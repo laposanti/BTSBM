@@ -37,5 +37,5 @@ Suggests:
     pkgdown
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-URL: https://github.com/laposanti/BTSBM
+URL: https://github.com/laposanti/BTSBM, https://laposanti.github.io/BTSBM/
 BugReports: https://github.com/laposanti/BTSBM/issues
