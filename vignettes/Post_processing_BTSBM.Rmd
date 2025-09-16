@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
   fig.height = 5,
   warning = FALSE,
   message = FALSE,
-  eval = F
+  eval = T
 )
 ```
 
@@ -43,15 +43,21 @@ Posterior draws come from a separate MCMC run (saved as an .rds file).
 
 ### Dependencies
 
-
-```{r}
-library(BTSBM)        
+```{r deps, include=FALSE}
+need <- c("coda","dplyr","tidyr","ggplot2","ggrepel","kableExtra",
+          "reshape2","stringr","ggside","mcclust","mcclust.ext")
+miss <- need[!vapply(need, requireNamespace, logical(1), quietly = TRUE)]
+if (length(miss)) {
+  message("Skipping execution; missing packages: ", paste(miss, collapse = ", "))
+  knitr::opts_chunk$set(eval = FALSE)
+}
+library(BTSBM)
 library(ggplot2)
+library(mcclust)      # comp.psm, vi.dist
+library(mcclust.ext)  # minVI, minbinder.ext
 library(dplyr)
 library(tidyr)
 library(coda)
-library(mcclust)
-library(mcclust.ext)
 library(ggrepel)
 library(kableExtra)
 library(reshape2)
@@ -60,11 +66,11 @@ library(ggside)
 ```
 
 
-
-
 ### Data
 
 ```{r}
+first_year <- 1999
+
 data(ATP_2000_2022, package = "BTSBM")
 names(ATP_2000_2022)[1:3]
 year_idx <- 1
@@ -80,13 +86,15 @@ Each yearly element contains:
 
 We use this structure to align player indices with posterior draws.
 
+This is just a demo. The file contains just 200 iterations for the first two years.
+For a complete analysis, compile the file locally and obtain full results.
+
 ```{r}
 
+res_path <- system.file("extdata", "resGN_demo.rds", package = "BTSBM")
+stopifnot(nzchar(res_path))  # helpful error if missing
+res_list <- readRDS(res_path)
 
-f <- system.file("extdata", "resGN_demo.rds", package = "BTSBM")
-res_list <- readRDS(f)
-
-first_year <- 1999
 
 ```
 
@@ -246,13 +254,13 @@ num_block_plot
 Below we show how to relabel by decreasing $\lambda$, plot $\lambda$ uncertainty, build block-ordered adjacency heatmaps, and visualize assignment probabilities.
 
 Replace yr with the desired index and ensure your .rds file is available.
+
 ```{r}
-first_year <- 1999
-yr <- 18                # example: -> "2017/2018"
 model <- "GN"
+yr <- 2
 season_label <- paste0(first_year + yr, "/", first_year + yr + 1)
 
-res_i <- readRDS(paste0("results/augmented_multiple_seasons", model, ".rds"))[[yr]]
+res_i <- res_list[[yr]]
 x_samples <- res_i$x_samples
 lambda_samples <- res_i$lambda_samples
 
@@ -278,13 +286,13 @@ relabel_by_lambda <- function(x_draws, lambda_draws) {
   list(x = out_x, lambda = out_lambda)
 }
 
-k_target <- 5
+k_target <- 3
 keep <- apply(x_samples, 1, \(z) length(unique(z)) == k_target)
-x_k5 <- x_samples[keep, , drop = FALSE]
-lambda_k5 <- lambda_samples[keep, , drop = FALSE]
-relab <- relabel_by_lambda(x_k5, lambda_k5)
-x_k5 <- relab$x
-lambda_k5 <- relab$lambda
+x_k_target <- x_samples[keep, , drop = FALSE]
+lambda_k_target <- lambda_samples[keep, , drop = FALSE]
+relab <- relabel_by_lambda(x_k_target, lambda_k_target)
+x_k_target <- relab$x
+lambda_k_target <- relab$lambda
 ```
 
 
@@ -292,13 +300,13 @@ lambda_k5 <- relab$lambda
 
 
 ```{r}
-idx_mat <- cbind(rep(seq_len(nrow(x_k5)), each = ncol(x_k5)),
-                 as.vector(x_k5))
-lambda_player <- matrix(lambda_k5[idx_mat],
-                        nrow = nrow(x_k5),
-                        ncol = ncol(x_k5),
+idx_mat <- cbind(rep(seq_len(nrow(x_k_target)), each = ncol(x_k_target)),
+                 as.vector(x_k_target))
+lambda_player <- matrix(lambda_k_target[idx_mat],
+                        nrow = nrow(x_k_target),
+                        ncol = ncol(x_k_target),
                         byrow = FALSE)
-colnames(lambda_player) <- colnames(x_k5)
+colnames(lambda_player) <- colnames(x_k_target)
 
 log_lp <- log10(lambda_player)
 hpd90 <- t(apply(log_lp, 2, \(v) HPDinterval(as.mcmc(v), prob = 0.90)))
@@ -308,7 +316,7 @@ player_summ <- data.frame(
   mean    = 10^(colMeans(log_lp)),
   low90   = 10^(hpd90[, 1]),
   up90    = 10^(hpd90[, 2]),
-  cluster = inference_helper(x_samples, lambda_samples)$partition_expected
+  cluster = round(inference_helper(x_samples, lambda_samples)$partition_expected)
 ) |>
   arrange(cluster, desc(mean)) |>
   mutate(player = sapply(str_to_title(gsub("_", " ", player)), clean_players_names),
@@ -328,7 +336,7 @@ ggplot(player_summ, aes(x = mean, y = player, colour = factor(cluster))) +
 inf_i <- inference_helper(res_i$x_samples, lambda_samples = res_i$lambda_samples)
 x_relabel <- inf_i$x_samples_relabel
 lambdas_reordered <- inf_i$lambda_samples_relabel
-partition_minVI <- inference_helper(x_relabel, lambdas_reordered)$partition_expected
+partition_minVI <- round(inference_helper(x_relabel, lambdas_reordered)$partition_expected)
 
 df_cl <- data.frame(
   players = rownames(Y_ij),
@@ -379,15 +387,15 @@ ggplot(Y_long_plot, aes(x = Loser, y = Winner)) +
 ```{r}
 count_cl <- function(x) length(unique(x))
 unique_count <- apply(x_samples, 1, count_cl)
-x_samples_sub <- x_samples[unique_count == 5, , drop = FALSE]
-lambda_samples_sub <- lambda_samples[unique_count == 5, , drop = FALSE]
+x_samples_sub <- x_samples[unique_count == k_target, , drop = FALSE]
+lambda_samples_sub <- lambda_samples[unique_count == k_target, , drop = FALSE]
 inf_i <- inference_helper(x_samples_sub, lambda_samples_sub)
 
-block_prob <- inf_i$player_block_assignment_probs[, 1:5]
+block_prob <- inf_i$player_block_assignment_probs[, 1:k_target]
 block_prob <- cbind(block_prob, pl_name = rownames(Y_ij))
 
 assignment_probs_long <- block_prob %>%
-  pivot_longer(cols = 1:5, names_to = "Cluster", values_to = "prob") %>%
+  pivot_longer(cols = 1:k_target, names_to = "Cluster", values_to = "prob") %>%
   mutate(Cluster = gsub("_", " ", Cluster),
          pl_name = gsub("_", " ", pl_name))
 
@@ -421,18 +429,3 @@ ggplot(assignment_probs_long_plot) +
   scale_y_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
-### Player trajectories (example)
-
-
-```{r}
-pl_selected <- c("Rafael Nadal", "Roger Federer", "Novak Djokovic", "Andy Murray")
-
-prob_assignment_across_years %>%
-  filter(pl_name %in% pl_selected) %>%
-  ggplot(aes(x = season, y = Cluster_1 * 100, group = pl_name, color = pl_name)) +
-  geom_line() +
-  theme_minimal() +
-  labs(y = "P(Top Block) (%)", x = "Season", color = "Player") +
-  theme(axis.text.x = element_text(angle = 90)) +
-  facet_wrap(~pl_name)
-```

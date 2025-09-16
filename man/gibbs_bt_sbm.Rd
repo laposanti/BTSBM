@@ -10,18 +10,16 @@ gibbs_bt_sbm(
   a,
   b,
   prior = "DP",
-  alpha_PY = NA_real_,
-  sigma_PY = NA_real_,
-  beta_DM = NA_real_,
-  H_DM = NA_integer_,
-  gamma_GN = NA_real_,
-  n_iter = 2000L,
-  burnin = 1000L,
+  alpha_PY = NA,
+  sigma_PY = NA,
+  beta_DM = NA,
+  H_DM = NA,
+  gamma_GN = NA,
+  n_iter = 2000,
+  burnin = 1000,
   init_x = NULL,
   store_z = FALSE,
-  verbose = TRUE,
-  a_prior_draw = function() rexp(1, 1),
-  a_prior_support = function(a) a > 0
+  verbose = TRUE
 )
 }
 \arguments{

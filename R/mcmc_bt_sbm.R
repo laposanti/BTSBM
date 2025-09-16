@@ -50,250 +50,292 @@
 #'
 #'
 gibbs_bt_sbm <- function(
-    w_ij, n_ij,
-    a, b,
-    prior = "DP",
-    alpha_PY = NA_real_,
-    sigma_PY = NA_real_,
-    beta_DM = NA_real_,
-    H_DM = NA_integer_,
-    gamma_GN = NA_real_,
-    n_iter = 2000L,
-    burnin = 1000L,
-    init_x = NULL,
-    store_z = FALSE,
-    verbose = TRUE,
-    a_prior_draw = function() rexp(1, 1),       # Exp(1) on a>0 (generic, proper)
-    a_prior_support = function(a) a > 0
+    w_ij, n_ij,              # K x K pairwise data
+    a, b,                    # Gamma(a,b) prior for each block rate
+    prior = "DP",            # which prior among c("DP","PY","DM","GN")
+    alpha_PY = NA,           # DP/PY parameter
+    sigma_PY = NA,           # discount for PY
+    beta_DM = NA,            # param for DM
+    H_DM = NA,               # max # clusters for DM
+    gamma_GN = NA,           # param for Gnedin
+    n_iter = 2000,
+    burnin = 1000,
+    init_x = NULL,           # optional initialization
+    store_z = FALSE,         # store the latent Z?
+    verbose = TRUE
 ) {
-  ## ---------- input checks ----------
-  stopifnot(is.matrix(w_ij), is.matrix(n_ij))
   K <- nrow(w_ij)
-  if (!identical(dim(w_ij), dim(n_ij)))
-    stop("w_ij and n_ij must have the same dimensions.")
-  if (K != ncol(w_ij) || K != nrow(n_ij) || K != ncol(n_ij))
-    stop("w_ij and n_ij must be square K x K matrices.")
-  if (any(is.na(w_ij)) || any(is.na(n_ij)))
-    stop("w_ij and n_ij must not contain NA.")
-  if (any(w_ij < 0) || any(n_ij < 0))
-    stop("w_ij and n_ij must be nonnegative.")
-  if (any(w_ij > n_ij))
-    stop("Elementwise, w_ij cannot exceed n_ij.")
-  if (any(diag(n_ij) != 0) || any(diag(w_ij) != 0))
-    stop("Diagonal of n_ij and w_ij must be zero.")
-  if (!isTRUE(all.equal(n_ij, t(n_ij))))
-    stop("n_ij must be symmetric.")
-  prior <- match.arg(prior, c("DP","PY","DM","GN"))
-  if (prior %in% c("DP","PY")) {
-    if (is.na(alpha_PY) || alpha_PY <= 0) stop("alpha_PY must be >0 for DP/PY.")
-    if (prior == "PY") {
-      if (is.na(sigma_PY) || sigma_PY < 0 || sigma_PY >= 1)
-        stop("sigma_PY must be in [0,1) for PY. Use 0 for DP behavior.")
-    } else {
-      sigma_PY <- 0
-    }
-  }
-  if (prior == "DM") {
-    if (is.na(beta_DM) || beta_DM <= 0) stop("beta_DM must be >0 for DM.")
-    if (is.na(H_DM) || H_DM < 1) stop("H_DM must be >=1 for DM.")
-  }
-  if (prior == "GN") {
-    if (is.na(gamma_GN) || gamma_GN <= 0) stop("gamma_GN must be >0 for GN.")
-  }
-  if (!is.numeric(a) || length(a) != 1 || a <= 0) stop("'a' must be a single positive number.")
-  if (!is.numeric(b) || length(b) != 1 || b <= 0) stop("'b' must be a single positive number.")
-  if (!is.numeric(n_iter) || !is.numeric(burnin) || n_iter <= burnin || n_iter < 2L)
-    stop("Require n_iter > burnin >= 0.")
-  if (!is.null(init_x)) {
-    if (length(init_x) != K) stop("init_x must have length K.")
-    if (any(init_x < 1 | init_x > K)) stop("init_x labels must be in 1..K.")
-  }
+  stopifnot(K == ncol(w_ij), K == nrow(n_ij), K == ncol(n_ij))
 
-  ## ---------- helpers: urn weights ----------
-  urn_weights <- function(v_minus) {
-    # v_minus: sizes of currently occupied clusters, length H
-    H <- length(v_minus)
-    if (prior == "DP" || (prior == "PY" && isTRUE(all.equal(sigma_PY, 0)))) {
-      # CRP with alpha = alpha_PY
-      c(v_minus, alpha_PY)
+  # Precompute w_i
+  w_i <- rowSums(w_ij)
+
+  # Init cluster assignment
+  if (is.null(init_x)) {
+    x_curr <- sample.int(K, K, replace = TRUE)
+  } else {
+    x_curr <- init_x
+  }
+  a_current = a
+  b=b
+  # We keep a block-rate vector of length K
+  lambda_curr <- rgamma(K, shape = a_current, rate = b)
+
+  # Latent Z
+  Z_curr <- matrix(0, K, K)
+  z_store <- if (store_z) array(0, dim = c(n_iter-burnin, K, K)) else NULL
+
+  x_samples <- matrix(NA, n_iter-burnin, K)
+  lambda_samples <- matrix(NA, n_iter-burnin, K)
+
+  # ------------------------------------------------------------------
+  # "urn_fun" picks the correct prior function to produce c(...)
+  # existing cluster weights, new cluster weight
+  # ------------------------------------------------------------------
+  urn_fun <- function(v_minus) {
+    if (prior == "DP") {
+      urn_DP(v_minus, alpha_PY)
     } else if (prior == "PY") {
-      # Pitman–Yor: existing weights v_minus - sigma, new alpha + sigma*H
-      if (any(v_minus <= sigma_PY)) stop("PY: some cluster size <= sigma; invalid state.")
-      c(v_minus - sigma_PY, alpha_PY + sigma_PY * H)
+      urn_PY(v_minus, alpha_PY, sigma_PY)
     } else if (prior == "DM") {
-      # Finite mixture with symmetric Dirichlet(beta_DM/H_DM) over H_DM labels
-      # Existing: size_i, New: number of empty labels (H_DM - H) each with prior mass beta_DM/H_DM
-      # For single-site update, we need a single "new" bucket proportional to total mass of empty labels
-      empty_count <- max(H_DM - H, 0L)
-      existing <- v_minus
-      new_mass <- empty_count * (beta_DM / H_DM)
-      c(existing, new_mass)
+      urn_DM(v_minus, beta_DM, H_DM)
     } else if (prior == "GN") {
-      # Placeholder simple GN-style: existing proportional to v_minus, new to gamma_GN
-      c(v_minus, gamma_GN)
+      urn_GN(v_minus, gamma_GN)
     } else {
-      stop("Invalid prior.")
+      stop("Invalid prior type chosen.")
     }
   }
 
-  ## ---------- Damien-style slice move for 'a' ----------
-  damien_update_a <- function(a_curr, lambda_vec, b_rate,
-                              prior_draw, prior_support,
-                              max_retries = 2000L) {
-    Klam <- length(lambda_vec)
-    gamma_val <- b_rate^Klam * prod(lambda_vec)              # (b^K) * prod(lambda_k)
+  #damien sampler for the hyperparameters
 
-    l1 <- function(a) gamma_val^a
-    l2 <- function(a) (gamma(a))^(-Klam)
+  damien_sampler_a <- function(a,                # current a
+                               lambda_vec,       # vector of lambdas (length K)
+                               b,                # known scale hyperparam
+                               prior_draw,       # function() that draws from p(a)
+                               prior_support,    # function(a) that returns TRUE if in supp
+                               max_retries = 1000) {
+    # 1) Compute l1(a_current) and l2(a_current) for the U_1, U_2 draws
+    K <- length(lambda_vec)
+    gamma_val <- b^K * prod(lambda_vec)         # "b^K * prod(lambda_i)"
 
-    U1 <- runif(1, 0, l1(a_curr))
-    U2 <- runif(1, 0, l2(a_curr))
+    l1 <- function(a) { gamma_val^a }
+    l2 <- function(a) { (gamma( a ))^(-K) }
+
+    # 2) Sample U1, U2 from Uniform(0, l1(a)), Uniform(0, l2(a)) respectively
+    U1 <- runif(1, min=0, max=l1(a_current))
+    U2 <- runif(1, min=0, max=l2(a_current))
+
+    # 3) We now want to sample 'a_new' from p(a) restricted to
+    #       { l1(a) > U1 } intersect { l2(a) > U2 } = { gamma_val^a > U1 } intersect { gamma(a)^(-K) > U2 }.
+    #    We'll do a simple rejection loop.  If your prior is well-behaved, this should be efficient enough.
 
     for (trial in seq_len(max_retries)) {
-      a_prop <- prior_draw()
-      if (!is.finite(a_prop) || !prior_support(a_prop)) next
-      cond1 <- (gamma_val^a_prop > U1)
-      cond2 <- ((gamma(a_prop))^(-Klam) > U2)
-      if (cond1 && cond2) return(list(a_new = a_prop, accepted = TRUE))
+      a_prop <- prior_draw()             # draw from p(a)
+
+      # Check if in prior support
+      if (!prior_support(a_prop)) next
+
+      # Check the slice constraints:
+      cond1 <- ( gamma_val^a_prop > U1 )
+      cond2 <- ( (gamma(a_prop))^(-K) > U2 )  # i.e. gamma(a_prop) < U2^(-1/K)
+
+      if (cond1 && cond2) {
+        # success!
+        return(list(a_new = a_prop, u1 = U1, u2 = U2, accepted=TRUE))
+      }
     }
-    list(a_new = a_curr, accepted = FALSE)
+
+    # If we got here, we never found a suitable a in 'max_retries' tries
+    return(list(a_new = a, u1 = U1, u2 = U2, accepted=FALSE))
   }
+  # "prior_draw" draws from that Gamma
+  prior_draw <- function() runif(1,0,1)
 
-  ## ---------- precompute ----------
-  w_i <- rowSums(w_ij)                          # wins out of i
-  Z    <- matrix(0.0, K, K)                     # latent gammas
-  x    <- if (is.null(init_x)) sample.int(K, K, replace = TRUE) else as.integer(init_x)
-  a_curr <- as.numeric(a)
-  b_rate <- as.numeric(b)
-  lambda <- rgamma(K, shape = a_curr, rate = b_rate)  # one per label 1..K
+  # "prior_support" just requires a>0
+  prior_support <- function(a) (a>0)
 
-  n_save <- as.integer(n_iter - burnin)
-  x_out <- matrix(NA_integer_, n_save, K)
-  lambda_out <- matrix(NA_real_, n_save, K)
-  z_out <- if (store_z) array(0.0, dim = c(n_save, K, K)) else NULL
-  save_i <- 0L
+  # sumZi
+  sumZi <- function(i) sum(Z_curr[i, ])
 
-  sumZi <- function(i) sum(Z[i, ], na.rm = TRUE)
+  # integral over a new lambda from Gamma(a,b)
+  # for node i alone in a new block:
 
-  new_cluster_integral_log <- function(wi, Zi, a_shp, b_rt) {
-    # log ∫ λ^{wi+a-1} e^{-(Zi+b)λ} b^a / Γ(a) dλ  =  a log b + lgamma(a+wi) - lgamma(a) - (a+wi) log(Zi + b)
-    a_shp * log(b_rt) + lgamma(a_shp + wi) - lgamma(a_shp) - (a_shp + wi) * log(Zi + b_rt)
+  # Log version
+  new_cluster_integral_log <- function(w_i_val, Z_i_val,a_current) {
+    # log( top / bot ) = log(top) - log(bot)
+    log_top <- (a_current*log(b)) + lgamma(a_current + w_i_val)
+    log_bot <- lgamma(a_current) + (a_current + w_i_val)*log(b + Z_i_val)
+    log_top - log_bot
   }
-
-  ## ---------- main loop ----------
+  save_i = 0
   for (iter in seq_len(n_iter)) {
 
-    # 1) Update Z_{ij} for i<j, copy symmetrically
-    for (i in 1:(K - 1L)) {
-      lam_i <- lambda[x[i]]
-      for (j in (i + 1L):K) {
-        nij <- n_ij[i, j]
+    # 1) Update Z_{ij}
+    for (i in 1:(K-1)) {
+      lam_i <- lambda_curr[x_curr[i]]
+      for (j in (i+1):K) {
+        nij <- n_ij[i,j]
         if (nij > 0) {
-          lam_j <- lambda[x[j]]
-          zij <- rgamma(1L, shape = nij, rate = lam_i + lam_j)
-          Z[i, j] <- zij
-          Z[j, i] <- zij
+          lam_j <- lambda_curr[x_curr[j]]
+          Z_val <- rgamma(1, shape = nij, rate = lam_i + lam_j)
+          Z_curr[i,j] <- Z_val
+          Z_curr[j,i] <- Z_val
         } else {
-          Z[i, j] <- 0.0
-          Z[j, i] <- 0.0
+          Z_curr[i,j] <- 0
+          Z_curr[j,i] <- 0
         }
       }
     }
 
-    # 2) Update cluster labels x_i (single-site)
+
+    # 3) Single-site update for x_i
     for (i in seq_len(K)) {
-      # cluster sizes excluding i
-      csize <- tabulate(x[-i], nbins = K) # length K
-      occupied <- which(csize > 0L)
+      old_k <- x_curr[i]
+
+      # cluster sizes ignoring i
+      csize <- integer(K)
+      for (k in seq_len(K)) {
+        csize[k] <- sum(x_curr[-i] == k)
+      }
+
+      occupied <- which(csize > 0)
       H <- length(occupied)
       v_minus <- csize[occupied]
 
-      weights <- urn_weights(v_minus)
-      if (length(weights) != H + 1L)
-        stop("urn_weights must return length H+1 vector (existing + new).")
+      # get prior weights from urn function
+      # => vector of length H+1
+      prior_vec <- urn_fun(v_minus)
+      new_weight <- prior_vec[H+1]
+      existing_weights <- prior_vec[1:H]
 
-      Zi <- sumZi(i)
-      wi <- w_i[i]
+      existing_ids <- occupied
+      Zi_val <- sumZi(i)
+      wi_val <- w_i[i]
 
-      logp <- numeric(H + 1L)
+      # We'll build a vector log_probs of length H+1
+      log_probs <- numeric(H+1)
 
-      # existing clusters
+      # existing
       for (h in seq_len(H)) {
-        k_id <- occupied[h]
-        lam_k <- lambda[k_id]
-        llh <- wi * log(lam_k + 1e-300) - lam_k * Zi
-        lprior <- log(weights[h] + 1e-300)
-        logp[h] <- lprior + llh
+        k_id <- existing_ids[h]
+        lam_k <- lambda_curr[k_id]
+
+        # log-likelihood factor = w_i[i]*log(lam_k) - lam_k * Zi_val
+        # log-prior factor = log( existing_weights[h] )
+        # so total is:
+        # log_probs[h] = log( existing_weights[h] ) + [ w_i[i]*log(lam_k) - lam_k*Zi_val ]
+
+
+        llh_ex <- wi_val*log(lam_k) - lam_k*Zi_val
+        lprior_ex <- log(existing_weights[h] + 1e-300)  # +1e-300 in case it's 0
+        log_probs[h] <- lprior_ex + llh_ex
       }
 
-      # new cluster mass (marginalized λ)
-      new_w <- weights[H + 1L]
-      if (new_w > 0) {
-        logp[H + 1L] <- log(new_w) + new_cluster_integral_log(wi, Zi, a_curr, b_rate)
+
+      # new cluster
+      if (new_weight > 0) {
+        # log of new_weight + log of new_cluster_integral
+        lprior_new <- log(new_weight)
+        lint_new <- new_cluster_integral_log(wi_val, Zi_val,a_current)
+        log_probs[H+1] <- lprior_new + lint_new
       } else {
-        logp[H + 1L] <- -Inf
+        log_probs[H+1] <- -Inf
       }
 
-      # normalize
-      offs <- max(logp)
-      pr <- exp(logp - offs)
-      pr <- pr / sum(pr)
+      # Numeric stability:
+      offset <- max(log_probs)
+      shifted <- log_probs - offset
+      unnorm <- exp(shifted)
+      denom <- sum(unnorm)
+      probs <- unnorm / denom
 
-      choice <- sample.int(H + 1L, 1L, prob = pr)
+      choice <- sample.int(H+1, size=1, prob=probs)
 
       if (choice <= H) {
-        x[i] <- occupied[choice]
+        x_curr[i] <- existing_ids[choice]
       } else {
-        # assign to a fresh empty label
-        empties <- which(csize == 0L)
-        new_label <- empties[1L]
-        x[i] <- new_label
-        # draw its λ | data_i
-        shape_k <- a_curr + wi
-        rate_k  <- b_rate + Zi
-        lambda[new_label] <- rgamma(1L, shape = shape_k, rate = rate_k)
+        # new cluster => pick an empty label
+        csize <- integer(K)
+        for (k in seq_len(K)) {
+          csize[k] <- sum(x_curr[-i] == k)
+        }
+
+        empties   <- which(csize == 0)
+        new_label <- empties[1]
+        x_curr[i] <- new_label
+        shape_k   <- a_current + w_i[i]
+        rate_k    <- b
+        rate_k    <- rate_k + sumZi(i)
+
+        lambda_curr[new_label] <- rgamma(1, shape = shape_k, rate = rate_k)
+        #2.1) Update a for Gamma
+        csize <- integer(K)
+        for (k in seq_len(K)) {
+          csize[k] <- sum(x_curr == k)
+        }
+
+
       }
     }
 
-    # 3) Update λ_k for each occupied cluster
-    csize_full <- tabulate(x, nbins = K)
-    for (k in which(csize_full > 0L)) {
-      members <- (x == k)
-      shape_k <- a_curr + sum(w_i[members])
-      rate_k  <- b_rate + sum(rowSums(Z[members, , drop = FALSE]))
-      lambda[k] <- rgamma(1L, shape = shape_k, rate = rate_k)
+
+
+    # 2) Update lambda_k for each occupied cluster
+    for (k in seq_len(K)) {
+      members_k <- which(x_curr == k)
+      if (length(members_k) > 0) {
+        shape_k <- a_current + sum(w_i[members_k])
+        rate_k  <- b
+        for (i in members_k) {
+          rate_k <- rate_k + sumZi(i)
+        }
+        lambda_curr[k] <- rgamma(1, shape = shape_k, rate = rate_k)
+      }
     }
 
-    # 4) Optional reparameterization step (Dirichlet-Gamma “rescale”)
-    #    Keep as in your code: draw total mass then normalize to improve mixing.
-    pi_curr <- lambda / sum(lambda)
-    total   <- rgamma(1L, shape = K * a_curr, rate = b_rate)
-    lambda  <- pi_curr * total
-
-    # 5) Update 'a' via Damien move
-    a_upd <- damien_update_a(
-      a_curr, lambda_vec = lambda, b_rate = b_rate,
-      prior_draw   = a_prior_draw,
-      prior_support = a_prior_support
-    )
-    if (a_upd$accepted) a_curr <- a_upd$a_new
-
-    # 6) Store
-    if (iter > burnin) {
-      save_i <- save_i + 1L
-      x_out[save_i, ] <- x
-      lambda_out[save_i, ] <- lambda
-      if (store_z) z_out[save_i, , ] <- Z
+    # cluster sizes ignoring i
+    csize <- integer(K)
+    for (k in seq_len(K)) {
+      csize[k] <- sum(x_curr == k)
     }
 
-    if (verbose && iter %% 200L == 0L) {
-      cat("iter", iter, "| occupied =", length(which(csize_full > 0L)), "\n")
+    pi_curr = lambda_curr/sum(lambda_curr)
+
+    lambda_curr = pi_curr*rgamma(1,K*a_current,b)
+
+    #2.1) Update a for Gamma prior
+    # out <- damien_sampler_a(a=a_current,
+    #                         lambda_vec=lambda_curr,
+    #                         b=b,
+    #                         prior_draw=prior_draw,
+    #                         prior_support=prior_support)
+    #
+    # #
+    # if (out$accepted) {
+    #   a_current <- out$a_new
+    # } else {
+    #   # fallback: keep old value if we run out of tries
+    # }
+
+    #
+    # store
+    if(iter>burnin)
+      save_i = save_i+1
+    x_samples[save_i, ] <- x_curr
+    lambda_samples[save_i, ] <- lambda_curr
+    if (store_z) {
+      z_store[save_i,,] <- Z_curr
+    }
+
+    if (verbose && iter %% 200 == 0) {
+      cat("Iteration:", iter,
+          "- #occupied =", length(unique(x_curr)), "\n")
     }
   }
 
   list(
-    x_samples = x_out,
-    lambda_samples = lambda_out,
-    z_samples = z_out
+    x_samples      = x_samples,
+    lambda_samples = lambda_samples,
+    z_samples      = z_store
   )
 }

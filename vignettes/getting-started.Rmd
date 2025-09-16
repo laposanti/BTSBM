@@ -1,22 +1,46 @@
 ---
-title: "Getting Started: Single-K Simulation Walkthrough"
-author: "Lapo Santi"
+title: "Getting started with BTSBM"
+author: "BTSBM authors"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: false
 vignette: >
-  %\VignetteIndexEntry{getting-started}
+  %\VignetteIndexEntry{Getting started with BTSBM}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
-```{r, include=FALSE}
+  
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 6, fig.height = 4,
-  out.width = "80%"
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
 )
-set.seed(123)
+
+
+
+```
+
+```{r deps, include=FALSE}
+need <- c("coda","dplyr","tidyr","ggplot2","ggrepel","kableExtra",
+          "reshape2","stringr","ggside","mcclust","mcclust.ext")
+miss <- need[!vapply(need, requireNamespace, logical(1), quietly = TRUE)]
+if (length(miss)) {
+  message("Skipping execution; missing packages: ", paste(miss, collapse = ", "))
+  knitr::opts_chunk$set(eval = FALSE)
+}
+library(BTSBM)
+library(ggplot2)
+library(BTSBM)        # this package
+library(mcclust)      # comp.psm, vi.dist
+library(mcclust.ext)  # minVI, minbinder.ext
+
 ```
 
 # Overview
@@ -31,13 +55,7 @@ This vignette replicates the spirit of a larger simulation pipeline, but focuses
 -compare the inferred partition to truth via VI distance.
 
 
-### Load packages
 
-```{r}
-library(BTSBM)        # this package
-library(mcclust)      # comp.psm, vi.dist
-library(mcclust.ext)  # minVI, minbinder.ext
-```
 
 Helpers
 
@@ -56,36 +74,57 @@ sample_Nij <- function(n_players, lambda = 3) {
 }
 
 # Map block rates to pairwise BT probabilities
-lambda_to_theta <- function(lambda) {
-  outer(lambda, lambda, function(a, b) a / (a + b))
+from_lambda_to_theta <- function(lambda) {
+  # Calculate theta
+  theta <- exp(lambda) / (matrix(exp(lambda), length(lambda), length(lambda), byrow = TRUE) + exp(lambda))
+  
+  # Replace -Inf values in theta with a very small number
+  theta[is.infinite(theta) & theta < 0] <- .Machine$double.xmin # Replace with the smallest positive number
+  return(theta)
 }
+
 ```
 
 1) Simulate one dataset (single K)
 
 ```{r}
-K <- 5                  # single K for this vignette
-n <- 60                 # number of players/items
+K <- 4                  # single K for this vignette
+n <- 100                 # number of players/items
 
-# --- match topology (symmetric, diag 0)
-N_ij <- sample_Nij(n_players = n, lambda = 2)
-
-# --- latent block structure and rates
-z_star <- sample.int(K, n, replace = TRUE)               # true labels
-lambda_star <- seq(0.8, 2.0, length.out = K)             # monotone blocks
-theta_star  <- lambda_to_theta(lambda_star)              # K x K BT probs
-
-# --- generate wins
-w_ij <- matrix(0L, n, n)
-idx  <- which(upper.tri(N_ij) & N_ij > 0L, arr.ind = TRUE)
-for (k in seq_len(nrow(idx))) {
-  i <- idx[k, 1]; j <- idx[k, 2]
-  nij <- N_ij[i, j]
-  pij <- theta_star[z_star[i], z_star[j]]
-  wij <- rbinom(1, size = nij, prob = pij)
-  w_ij[i, j] <- wij
-  w_ij[j, i] <- nij - wij
+N_ij = matrix(0, n, n)
+for(i in 1:(n-1)){
+  for(j in (i+1):n){
+    N_ij[i,j] = rpois(1,5)
+  }
 }
+N_ij[lower.tri(N_ij)] = t(N_ij)[lower.tri(N_ij)]
+
+# ---------------------------
+# 2) Assign each node to one of K clusters
+#    (z_star[i] in {1,...,K})
+# ---------------------------
+x_star = sample(1:K, n, replace = TRUE)
+
+lambda_star = seq(0.1,2, length.out=K)
+theta_star = from_lambda_to_theta(lambda_star)
+
+# ---------------------------
+# 3) Generate adjacency Y_ij
+#    using your binomial logic
+# ---------------------------
+w_ij = matrix(0, n, n)
+for (i in 1:(n-1)) {
+  for (j in (i+1):n) {
+    if(N_ij[i,j]!=0){
+      for(k in 1:N_ij[i,j]){
+        w_ij[i,j] = w_ij[i,j] + rbinom(1, 1, theta_star[x_star[i],x_star[j]])
+      }
+    }
+  }
+}
+# Mirror for lower triangle
+w_ij[lower.tri(w_ij)] = N_ij[lower.tri(N_ij)] - t(w_ij)[lower.tri(w_ij)]
+
 ```
 
 2) Run the clustered Gibbs sampler (short chain)
@@ -94,14 +133,14 @@ for (k in seq_len(nrow(idx))) {
 out <- gibbs_bt_sbm(
   w_ij   = w_ij,
   n_ij   = N_ij,
-  a      = 1, b = 1,
-  prior  = "DP",       # "DP", "PY", "DM", or "GN"
-  alpha_PY = 1,
-  n_iter = 800, burnin = 300,
-  verbose = FALSE
+  a      = 0.01, b = 1,
+  prior  = "GN",       # "DP", "PY", "DM", or "GN"
+  gamma_GN =  0.8,
+  n_iter = 1000, burnin = 300,
+  verbose = T
 )
 
-str(out, max.level = 1)
+
 ```
 
 3) Relabel and summarize
@@ -111,57 +150,31 @@ post <- inference_helper(out$x_samples, out$lambda_samples)
 
 # Average number of clusters, and distribution over #clusters
 post$avg_n_clusters
-table(post$n_clusters_each_iter)
+hist(post$n_clusters_each_iter)
 ```
 
 Posterior similarity matrix (PSM):
 
 ```{r}
-  image(post$co_clustering, main = "Posterior Similarity Matrix", axes = FALSE)
+
+psm <- post$co_clustering
+o <- order(x_star, decreasing = T)   # or TRUE if you prefer
+image(psm[o, o], main = "Posterior Similarity Matrix", axes = FALSE)
+
 ```
 
-Per-player assignment probabilities (first rows):
-
-
-```{r}
-  head(post$player_block_assignment_probs)
-```
 
 4) Compare partitions to truth (VI distance)
 
 We compute VI distances for the minVI and Binder partitions against the true labels z_star.
 
 ```{r}
-vi_minvi  <- mcclust::vi.dist(post$minVI_partition,   z_star)
-vi_binder <- mcclust::vi.dist(post$partition_binder,  z_star)
+vi_minvi  <- mcclust::vi.dist(post$minVI_partition,   x_star)
+vi_exp <- mcclust::vi.dist(post$partition_expected,  x_star)
 
-c(VI_minVI = vi_minvi, VI_binder = vi_binder)
+c(VI_minVI = vi_minvi, vi_exp = vi_exp)
 ```
 
-Tip: If you also want ARI, use mclust::adjustedRandIndex(post$minVI_partition, z_star) in a script or article (it’s heavier; we keep the vignette light).
 
-5) Optional: Build LOO matrices for model comparison
-Here we just show the calls; evaluate in your scripts if needed.
 
-```{r}
-# Simple BT (player-level) log-likelihood matrix
-simple_llo <- make_bt_simple_loo(
-  w_ij = w_ij, n_ij = N_ij,
-  lambda_samples = out$lambda_samples
-)
-
-# Clustered BT–SBM log-likelihood matrix
-cluster_llo <- make_bt_cluster_loo(
-  w_ij = w_ij, n_ij = N_ij,
-  lambda_samples = post$lambda_samples_relabel,
-  x_samples      = post$x_samples_relabel
-)
-```
-
-### Compare via PSIS-LOO (requires 'loo')
-
-```{r}
-cmp <- compare_bt_models_loo(simple_llo, cluster_llo)
-cmp$comparison
-```
 

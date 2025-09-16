@@ -47,6 +47,7 @@ clean_players_names <- function(name) {
 #' @importFrom mcclust.ext minbinder.ext minVI
 #' @importFrom stats median
 #' @export
+#'
 inference_helper <- function(x_samples, lambda_samples){
   stopifnot(is.matrix(x_samples), is.matrix(lambda_samples))
   n_iter <- nrow(x_samples)
@@ -385,6 +386,9 @@ make_bt_cluster_loo <- function(w_ij, n_ij, lambda_samples, x_samples) {
 #' \item \code{comparison} — result of \code{loo::compare()}.
 #' }
 #' @export
+#'
+#'
+#'
 compare_bt_models_loo <- function(simple_llo, cluster_llo) {
   if (!requireNamespace("loo", quietly = TRUE))
     stop("Package 'loo' not installed. Install it to run LOO.")
