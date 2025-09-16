@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Getting Started: Single-K Simulation Walkthrough • BTSBM</title>
+<title>Getting started with BTSBM • BTSBM</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started: Single-K Simulation Walkthrough">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started with BTSBM">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started: Single-K Simulation Walkthrough</a></li>
+<li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with BTSBM</a></li>
     <li><a class="dropdown-item" href="../articles/Post_processing_BTSBM.html">Post-processing and Summary Plots for BT-SBM</a></li>
   </ul>
 </li>
@@ -56,8 +56,9 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Getting Started: Single-K Simulation Walkthrough</h1>
-                        <h4 data-toc-skip class="author">Lapo Santi</h4>
+      <h1>Getting started with BTSBM</h1>
+                        <h4 data-toc-skip class="author">BTSBM
+authors</h4>
             
             <h4 data-toc-skip class="date">2025-09-16</h4>
       
@@ -79,16 +80,8 @@ blocks and block rates, -generate win counts
 -run the clustered Gibbs sampler (gibbs_bt_sbm), -relabel and summarize
 (inference_helper), -compare the inferred partition to truth via VI
 distance.</p>
-<div class="section level4">
-<h4 id="load-packages">Load packages<a class="anchor" aria-label="anchor" href="#load-packages"></a>
-</h4>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span>        <span class="co"># this package</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mcclust</span><span class="op">)</span>      <span class="co"># comp.psm, vi.dist</span></span>
-<span><span class="co">#&gt; Loading required package: lpSolve</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mcclust.ext</span><span class="op">)</span>  <span class="co"># minVI, minbinder.ext</span></span></code></pre></div>
 <p>Helpers</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Random sparse match topology via Poisson counts on each unordered pair</span></span>
 <span><span class="va">sample_Nij</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_players</span>, <span class="va">lambda</span> <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/combn.html" class="external-link">combn</a></span><span class="op">(</span><span class="va">n_players</span>, <span class="fl">2</span><span class="op">)</span></span>
@@ -103,433 +96,102 @@ distance.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Map block rates to pairwise BT probabilities</span></span>
-<span><span class="va">lambda_to_theta</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/outer.html" class="external-link">outer</a></span><span class="op">(</span><span class="va">lambda</span>, <span class="va">lambda</span>, <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span> <span class="va">a</span> <span class="op">/</span> <span class="op">(</span><span class="va">a</span> <span class="op">+</span> <span class="va">b</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">from_lambda_to_theta</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Calculate theta</span></span>
+<span>  <span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="co"># Replace -Inf values in theta with a very small number</span></span>
+<span>  <span class="va">theta</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.infinite</a></span><span class="op">(</span><span class="va">theta</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">theta</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">.Machine</span><span class="op">$</span><span class="va">double.xmin</span> <span class="co"># Replace with the smallest positive number</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">theta</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <ol style="list-style-type: decimal">
 <li>Simulate one dataset (single K)</li>
 </ol>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">K</span> <span class="op">&lt;-</span> <span class="fl">5</span>                  <span class="co"># single K for this vignette</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">60</span>                 <span class="co"># number of players/items</span></span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">K</span> <span class="op">&lt;-</span> <span class="fl">4</span>                  <span class="co"># single K for this vignette</span></span>
+<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span>                 <span class="co"># number of players/items</span></span>
 <span></span>
-<span><span class="co"># --- match topology (symmetric, diag 0)</span></span>
-<span><span class="va">N_ij</span> <span class="op">&lt;-</span> <span class="fu">sample_Nij</span><span class="op">(</span>n_players <span class="op">=</span> <span class="va">n</span>, lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">N_ij</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="kw">for</span><span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="op">(</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">n</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">N_ij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span></span>
 <span></span>
-<span><span class="co"># --- latent block structure and rates</span></span>
-<span><span class="va">z_star</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="va">K</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>               <span class="co"># true labels</span></span>
-<span><span class="va">lambda_star</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">2.0</span>, length.out <span class="op">=</span> <span class="va">K</span><span class="op">)</span>             <span class="co"># monotone blocks</span></span>
-<span><span class="va">theta_star</span>  <span class="op">&lt;-</span> <span class="fu">lambda_to_theta</span><span class="op">(</span><span class="va">lambda_star</span><span class="op">)</span>              <span class="co"># K x K BT probs</span></span>
+<span><span class="co"># ---------------------------</span></span>
+<span><span class="co"># 2) Assign each node to one of K clusters</span></span>
+<span><span class="co">#    (z_star[i] in {1,...,K})</span></span>
+<span><span class="co"># ---------------------------</span></span>
+<span><span class="va">x_star</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">K</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># --- generate wins</span></span>
-<span><span class="va">w_ij</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
-<span><span class="va">idx</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">N_ij</span> <span class="op">&gt;</span> <span class="fl">0L</span>, arr.ind <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">idx</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">idx</span><span class="op">[</span><span class="va">k</span>, <span class="fl">1</span><span class="op">]</span>; <span class="va">j</span> <span class="op">&lt;-</span> <span class="va">idx</span><span class="op">[</span><span class="va">k</span>, <span class="fl">2</span><span class="op">]</span></span>
-<span>  <span class="va">nij</span> <span class="op">&lt;-</span> <span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span></span>
-<span>  <span class="va">pij</span> <span class="op">&lt;-</span> <span class="va">theta_star</span><span class="op">[</span><span class="va">z_star</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">z_star</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span></span>
-<span>  <span class="va">wij</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, size <span class="op">=</span> <span class="va">nij</span>, prob <span class="op">=</span> <span class="va">pij</span><span class="op">)</span></span>
-<span>  <span class="va">w_ij</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">wij</span></span>
-<span>  <span class="va">w_ij</span><span class="op">[</span><span class="va">j</span>, <span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">nij</span> <span class="op">-</span> <span class="va">wij</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<span><span class="va">lambda_star</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">2</span>, length.out<span class="op">=</span><span class="va">K</span><span class="op">)</span></span>
+<span><span class="va">theta_star</span> <span class="op">=</span> <span class="fu">from_lambda_to_theta</span><span class="op">(</span><span class="va">lambda_star</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># ---------------------------</span></span>
+<span><span class="co"># 3) Generate adjacency Y_ij</span></span>
+<span><span class="co">#    using your binomial logic</span></span>
+<span><span class="co"># ---------------------------</span></span>
+<span><span class="va">w_ij</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="op">(</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span><span class="op">(</span><span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">{</span></span>
+<span>      <span class="kw">for</span><span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span><span class="op">)</span><span class="op">{</span></span>
+<span>        <span class="va">w_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">=</span> <span class="va">w_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="va">theta_star</span><span class="op">[</span><span class="va">x_star</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="va">x_star</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co"># Mirror for lower triangle</span></span>
+<span><span class="va">w_ij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="va">N_ij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li>Run the clustered Gibbs sampler (short chain)</li>
 </ol>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
 <span>  w_ij   <span class="op">=</span> <span class="va">w_ij</span>,</span>
 <span>  n_ij   <span class="op">=</span> <span class="va">N_ij</span>,</span>
-<span>  a      <span class="op">=</span> <span class="fl">1</span>, b <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  prior  <span class="op">=</span> <span class="st">"DP"</span>,       <span class="co"># "DP", "PY", "DM", or "GN"</span></span>
-<span>  alpha_PY <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  n_iter <span class="op">=</span> <span class="fl">800</span>, burnin <span class="op">=</span> <span class="fl">300</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  a      <span class="op">=</span> <span class="fl">0.01</span>, b <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  prior  <span class="op">=</span> <span class="st">"GN"</span>,       <span class="co"># "DP", "PY", "DM", or "GN"</span></span>
+<span>  gamma_GN <span class="op">=</span>  <span class="fl">0.8</span>,</span>
+<span>  n_iter <span class="op">=</span> <span class="fl">1000</span>, burnin <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">T</span></span>
 <span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">out</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; List of 3</span></span>
-<span><span class="co">#&gt;  $ x_samples     : int [1:500, 1:60] 7 7 7 7 7 7 7 7 7 7 ...</span></span>
-<span><span class="co">#&gt;  $ lambda_samples: num [1:500, 1:60] 2.01 1.97 1.78 2.21 2.22 ...</span></span>
-<span><span class="co">#&gt;  $ z_samples     : NULL</span></span></code></pre></div>
+<span><span class="co">#&gt; Iteration: 200 - #occupied = 4 </span></span>
+<span><span class="co">#&gt; Iteration: 400 - #occupied = 4 </span></span>
+<span><span class="co">#&gt; Iteration: 600 - #occupied = 4 </span></span>
+<span><span class="co">#&gt; Iteration: 800 - #occupied = 4 </span></span>
+<span><span class="co">#&gt; Iteration: 1000 - #occupied = 4</span></span></code></pre></div>
 <ol start="3" style="list-style-type: decimal">
 <li>Relabel and summarize</li>
 </ol>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">out</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Average number of clusters, and distribution over #clusters</span></span>
 <span><span class="va">post</span><span class="op">$</span><span class="va">avg_n_clusters</span></span>
-<span><span class="co">#&gt; [1] 3.858</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">n_clusters_each_iter</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   2   3   4   5   6   7   8 </span></span>
-<span><span class="co">#&gt;  80 141 138  81  39  13   8</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 4</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">n_clusters_each_iter</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>Posterior similarity matrix (PSM):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span>  <span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">co_clustering</span>, main <span class="op">=</span> <span class="st">"Posterior Similarity Matrix"</span>, axes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" width="80%"></p>
-<p>Per-player assignment probabilities (first rows):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">player_block_assignment_probs</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          Cluster_1 Cluster_2 Cluster_3 Cluster_4 Cluster_5 Cluster_6 Cluster_7</span></span>
-<span><span class="co">#&gt; Player_1     0.630     0.284     0.056     0.022     0.006     0.002     0.000</span></span>
-<span><span class="co">#&gt; Player_2     0.804     0.176     0.018     0.002     0.000     0.000     0.000</span></span>
-<span><span class="co">#&gt; Player_3     0.822     0.160     0.016     0.002     0.000     0.000     0.000</span></span>
-<span><span class="co">#&gt; Player_4     0.754     0.214     0.030     0.002     0.000     0.000     0.000</span></span>
-<span><span class="co">#&gt; Player_5     0.216     0.338     0.236     0.140     0.050     0.012     0.006</span></span>
-<span><span class="co">#&gt; Player_6     0.028     0.338     0.306     0.210     0.082     0.024     0.006</span></span>
-<span><span class="co">#&gt;          Cluster_8 Cluster_9 Cluster_10 Cluster_11 Cluster_12 Cluster_13</span></span>
-<span><span class="co">#&gt; Player_1     0.000         0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2     0.000         0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3     0.000         0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4     0.000         0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5     0.002         0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6     0.006         0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_14 Cluster_15 Cluster_16 Cluster_17 Cluster_18 Cluster_19</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_20 Cluster_21 Cluster_22 Cluster_23 Cluster_24 Cluster_25</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_26 Cluster_27 Cluster_28 Cluster_29 Cluster_30 Cluster_31</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_32 Cluster_33 Cluster_34 Cluster_35 Cluster_36 Cluster_37</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_38 Cluster_39 Cluster_40 Cluster_41 Cluster_42 Cluster_43</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_44 Cluster_45 Cluster_46 Cluster_47 Cluster_48 Cluster_49</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_50 Cluster_51 Cluster_52 Cluster_53 Cluster_54 Cluster_55</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0          0</span></span>
-<span><span class="co">#&gt;          Cluster_56 Cluster_57 Cluster_58 Cluster_59 Cluster_60</span></span>
-<span><span class="co">#&gt; Player_1          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_2          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_3          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_4          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_5          0          0          0          0          0</span></span>
-<span><span class="co">#&gt; Player_6          0          0          0          0          0</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">psm</span> <span class="op">&lt;-</span> <span class="va">post</span><span class="op">$</span><span class="va">co_clustering</span></span>
+<span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">x_star</span>, decreasing <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>   <span class="co"># or TRUE if you prefer</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">psm</span><span class="op">[</span><span class="va">o</span>, <span class="va">o</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"Posterior Similarity Matrix"</span>, axes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;"></p>
 <ol start="4" style="list-style-type: decimal">
 <li>Compare partitions to truth (VI distance)</li>
 </ol>
 <p>We compute VI distances for the minVI and Binder partitions against
 the true labels z_star.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">vi_minvi</span>  <span class="op">&lt;-</span> <span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/vi.dist.html" class="external-link">vi.dist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span>,   <span class="va">z_star</span><span class="op">)</span></span>
-<span><span class="va">vi_binder</span> <span class="op">&lt;-</span> <span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/vi.dist.html" class="external-link">vi.dist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">partition_binder</span>,  <span class="va">z_star</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">vi_minvi</span>  <span class="op">&lt;-</span> <span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/vi.dist.html" class="external-link">vi.dist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span>,   <span class="va">x_star</span><span class="op">)</span></span>
+<span><span class="va">vi_exp</span> <span class="op">&lt;-</span> <span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/vi.dist.html" class="external-link">vi.dist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">partition_expected</span>,  <span class="va">x_star</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>VI_minVI <span class="op">=</span> <span class="va">vi_minvi</span>, VI_binder <span class="op">=</span> <span class="va">vi_binder</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  VI_minVI VI_binder </span></span>
-<span><span class="co">#&gt;  2.147630  2.168204</span></span></code></pre></div>
-<p>Tip: If you also want ARI, use
-mclust::adjustedRandIndex(post$minVI_partition, z_star) in a script or
-article (it’s heavier; we keep the vignette light).</p>
-<ol start="5" style="list-style-type: decimal">
-<li>Optional: Build LOO matrices for model comparison Here we just show
-the calls; evaluate in your scripts if needed.</li>
-</ol>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Simple BT (player-level) log-likelihood matrix</span></span>
-<span><span class="va">simple_llo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_bt_simple_loo.html">make_bt_simple_loo</a></span><span class="op">(</span></span>
-<span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>, n_ij <span class="op">=</span> <span class="va">N_ij</span>,</span>
-<span>  lambda_samples <span class="op">=</span> <span class="va">out</span><span class="op">$</span><span class="va">lambda_samples</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Clustered BT–SBM log-likelihood matrix</span></span>
-<span><span class="va">cluster_llo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_bt_cluster_loo.html">make_bt_cluster_loo</a></span><span class="op">(</span></span>
-<span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>, n_ij <span class="op">=</span> <span class="va">N_ij</span>,</span>
-<span>  lambda_samples <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">lambda_samples_relabel</span>,</span>
-<span>  x_samples      <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">x_samples_relabel</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="compare-via-psis-loo-requires-loo">Compare via PSIS-LOO (requires ‘loo’)<a class="anchor" aria-label="anchor" href="#compare-via-psis-loo-requires-loo"></a>
-</h4>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_bt_models_loo.html">compare_bt_models_loo</a></span><span class="op">(</span><span class="va">simple_llo</span>, <span class="va">cluster_llo</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Can't fit generalized Pareto distribution because all tail values are</span></span>
-<span><span class="co">#&gt; the same.</span></span>
-<span><span class="co">#&gt; Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.</span></span>
-<span><span class="co">#&gt; Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.</span></span>
-<span><span class="co">#&gt; Warning in loo::compare(loo_simple, loo_cluster): 'loo::compare' is deprecated.</span></span>
-<span><span class="co">#&gt; Use 'loo_compare' instead.</span></span>
-<span><span class="co">#&gt; See help("Deprecated")</span></span>
-<span><span class="va">cmp</span><span class="op">$</span><span class="va">comparison</span></span>
-<span><span class="co">#&gt; elpd_diff        se </span></span>
-<span><span class="co">#&gt;     772.8      64.1</span></span></code></pre></div>
-</div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>VI_minVI <span class="op">=</span> <span class="va">vi_minvi</span>, vi_exp <span class="op">=</span> <span class="va">vi_exp</span><span class="op">)</span></span>
+<span><span class="co">#&gt; VI_minVI   vi_exp </span></span>
+<span><span class="co">#&gt;        0        0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

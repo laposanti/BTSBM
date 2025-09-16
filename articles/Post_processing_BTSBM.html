@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started: Single-K Simulation Walkthrough</a></li>
+<li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with BTSBM</a></li>
     <li><a class="dropdown-item" href="../articles/Post_processing_BTSBM.html">Post-processing and Summary Plots for BT-SBM</a></li>
   </ul>
 </li>
@@ -52,7 +52,7 @@
 
 
 
-
+<script src="Post_processing_BTSBM_files/kePrint-0.0.1/kePrint.js"></script><link href="Post_processing_BTSBM_files/lightable-0.0.1/lightable.css" rel="stylesheet">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
@@ -81,28 +81,24 @@ file).</p>
 <div class="section level4">
 <h4 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
 </h4>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span>        </span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">coda</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mcclust</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mcclust.ext</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/" class="external-link">ggrepel</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/reshape" class="external-link">reshape2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org" class="external-link">stringr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jtlandis/ggside" class="external-link">ggside</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h4>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ATP_2000_2022</span>, package <span class="op">=</span> <span class="st">"BTSBM"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">first_year</span> <span class="op">&lt;-</span> <span class="fl">1999</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ATP_2000_2022</span>, package <span class="op">=</span> <span class="st">"BTSBM"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ATP_2000_2022</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "2000" "2001" "2002"</span></span>
 <span><span class="va">year_idx</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">ATP_2000_2022</span><span class="op">[[</span><span class="va">year_idx</span><span class="op">]</span><span class="op">]</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">ATP_2000_2022</span><span class="op">[[</span><span class="va">year_idx</span><span class="op">]</span><span class="op">]</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; List of 3</span></span>
+<span><span class="co">#&gt;  $ Y_ij      : num [1:105, 1:105] 0 0 1 1 1 1 0 0 0 1 ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;  $ N_ij      : num [1:105, 1:105] 0 2 2 4 3 3 1 1 0 1 ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;  $ players_df: tibble [105 × 7] (S3: tbl_df/tbl/data.frame)</span></span></code></pre></div>
 <p>Each yearly element contains:</p>
 <ul>
 <li>Y_ij, pairwise victory matrix</li>
@@ -112,20 +108,21 @@ age_year, ht_year, player_slug).</li>
 </ul>
 <p>We use this structure to align player indices with posterior
 draws.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>This is just a demo. The file contains just 200 iterations for the
+first two years. For a complete analysis, compile the file locally and
+obtain full results.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span></span>
-<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"resGN_demo.rds"</span>, package <span class="op">=</span> <span class="st">"BTSBM"</span><span class="op">)</span></span>
-<span><span class="va">res_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">first_year</span> <span class="op">&lt;-</span> <span class="fl">1999</span></span></code></pre></div>
+<span><span class="va">res_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"resGN_demo.rds"</span>, package <span class="op">=</span> <span class="st">"BTSBM"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">res_path</span><span class="op">)</span><span class="op">)</span>  <span class="co"># helpful error if missing</span></span>
+<span><span class="va">res_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">res_path</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="cross-season-summaries">Cross-season summaries<a class="anchor" aria-label="anchor" href="#cross-season-summaries"></a>
 </h3>
 <p>We iterate seasons, relabel draws, compute entropy and skill
 summaries, and collect the posterior for the number of blocks.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span></span>
 <span></span>
@@ -198,7 +195,7 @@ summaries, and collect the posterior for the number of blocks.</p>
 <div class="section level4">
 <h4 id="posterior-for-the-number-of-blocks-table">Posterior for the number of blocks (table)<a class="anchor" aria-label="anchor" href="#posterior-for-the-number-of-blocks-table"></a>
 </h4>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">post_numb_block_across_years_wide</span> <span class="op">&lt;-</span> <span class="va">post_numb_block_across_years</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">num_blocks</span> <span class="op">&lt;</span> <span class="fl">7</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">count</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
@@ -211,11 +208,75 @@ summaries, and collect the posterior for the number of blocks.</p>
 <span></span>
 <span><span class="fu">kable</span><span class="op">(</span><span class="va">post_numb_block_across_years_wide</span>, format <span class="op">=</span> <span class="st">"html"</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">kable_styling</span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;">
+season
+</th>
+<th style="text-align:right;">
+2
+</th>
+<th style="text-align:right;">
+3
+</th>
+<th style="text-align:right;">
+4
+</th>
+<th style="text-align:right;">
+5
+</th>
+<th style="text-align:right;">
+6
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2000/2001
+</td>
+<td style="text-align:right;">
+0.795
+</td>
+<td style="text-align:right;">
+0.195
+</td>
+<td style="text-align:right;">
+0.01
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2001/2002
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+0.460
+</td>
+<td style="text-align:right;">
+0.18
+</td>
+<td style="text-align:right;">
+0.255
+</td>
+<td style="text-align:right;">
+0.09
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level4">
 <h4 id="jitter-plot-probability-of-top-block-membership">Jitter plot: probability of top-block membership<a class="anchor" aria-label="anchor" href="#jitter-plot-probability-of-top-block-membership"></a>
 </h4>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prob_assignment_across_years</span> <span class="op">&lt;-</span> <span class="va">prob_assignment_across_years</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">left_join</span><span class="op">(</span><span class="va">num_blocks_season</span>, by <span class="op">=</span> <span class="st">"season"</span><span class="op">)</span></span>
 <span></span>
@@ -230,11 +291,12 @@ summaries, and collect the posterior for the number of blocks.</p>
 <span>  <span class="fu">theme_minimal</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme</span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">0.5</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>        panel.grid.minor <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Post_processing_BTSBM_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="entropy-over-time">Entropy over time<a class="anchor" aria-label="anchor" href="#entropy-over-time"></a>
 </h4>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">entropy_per_season</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>season_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"/.*"</span>, <span class="st">""</span>, <span class="va">season</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">season_start</span>, y <span class="op">=</span> <span class="va">mean_entropy</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -244,11 +306,12 @@ summaries, and collect the posterior for the number of blocks.</p>
 <span>  <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"/.*"</span>, <span class="st">""</span>, <span class="va">entropy_per_season</span><span class="op">$</span><span class="va">season</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_minimal</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Season"</span>, y <span class="op">=</span> <span class="st">"Shannon Entropy"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Post_processing_BTSBM_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="count-of-top-block-members-by-season">Count of top-block members by season<a class="anchor" aria-label="anchor" href="#count-of-top-block-members-by-season"></a>
 </h4>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">num_block_plot</span> <span class="op">&lt;-</span> <span class="va">prob_assignment_across_years</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">season</span>, <span class="va">pl_name</span>, <span class="va">num_blocks</span>, <span class="va">eos_ranking</span><span class="op">)</span>,</span>
 <span>               names_to <span class="op">=</span> <span class="st">"cluster"</span>, values_to <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
@@ -266,6 +329,7 @@ summaries, and collect the posterior for the number of blocks.</p>
 <span>  <span class="fu">theme</span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, vjust <span class="op">=</span> <span class="fl">0.5</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>        panel.grid.minor <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">num_block_plot</span></span></code></pre></div>
+<p><img src="Post_processing_BTSBM_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level3">
@@ -279,13 +343,12 @@ uncertainty, build block-ordered adjacency heatmaps, and visualize
 assignment probabilities.</p>
 <p>Replace yr with the desired index and ensure your .rds file is
 available.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">first_year</span> <span class="op">&lt;-</span> <span class="fl">1999</span></span>
-<span><span class="va">yr</span> <span class="op">&lt;-</span> <span class="fl">18</span>                <span class="co"># example: -&gt; "2017/2018"</span></span>
-<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="st">"GN"</span></span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="st">"GN"</span></span>
+<span><span class="va">yr</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
 <span><span class="va">season_label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">first_year</span> <span class="op">+</span> <span class="va">yr</span>, <span class="st">"/"</span>, <span class="va">first_year</span> <span class="op">+</span> <span class="va">yr</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">res_i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"results/augmented_multiple_seasons"</span>, <span class="va">model</span>, <span class="st">".rds"</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="va">yr</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">res_i</span> <span class="op">&lt;-</span> <span class="va">res_list</span><span class="op">[[</span><span class="va">yr</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">x_samples</span> <span class="op">&lt;-</span> <span class="va">res_i</span><span class="op">$</span><span class="va">x_samples</span></span>
 <span><span class="va">lambda_samples</span> <span class="op">&lt;-</span> <span class="va">res_i</span><span class="op">$</span><span class="va">lambda_samples</span></span>
 <span></span>
@@ -297,7 +360,7 @@ available.</p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>
 rank<a class="anchor" aria-label="anchor" href="#relabel-draws-by-lambda-rank"></a>
 </h4>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">relabel_by_lambda</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x_draws</span>, <span class="va">lambda_draws</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">K</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">lambda_draws</span><span class="op">)</span></span>
 <span>  <span class="va">out_x</span> <span class="op">&lt;-</span> <span class="va">x_draws</span></span>
@@ -311,27 +374,27 @@ rank<a class="anchor" aria-label="anchor" href="#relabel-draws-by-lambda-rank"><
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">out_x</span>, lambda <span class="op">=</span> <span class="va">out_lambda</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">k_target</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
+<span><span class="va">k_target</span> <span class="op">&lt;-</span> <span class="fl">3</span></span>
 <span><span class="va">keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x_samples</span>, <span class="fl">1</span>, \<span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span> <span class="op">==</span> <span class="va">k_target</span><span class="op">)</span></span>
-<span><span class="va">x_k5</span> <span class="op">&lt;-</span> <span class="va">x_samples</span><span class="op">[</span><span class="va">keep</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span><span class="va">lambda_k5</span> <span class="op">&lt;-</span> <span class="va">lambda_samples</span><span class="op">[</span><span class="va">keep</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span><span class="va">relab</span> <span class="op">&lt;-</span> <span class="fu">relabel_by_lambda</span><span class="op">(</span><span class="va">x_k5</span>, <span class="va">lambda_k5</span><span class="op">)</span></span>
-<span><span class="va">x_k5</span> <span class="op">&lt;-</span> <span class="va">relab</span><span class="op">$</span><span class="va">x</span></span>
-<span><span class="va">lambda_k5</span> <span class="op">&lt;-</span> <span class="va">relab</span><span class="op">$</span><span class="va">lambda</span></span></code></pre></div>
+<span><span class="va">x_k_target</span> <span class="op">&lt;-</span> <span class="va">x_samples</span><span class="op">[</span><span class="va">keep</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">lambda_k_target</span> <span class="op">&lt;-</span> <span class="va">lambda_samples</span><span class="op">[</span><span class="va">keep</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">relab</span> <span class="op">&lt;-</span> <span class="fu">relabel_by_lambda</span><span class="op">(</span><span class="va">x_k_target</span>, <span class="va">lambda_k_target</span><span class="op">)</span></span>
+<span><span class="va">x_k_target</span> <span class="op">&lt;-</span> <span class="va">relab</span><span class="op">$</span><span class="va">x</span></span>
+<span><span class="va">lambda_k_target</span> <span class="op">&lt;-</span> <span class="va">relab</span><span class="op">$</span><span class="va">lambda</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="lambda-uncertainty-plot">
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>
 uncertainty plot<a class="anchor" aria-label="anchor" href="#lambda-uncertainty-plot"></a>
 </h4>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">idx_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x_k5</span><span class="op">)</span><span class="op">)</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">x_k5</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                 <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">x_k5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">lambda_player</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">lambda_k5</span><span class="op">[</span><span class="va">idx_mat</span><span class="op">]</span>,</span>
-<span>                        nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x_k5</span><span class="op">)</span>,</span>
-<span>                        ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">x_k5</span><span class="op">)</span>,</span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">idx_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x_k_target</span><span class="op">)</span><span class="op">)</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">x_k_target</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                 <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">x_k_target</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">lambda_player</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">lambda_k_target</span><span class="op">[</span><span class="va">idx_mat</span><span class="op">]</span>,</span>
+<span>                        nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x_k_target</span><span class="op">)</span>,</span>
+<span>                        ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">x_k_target</span><span class="op">)</span>,</span>
 <span>                        byrow <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">lambda_player</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x_k5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">lambda_player</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x_k_target</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">log_lp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">lambda_player</span><span class="op">)</span></span>
 <span><span class="va">hpd90</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">log_lp</span>, <span class="fl">2</span>, \<span class="op">(</span><span class="va">v</span><span class="op">)</span> <span class="fu">HPDinterval</span><span class="op">(</span><span class="fu">as.mcmc</span><span class="op">(</span><span class="va">v</span><span class="op">)</span>, prob <span class="op">=</span> <span class="fl">0.90</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -341,7 +404,7 @@ uncertainty plot<a class="anchor" aria-label="anchor" href="#lambda-uncertainty-
 <span>  mean    <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">log_lp</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  low90   <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="va">hpd90</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>  up90    <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="va">hpd90</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>  cluster <span class="op">=</span> <span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">x_samples</span>, <span class="va">lambda_samples</span><span class="op">)</span><span class="op">$</span><span class="va">partition_expected</span></span>
+<span>  cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">x_samples</span>, <span class="va">lambda_samples</span><span class="op">)</span><span class="op">$</span><span class="va">partition_expected</span><span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">arrange</span><span class="op">(</span><span class="va">cluster</span>, <span class="fu">desc</span><span class="op">(</span><span class="va">mean</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>player <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu">str_to_title</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"_"</span>, <span class="st">" "</span>, <span class="va">player</span><span class="op">)</span><span class="op">)</span>, <span class="va">clean_players_names</span><span class="op">)</span>,</span>
@@ -353,15 +416,16 @@ uncertainty plot<a class="anchor" aria-label="anchor" href="#lambda-uncertainty-
 <span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">~</span><span class="st">"(posterior mean, log"</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span><span class="op">*</span><span class="st">" scale)"</span><span class="op">)</span>, y <span class="op">=</span> <span class="cn">NULL</span>, color <span class="op">=</span> <span class="st">"Cluster"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_minimal</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme</span><span class="op">(</span>axis.text.y <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>, panel.grid.minor <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Post_processing_BTSBM_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="block-ordered-adjacency-heatmap">Block-ordered adjacency heatmap<a class="anchor" aria-label="anchor" href="#block-ordered-adjacency-heatmap"></a>
 </h4>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inf_i</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">res_i</span><span class="op">$</span><span class="va">x_samples</span>, lambda_samples <span class="op">=</span> <span class="va">res_i</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
 <span><span class="va">x_relabel</span> <span class="op">&lt;-</span> <span class="va">inf_i</span><span class="op">$</span><span class="va">x_samples_relabel</span></span>
 <span><span class="va">lambdas_reordered</span> <span class="op">&lt;-</span> <span class="va">inf_i</span><span class="op">$</span><span class="va">lambda_samples_relabel</span></span>
-<span><span class="va">partition_minVI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">x_relabel</span>, <span class="va">lambdas_reordered</span><span class="op">)</span><span class="op">$</span><span class="va">partition_expected</span></span>
+<span><span class="va">partition_minVI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">x_relabel</span>, <span class="va">lambdas_reordered</span><span class="op">)</span><span class="op">$</span><span class="va">partition_expected</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">df_cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  players <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">Y_ij</span><span class="op">)</span>,</span>
@@ -405,22 +469,23 @@ uncertainty plot<a class="anchor" aria-label="anchor" href="#lambda-uncertainty-
 <span>  <span class="fu">theme_ggside_void</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">scale_y_discrete</span><span class="op">(</span>guide <span class="op">=</span> <span class="fu">guide_axis</span><span class="op">(</span>n.dodge <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">coord_fixed</span><span class="op">(</span>ratio <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Post_processing_BTSBM_files/figure-html/unnamed-chunk-11-1.png" width="768" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="assignment-probability-heatmap">Assignment probability heatmap<a class="anchor" aria-label="anchor" href="#assignment-probability-heatmap"></a>
 </h4>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">count_cl</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">unique_count</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x_samples</span>, <span class="fl">1</span>, <span class="va">count_cl</span><span class="op">)</span></span>
-<span><span class="va">x_samples_sub</span> <span class="op">&lt;-</span> <span class="va">x_samples</span><span class="op">[</span><span class="va">unique_count</span> <span class="op">==</span> <span class="fl">5</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span><span class="va">lambda_samples_sub</span> <span class="op">&lt;-</span> <span class="va">lambda_samples</span><span class="op">[</span><span class="va">unique_count</span> <span class="op">==</span> <span class="fl">5</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">x_samples_sub</span> <span class="op">&lt;-</span> <span class="va">x_samples</span><span class="op">[</span><span class="va">unique_count</span> <span class="op">==</span> <span class="va">k_target</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">lambda_samples_sub</span> <span class="op">&lt;-</span> <span class="va">lambda_samples</span><span class="op">[</span><span class="va">unique_count</span> <span class="op">==</span> <span class="va">k_target</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span><span class="va">inf_i</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">x_samples_sub</span>, <span class="va">lambda_samples_sub</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">block_prob</span> <span class="op">&lt;-</span> <span class="va">inf_i</span><span class="op">$</span><span class="va">player_block_assignment_probs</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
+<span><span class="va">block_prob</span> <span class="op">&lt;-</span> <span class="va">inf_i</span><span class="op">$</span><span class="va">player_block_assignment_probs</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="va">k_target</span><span class="op">]</span></span>
 <span><span class="va">block_prob</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">block_prob</span>, pl_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">Y_ij</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">assignment_probs_long</span> <span class="op">&lt;-</span> <span class="va">block_prob</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, names_to <span class="op">=</span> <span class="st">"Cluster"</span>, values_to <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="va">k_target</span>, names_to <span class="op">=</span> <span class="st">"Cluster"</span>, values_to <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>Cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"_"</span>, <span class="st">" "</span>, <span class="va">Cluster</span><span class="op">)</span>,</span>
 <span>         pl_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"_"</span>, <span class="st">" "</span>, <span class="va">pl_name</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -452,21 +517,7 @@ uncertainty plot<a class="anchor" aria-label="anchor" href="#lambda-uncertainty-
 <span>        axis.title.x <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>        axis.title.y <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">scale_y_discrete</span><span class="op">(</span>guide <span class="op">=</span> <span class="fu">guide_axis</span><span class="op">(</span>n.dodge <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="player-trajectories-example">Player trajectories (example)<a class="anchor" aria-label="anchor" href="#player-trajectories-example"></a>
-</h4>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pl_selected</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Rafael Nadal"</span>, <span class="st">"Roger Federer"</span>, <span class="st">"Novak Djokovic"</span>, <span class="st">"Andy Murray"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">prob_assignment_across_years</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">pl_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">pl_selected</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">season</span>, y <span class="op">=</span> <span class="va">Cluster_1</span> <span class="op">*</span> <span class="fl">100</span>, group <span class="op">=</span> <span class="va">pl_name</span>, color <span class="op">=</span> <span class="va">pl_name</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_minimal</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="st">"P(Top Block) (%)"</span>, x <span class="op">=</span> <span class="st">"Season"</span>, color <span class="op">=</span> <span class="st">"Player"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme</span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">pl_name</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Post_processing_BTSBM_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;"></p>
 </div>
 </div>
 </div>
