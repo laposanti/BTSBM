@@ -30,6 +30,8 @@ Imports:
     mcclust.ext,
     stats,
     loo
+Remotes:
+    sarawade/mcclust.ext
 Suggests:
     testthat (>= 3.0.0),
     knitr,

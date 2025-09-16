@@ -2,3 +2,10 @@ url: https://laposanti.github.io/BTSBM/
 template:
   bootstrap: 5
 
+- uses: r-lib/actions/setup-r-dependencies@v2
+  with:
+    # install pkgdown + your package's deps needed for website
+    needs: website
+    extra-packages: |
+      any::pkgdown
+      github::sarawade/mcclust.ext
