@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Getting started with BTSBM • BTSBM</title>
+<title>Getting started with BTSBM • BTSBM:Bradley–Terry meets Stochastic Block Model</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">BTSBM</a>
+    <a class="navbar-brand me-2" href="../index.html">BTSBM:Bradley–Terry meets Stochastic Block Model</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
@@ -74,12 +74,13 @@ authors</h4>
 <p>This vignette replicates the spirit of a larger simulation pipeline,
 but focuses on a single value of K and a single dataset to keep things
 simple and fast</p>
-<p>-simulate a sparse paired-comparison topology, -simulate latent
-blocks and block rates, -generate win counts
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">w_{ij}</annotation></semantics></math>
--run the clustered Gibbs sampler (gibbs_bt_sbm), -relabel and summarize
-(inference_helper), -compare the inferred partition to truth via VI
-distance.</p>
+<p>-simulate a sparse paired-comparison topology,</p>
+<p>-simulate latent blocks and block rates,</p>
+<p>-generate win counts
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">w_{ij}</annotation></semantics></math></p>
+<p>-run the clustered Gibbs sampler (gibbs_bt_sbm),</p>
+<p>-relabel and summarize (inference_helper),</p>
+<p>-compare the inferred partition to truth via VI distance.</p>
 <p>Helpers</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Random sparse match topology via Poisson counts on each unordered pair</span></span>
@@ -114,7 +115,7 @@ distance.</p>
 <span><span class="va">N_ij</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
 <span><span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="kw">for</span><span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="op">(</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">n</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span></span>
+<span>    <span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">N_ij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span></span>
@@ -157,7 +158,7 @@ distance.</p>
 <span>  n_iter <span class="op">=</span> <span class="fl">1000</span>, burnin <span class="op">=</span> <span class="fl">300</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">T</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Iteration: 200 - #occupied = 4 </span></span>
+<span><span class="co">#&gt; Iteration: 200 - #occupied = 6 </span></span>
 <span><span class="co">#&gt; Iteration: 400 - #occupied = 4 </span></span>
 <span><span class="co">#&gt; Iteration: 600 - #occupied = 4 </span></span>
 <span><span class="co">#&gt; Iteration: 800 - #occupied = 4 </span></span>
@@ -170,9 +171,7 @@ distance.</p>
 <span></span>
 <span><span class="co"># Average number of clusters, and distribution over #clusters</span></span>
 <span><span class="va">post</span><span class="op">$</span><span class="va">avg_n_clusters</span></span>
-<span><span class="co">#&gt; [1] 4</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">n_clusters_each_iter</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;"></p>
+<span><span class="co">#&gt; [1] 4.02</span></span></code></pre></div>
 <p>Posterior similarity matrix (PSM):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
@@ -190,8 +189,8 @@ the true labels z_star.</p>
 <span><span class="va">vi_exp</span> <span class="op">&lt;-</span> <span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/vi.dist.html" class="external-link">vi.dist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">partition_expected</span>,  <span class="va">x_star</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>VI_minVI <span class="op">=</span> <span class="va">vi_minvi</span>, vi_exp <span class="op">=</span> <span class="va">vi_exp</span><span class="op">)</span></span>
-<span><span class="co">#&gt; VI_minVI   vi_exp </span></span>
-<span><span class="co">#&gt;        0        0</span></span></code></pre></div>
+<span><span class="co">#&gt;  VI_minVI    vi_exp </span></span>
+<span><span class="co">#&gt; 0.1205321 0.1205321</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
