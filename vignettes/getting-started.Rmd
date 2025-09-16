@@ -48,10 +48,15 @@ library(mcclust.ext)  # minVI, minbinder.ext
 This vignette replicates the spirit of a larger simulation pipeline, but focuses on a single value of K and a single dataset to keep things simple and fast
 
 -simulate a sparse paired-comparison topology,
+
 -simulate latent blocks and block rates,
+
 -generate win counts $w_{ij}$
+
 -run the clustered Gibbs sampler (gibbs_bt_sbm),
+
 -relabel and summarize (inference_helper),
+
 -compare the inferred partition to truth via VI distance.
 
 
@@ -94,7 +99,7 @@ n <- 100                 # number of players/items
 N_ij = matrix(0, n, n)
 for(i in 1:(n-1)){
   for(j in (i+1):n){
-    N_ij[i,j] = rpois(1,5)
+    N_ij[i,j] = rpois(1,3)
   }
 }
 N_ij[lower.tri(N_ij)] = t(N_ij)[lower.tri(N_ij)]
@@ -150,7 +155,6 @@ post <- inference_helper(out$x_samples, out$lambda_samples)
 
 # Average number of clusters, and distribution over #clusters
 post$avg_n_clusters
-hist(post$n_clusters_each_iter)
 ```
 
 Posterior similarity matrix (PSM):

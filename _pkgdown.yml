@@ -1,6 +1,12 @@
+# _pkgdown.yml
+package: BTSBM
+title: "BTSBM:Bradley–Terry meets Stochastic Block Model"
 url: https://laposanti.github.io/BTSBM/
 template:
   bootstrap: 5
-destination: docs
-build:
-  vignettes: false
+home:
+  title: "Bradley–Terry SBM"
+  description: >
+    Gibbs sampler + post-processing utilities for Bradley–Terry Stochastic
+    Block Models (DP, PY, DM, GN priors).
+  readme: index.md
