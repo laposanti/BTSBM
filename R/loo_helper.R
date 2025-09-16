@@ -1,0 +1,136 @@
+#' Log-likelihood matrix for the *simple* Bradley–Terry model
+#'
+#' Builds an S x D matrix of log-likelihood values, where S is the number of
+#' posterior draws and D is the number of observed unordered pairs (i<j) with
+#' \code{n_ij > 0}. This is suitable as input to \pkg{loo}.
+#'
+#' @param w_ij integer/numeric K x K wins (i over j).
+#' @param n_ij integer/numeric K x K total matches (symmetric, diag=0).
+#' @param lambda_samples numeric S x K matrix of player-specific rates \eqn{\lambda_i}.
+#'
+#' @return A list with:
+#' \itemize{
+#' \item \code{ll} — S x D matrix of log-likelihoods.
+#' \item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' K <- 5
+#' n <- matrix(0, K, K); n[upper.tri(n)] <- sample(0:4, sum(upper.tri(n)), TRUE)
+#' n <- n + t(n); diag(n) <- 0
+#' w <- matrix(0, K, K); w[upper.tri(w)] <- rbinom(sum(upper.tri(w)), n[upper.tri(n)], 0.5)
+#' w <- w + t(n - w); diag(w) <- 0
+#' lam <- matrix(rexp(200*K), 200, K)
+#' ll_obj <- make_bt_simple_loo(w, n, lam)
+#' }
+#' @export
+#'
+make_bt_simple_loo <- function(w_ij, n_ij, lambda_samples) {
+  stopifnot(is.matrix(w_ij), is.matrix(n_ij), is.matrix(lambda_samples))
+  K <- nrow(w_ij)
+  if (!identical(dim(w_ij), dim(n_ij))) stop("w_ij and n_ij must have same dims.")
+  if (!isTRUE(all.equal(n_ij, t(n_ij)))) stop("n_ij must be symmetric.")
+  if (any(diag(n_ij) != 0)) stop("Diagonal of n_ij must be zero.")
+  S <- nrow(lambda_samples)
+  if (ncol(lambda_samples) != K) stop("lambda_samples must have K columns.")
+
+  idx <- which(upper.tri(n_ij) & n_ij > 0, arr.ind = TRUE)
+  D <- nrow(idx)
+  ll <- matrix(NA_real_, S, D)
+
+  for (s in seq_len(S)) {
+    lam <- lambda_samples[s, ]
+    for (d in seq_len(D)) {
+      i <- idx[d, 1]; j <- idx[d, 2]
+      n <- n_ij[i, j]; w <- w_ij[i, j]
+      p <- lam[i] / (lam[i] + lam[j])
+      ll[s, d] <- stats::dbinom(w, size = n, prob = p, log = TRUE)
+    }
+  }
+  list(ll = ll, obs_idx = idx)
+}
+
+#' Log-likelihood matrix for the BT–SBM (clustered) model
+#'
+#' Builds an S x D matrix of log-likelihood values using cluster labels \eqn{x_i}
+#' and cluster rates \eqn{\lambda_k}. Assumes \code{x_samples} and
+#' \code{lambda_samples} are *relabelled consistently* (e.g. via \code{inference_helper}).
+#'
+#' @param w_ij integer/numeric K x K wins (i over j).
+#' @param n_ij integer/numeric K x K total matches (symmetric, diag=0).
+#' @param lambda_samples numeric S x K matrix of cluster rates \eqn{\lambda_k}.
+#' @param x_samples integer S x K matrix of cluster labels for each player.
+#'
+#' @return A list with:
+#' \itemize{
+#' \item \code{ll} — S x D matrix of log-likelihoods.
+#' \item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' # After running your clustered sampler and relabeling:
+#' # ll_obj <- make_bt_cluster_loo(w, n, out$lambda_samples_relabel, out$x_samples_relabel)
+#' }
+#' @export
+make_bt_cluster_loo <- function(w_ij, n_ij, lambda_samples, x_samples) {
+  stopifnot(is.matrix(w_ij), is.matrix(n_ij),
+            is.matrix(lambda_samples), is.matrix(x_samples))
+  K <- nrow(w_ij)
+  if (!identical(dim(w_ij), dim(n_ij))) stop("w_ij and n_ij must have same dims.")
+  if (!isTRUE(all.equal(n_ij, t(n_ij)))) stop("n_ij must be symmetric.")
+  if (any(diag(n_ij) != 0)) stop("Diagonal of n_ij must be zero.")
+  if (!identical(dim(lambda_samples), dim(x_samples)))
+    stop("lambda_samples and x_samples must have identical dims (S x K).")
+
+  S <- nrow(x_samples)
+  idx <- which(upper.tri(n_ij) & n_ij > 0, arr.ind = TRUE)
+  D <- nrow(idx)
+  ll <- matrix(NA_real_, S, D)
+
+  for (s in seq_len(S)) {
+    lam <- lambda_samples[s, ]  # λ_1..λ_K (cluster-level, after relabel)
+    xs  <- x_samples[s, ]       # labels in {1..K}
+    # precompute player-level rates for this draw
+    lam_player <- lam[xs]
+    for (d in seq_len(D)) {
+      i <- idx[d, 1]; j <- idx[d, 2]
+      n <- n_ij[i, j]
+      if (n == 0) { ll[s, d] <- 0; next }
+      w <- w_ij[i, j]
+      p <- lam_player[i] / (lam_player[i] + lam_player[j])
+      ll[s, d] <- stats::dbinom(w, size = n, prob = p, log = TRUE)
+    }
+  }
+  list(ll = ll, obs_idx = idx)
+}
+
+#' Compare BT models with Pareto-smoothed importance sampling LOO
+#'
+#' Convenience wrapper around \pkg{loo} for comparing two log-likelihood
+#' matrices (simple vs clustered BT).
+#'
+#' @param simple_llo list returned by \code{make_bt_simple_loo()}.
+#' @param cluster_llo list returned by \code{make_bt_cluster_loo()}.
+#'
+#' @return A list with:
+#' \itemize{
+#' \item \code{simple} — \code{loo} object for the simple BT.
+#' \item \code{cluster} — \code{loo} object for the clustered BT–SBM.
+#' \item \code{comparison} — result of \code{loo::compare_models()}.
+#' }
+#' @export
+compare_bt_models_loo <- function(simple_llo, cluster_llo) {
+  if (!requireNamespace("loo", quietly = TRUE))
+    stop("Package 'loo' not installed. Install it to run LOO.")
+  if (!is.list(simple_llo) || !is.list(cluster_llo) ||
+      is.null(simple_llo$ll) || is.null(cluster_llo$ll))
+    stop("Inputs must be lists with an 'll' matrix component.")
+
+  loo_simple  <- loo::loo(simple_llo$ll)
+  loo_cluster <- loo::loo(cluster_llo$ll)
+  comp <- loo::compare_models(loo_simple, loo_cluster)
+  list(simple = loo_simple, cluster = loo_cluster, comparison = comp)
+}

@@ -1,0 +1,167 @@
+---
+title: "Getting Started: Single-K Simulation Walkthrough"
+author: "Lapo Santi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{getting-started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6, fig.height = 4,
+  out.width = "80%"
+)
+set.seed(123)
+```
+
+# Overview
+
+This vignette replicates the spirit of a larger simulation pipeline, but focuses on a single value of K and a single dataset to keep things simple and fast
+
+-simulate a sparse paired-comparison topology,
+-simulate latent blocks and block rates,
+-generate win counts $w_{ij}$
+-run the clustered Gibbs sampler (gibbs_bt_sbm),
+-relabel and summarize (inference_helper),
+-compare the inferred partition to truth via VI distance.
+
+
+### Load packages
+
+```{r}
+library(BTSBM)        # this package
+library(mcclust)      # comp.psm, vi.dist
+library(mcclust.ext)  # minVI, minbinder.ext
+```
+
+Helpers
+
+```{r}
+# Random sparse match topology via Poisson counts on each unordered pair
+sample_Nij <- function(n_players, lambda = 3) {
+  pairs <- utils::combn(n_players, 2)
+  N_out <- matrix(0L, n_players, n_players)
+  for (k in seq_len(ncol(pairs))) {
+    i <- pairs[1, k]; j <- pairs[2, k]
+    n_ij <- rpois(1, lambda)
+    N_out[i, j] <- N_out[j, i] <- n_ij
+  }
+  diag(N_out) <- 0L
+  N_out
+}
+
+# Map block rates to pairwise BT probabilities
+lambda_to_theta <- function(lambda) {
+  outer(lambda, lambda, function(a, b) a / (a + b))
+}
+```
+
+1) Simulate one dataset (single K)
+
+```{r}
+K <- 5                  # single K for this vignette
+n <- 60                 # number of players/items
+
+# --- match topology (symmetric, diag 0)
+N_ij <- sample_Nij(n_players = n, lambda = 2)
+
+# --- latent block structure and rates
+z_star <- sample.int(K, n, replace = TRUE)               # true labels
+lambda_star <- seq(0.8, 2.0, length.out = K)             # monotone blocks
+theta_star  <- lambda_to_theta(lambda_star)              # K x K BT probs
+
+# --- generate wins
+w_ij <- matrix(0L, n, n)
+idx  <- which(upper.tri(N_ij) & N_ij > 0L, arr.ind = TRUE)
+for (k in seq_len(nrow(idx))) {
+  i <- idx[k, 1]; j <- idx[k, 2]
+  nij <- N_ij[i, j]
+  pij <- theta_star[z_star[i], z_star[j]]
+  wij <- rbinom(1, size = nij, prob = pij)
+  w_ij[i, j] <- wij
+  w_ij[j, i] <- nij - wij
+}
+```
+
+2) Run the clustered Gibbs sampler (short chain)
+
+```{r}
+out <- gibbs_bt_sbm(
+  w_ij   = w_ij,
+  n_ij   = N_ij,
+  a      = 1, b = 1,
+  prior  = "DP",       # "DP", "PY", "DM", or "GN"
+  alpha_PY = 1,
+  n_iter = 800, burnin = 300,
+  verbose = FALSE
+)
+
+str(out, max.level = 1)
+```
+
+3) Relabel and summarize
+
+```{r}
+post <- inference_helper(out$x_samples, out$lambda_samples)
+
+# Average number of clusters, and distribution over #clusters
+post$avg_n_clusters
+table(post$n_clusters_each_iter)
+```
+
+Posterior similarity matrix (PSM):
+
+```{r}
+  image(post$co_clustering, main = "Posterior Similarity Matrix", axes = FALSE)
+```
+
+Per-player assignment probabilities (first rows):
+
+
+```{r}
+  head(post$player_block_assignment_probs)
+```
+
+4) Compare partitions to truth (VI distance)
+
+We compute VI distances for the minVI and Binder partitions against the true labels z_star.
+
+```{r}
+vi_minvi  <- mcclust::vi.dist(post$minVI_partition,   z_star)
+vi_binder <- mcclust::vi.dist(post$partition_binder,  z_star)
+
+c(VI_minVI = vi_minvi, VI_binder = vi_binder)
+```
+
+Tip: If you also want ARI, use mclust::adjustedRandIndex(post$minVI_partition, z_star) in a script or article (it’s heavier; we keep the vignette light).
+
+5) Optional: Build LOO matrices for model comparison
+Here we just show the calls; evaluate in your scripts if needed.
+
+```{r}
+# Simple BT (player-level) log-likelihood matrix
+simple_llo <- make_bt_simple_loo(
+  w_ij = w_ij, n_ij = N_ij,
+  lambda_samples = out$lambda_samples
+)
+
+# Clustered BT–SBM log-likelihood matrix
+cluster_llo <- make_bt_cluster_loo(
+  w_ij = w_ij, n_ij = N_ij,
+  lambda_samples = post$lambda_samples_relabel,
+  x_samples      = post$x_samples_relabel
+)
+```
+
+### Compare via PSIS-LOO (requires 'loo')
+
+```{r}
+cmp <- compare_bt_models_loo(simple_llo, cluster_llo)
+cmp$comparison
+```
+

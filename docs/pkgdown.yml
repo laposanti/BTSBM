@@ -1,0 +1,7 @@
+pandoc: '3.4'
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles:
+  getting-started: getting-started.html
+  Post_processing_BTSBM: Post_processing_BTSBM.html
+last_built: 2025-09-16T14:50Z
