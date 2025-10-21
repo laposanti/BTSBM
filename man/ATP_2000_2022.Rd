@@ -60,6 +60,7 @@ The matrices may be sparse for many player pairs. Ensure any model code
 guards against divisions by zero when \code{N_ij[i, j] = 0}.
 }
 \examples{
+ \dontrun{
 data(ATP_2000_2022)
 names(ATP_2000_2022)
 year <- "2000"
@@ -75,6 +76,6 @@ ATP_2000_2022[[year]]$N_ij[i, j]
 
 # Join player metadata to indices used in the matrices:
 head(ATP_2000_2022[[year]]$players_df)
-
+}
 }
 \keyword{datasets}

@@ -1,3 +1,68 @@
+
+# R/utils-internal.R
+
+#' @keywords internal
+.safe_log <- function(x) ifelse(x > 0, log(x), -Inf)
+
+#' @keywords internal
+.logsumexp <- function(x) { m <- max(x); if (!is.finite(m)) return(m); m + log(sum(exp(x - m))) }
+
+#' Slice sampler on log-scale (internal)
+#'
+#' Univariate slice sampling on \eqn{\log a}. Used internally for hyperparameter updates.
+#'
+#' @param logpost Function taking `loga` and returning log-posterior up to a constant.
+#' @param loga0 Numeric; current log value.
+#' @param w Step-out width (default 1).
+#' @param m Max step-out steps (default 20).
+#' @param lower,upper Hard bounds on `loga`.
+#' @return A new `loga` draw.
+#' @keywords internal
+.slice_on_log <- function(
+    logpost, loga0, w = 1.0, m = 20L, lower = -Inf, upper = Inf
+) {
+  f0 <- logpost(loga0)
+  if (!is.finite(f0)) stop("Initial loga has -Inf logpost.")
+  y <- f0 - stats::rexp(1)
+  L <- loga0 - stats::runif(1, 0, w)
+  R <- L + w
+  J <- floor(stats::runif(1) * m); K <- (m - 1L) - J
+  while (J > 0L && L > lower && logpost(L) > y) { L <- L - w; J <- J - 1L }
+  while (K > 0L && R < upper && logpost(R) > y) { R <- R + w; K <- K - 1L }
+  for (iter in 1:100) {
+    loga1 <- stats::runif(1, max(L, lower), min(R, upper))
+    f1 <- logpost(loga1)
+    if (is.finite(f1) && f1 >= y) return(loga1)
+    if (loga1 < loga0) L <- loga1 else R <- loga1
+  }
+  warning("Slice sampler reached max shrink steps; returning last draw.")
+  loga1
+}
+
+#' Gamma-Poisson integrated log-likelihood (new block)
+#' @keywords internal
+.new_cluster_integral_log <- function(wi, Zi, a_now, b_now) {
+  (a_now * log(b_now)) + lgamma(a_now + wi) - lgamma(a_now) - (a_now + wi) * log(b_now + Zi)
+}
+
+#' Sample index from log-weights
+#' @keywords internal
+.sample_from_logweights <- function(logw) {
+  if (all(!is.finite(logw))) return(sample.int(length(logw), 1L))
+  lse <- .logsumexp(logw)
+  if (!is.finite(lse)) return(sample.int(length(logw), 1L))
+  p <- exp(logw - lse); p[!is.finite(p)] <- 0
+  s <- sum(p)
+  if (s <= 0) sample.int(length(p), 1L) else sample.int(length(p), 1L, prob = p/s)
+}
+
+#' Anchored version of the integrated log-score (drop a-only constant)
+#' @keywords internal
+.new_cluster_integral_log_anchored <- function(wi, Zi, a_now, b_now) {
+  lgamma(a_now + wi) - (a_now + wi) * log(b_now + Zi)
+}
+
+
 #' Format player names as "Surname F."
 #'
 #' @param name character scalar or vector (e.g., "Roger Federer").
@@ -14,121 +79,6 @@ clean_players_names <- function(name) {
   }, FUN.VALUE = character(1))
 }
 
-#' Post-processing for BT–SBM posterior draws
-#'
-#' Relabels each MCMC draw by descending block rate \eqn{\lambda}, computes the
-#' posterior similarity matrix (PSM), Binder and minVI point partitions, cluster
-#' count summaries, and per-player assignment probabilities.
-#'
-#' @param x_samples integer matrix (M x K). Cluster labels per draw (each row = one draw).
-#' @param lambda_samples numeric matrix (M x K). Block rates per draw (aligned with labels).
-#'
-#' @return A list with components:
-#' \itemize{
-#' \item \code{x_samples_relabel}, \code{lambda_samples_relabel} — relabeled draws.
-#' \item \code{co_clustering} — PSM (K x K).
-#' \item \code{partition_binder}, \code{minVI_partition}, \code{partition_expected}.
-#' \item \code{n_clusters_each_iter}, \code{avg_n_clusters}.
-#' \item \code{player_block_assignment_probs} (K x K data.frame).
-#' \item \code{block_count_distribution} (data.frame with \code{num_blocks}, \code{count}, \code{prob}).
-#' \item \code{top_block_count_per_iter}, \code{avg_top_block_count}.
-#' }
-#'
-#' @examples
-#' \dontrun{
-#' set.seed(1)
-#' M <- 100; K <- 6
-#' x  <- matrix(sample.int(3, M*K, TRUE), M, K)
-#' lam <- matrix(rexp(M*K), M, K)
-#' out <- inference_helper(x, lam)
-#' str(out)
-#' }
-#' @importFrom mcclust comp.psm
-#' @importFrom mcclust.ext minbinder.ext minVI
-#' @importFrom stats median
-#' @export
-#'
-inference_helper <- function(x_samples, lambda_samples){
-  stopifnot(is.matrix(x_samples), is.matrix(lambda_samples))
-  n_iter <- nrow(x_samples)
-  K <- ncol(x_samples)
-  stopifnot(nrow(lambda_samples) == n_iter, ncol(lambda_samples) == K)
-
-  new_x_samples <- matrix(NA_integer_, n_iter, K)
-  new_lambda_samples <- matrix(NA_real_, n_iter, K)
-
-  for (iter in seq_len(n_iter)) {
-    occupied <- sort(unique(x_samples[iter, ]))
-    current_lambda <- lambda_samples[iter, occupied]
-    ord <- order(current_lambda, decreasing = TRUE)
-    sorted_lambda <- current_lambda[ord]
-
-    label_map <- rep(NA_integer_, K)
-    for (r in seq_along(ord)) {
-      old_label <- occupied[ord[r]]
-      label_map[old_label] <- r
-    }
-
-    new_x_samples[iter, ] <- label_map[x_samples[iter, ]]
-    for (i in seq_len(K)) {
-      new_label_i <- new_x_samples[iter, i]
-      new_lambda_samples[iter, i] <-
-        if (!is.na(new_label_i) && new_label_i >= 1L && new_label_i <= length(sorted_lambda)) {
-          sorted_lambda[new_label_i]
-        } else {
-          NA_real_
-        }
-    }
-  }
-
-  co_clust <- mcclust::comp.psm(new_x_samples)
-  partition_binder <- mcclust.ext::minbinder.ext(psm = co_clust)$cl
-  partition_minVI  <- mcclust.ext::minVI(psm = co_clust)$cl
-  partition_expected <- apply(new_x_samples, 2, stats::median, na.rm = TRUE)
-
-  lambda_means   <- colMeans(new_lambda_samples, na.rm = TRUE)
-  lambda_medians <- apply(new_lambda_samples, 2, stats::median, na.rm = TRUE)
-
-  n_clust_vec <- apply(new_x_samples, 1, function(z) length(unique(z[!is.na(z)])))
-  avg_n_clust <- mean(n_clust_vec)
-
-  assignment_probs <- matrix(0, nrow = K, ncol = K)
-  for (i in seq_len(K)) {
-    for (k in seq_len(K)) {
-      assignment_probs[i, k] <- mean(new_x_samples[, i] == k, na.rm = TRUE)
-    }
-  }
-  colnames(assignment_probs) <- paste0("Cluster_", seq_len(K))
-  rownames(assignment_probs) <- paste0("Player_", seq_len(K))
-  assignment_probs_df <- as.data.frame(assignment_probs)
-
-  block_count_freq <- table(n_clust_vec)
-  block_count_df <- data.frame(
-    num_blocks = as.numeric(names(block_count_freq)),
-    count = as.vector(block_count_freq),
-    prob  = as.vector(block_count_freq) / sum(block_count_freq)
-  )
-
-  top_block_count_per_iter <- rowSums(new_x_samples == 1L, na.rm = TRUE)
-  avg_top_block_count <- mean(top_block_count_per_iter)
-
-  list(
-    partition_binder              = partition_binder,
-    partition_expected            = partition_expected,
-    x_samples_relabel             = new_x_samples,
-    lambda_samples_relabel        = new_lambda_samples,
-    co_clustering                 = co_clust,
-    minVI_partition               = partition_minVI,
-    n_clusters_each_iter          = n_clust_vec,
-    avg_n_clusters                = avg_n_clust,
-    lambda_means                  = lambda_means,
-    lambda_medians                = lambda_medians,
-    player_block_assignment_probs = assignment_probs_df,
-    block_count_distribution      = block_count_df,
-    top_block_count_per_iter      = top_block_count_per_iter,
-    avg_top_block_count           = avg_top_block_count
-  )
-}
 
 #' Gnedin prior normalization weight H(V,h)
 #'
@@ -459,4 +409,184 @@ shannon_entropy <- function(p) {
   probs <- p / sum(p)
   probs <- probs[probs > 0]  # remove zeros to avoid log(0)
   -sum(probs * log(probs))
+}
+
+
+
+
+
+#' Relabel cluster assignments by decreasing lambda
+#'
+#' Given posterior samples of labels `x_samples` (S x N) and corresponding
+#' cluster-level intensities `lambda_samples` per iteration, produce a
+#' canonical relabeling where cluster 1 has the largest \eqn{\lambda},
+#' cluster 2 the second largest, etc. Also computes co-clustering summaries
+#' and assignment probabilities.
+#'
+#' @param x_samples Integer matrix S x N of sampled labels (arbitrary ids per iter).
+#' @param lambda_samples Either:
+#' \itemize{
+#'   \item a **list** of length S with numeric vectors indexed by raw label id
+#'         (NAs allowed for non-occupied ids), or
+#'   \item a **matrix** S x L giving per-iteration \eqn{\lambda_\ell} for label \eqn{\ell}.
+#' }
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{x_samples_relabel}{S x N integer matrix of relabeled draws (1..H per iter, ordered by \eqn{\lambda}).}
+#'   \item{lambda_samples_relabel}{S x N numeric matrix assigning each item its cluster's \eqn{\lambda} after relabeling.}
+#'   \item{item_cluster_assignment_probs}{N x Kmax data frame of marginal assignment probabilities.}
+#'   \item{block_count_distribution}{Data frame of the distribution of the number of blocks across iterations.}
+#'   \item{avg_top_block_count}{Average size of the top-\eqn{\lambda} block.}
+#'   \item{co_clustering}{Posterior similarity matrix (N x N).}
+#'   \item{minVI_partition}{Hard partition via minVI.}
+#'   \item{partition_binder}{Hard partition via Binder's loss.}
+#'   \item{n_clusters_each_iter}{Integer vector length S with number of blocks per iteration.}
+#'   \item{top_block_count_per_iter}{Integer vector length S with size of the top block per iteration.}
+#'   \item{cluster_lambda_ordered}{List length S of ordered \eqn{\lambda} vectors (length H per iter).}
+#' }
+#'
+#' @details
+#' The function first compacts raw labels to 1..H within each iteration,
+#' then orders the occupied labels by decreasing \eqn{\lambda}, producing a
+#' canonical labeling. Co-clustering summaries use \pkg{mcclust} and \pkg{mcclust.ext}.
+#'
+#' @examples
+#' \dontrun{
+#' S <- 100; N <- 20
+#' set.seed(42)
+#' x_samps <- matrix(sample(1:3, S*N, TRUE), S, N)
+#' lam_list <- replicate(S, { v <- rep(NA_real_, 5); v[1:3] <- runif(3, 0.5, 2); v }, simplify=FALSE)
+#' out <- relabel_by_lambda(x_samps, lam_list)
+#' table(out$block_count_distribution$num_blocks)
+#' }
+#'
+#' @importFrom stats runif rexp
+#' @import mcclust
+#' @import mcclust.ext
+#' @export
+#'
+relabel_by_lambda <- function(x_samples, lambda_samples) {
+  stopifnot(is.matrix(x_samples))
+  S <- nrow(x_samples); N <- ncol(x_samples)
+
+  # Accept (i) list length S of numeric vectors indexed by label ID (sparse with NAs),
+  # or (ii) matrix S x L (sparse columns with NAs).
+  is_list_format <- is.list(lambda_samples)
+  get_lambda_vec <- function(iter) {
+    if (is_list_format) {
+      v <- lambda_samples[[iter]]
+      if (!is.numeric(v)) stop("lambda_samples[[iter]] must be numeric.")
+      v
+    } else {
+      lambda_samples[iter, ]
+    }
+  }
+
+  # Outputs
+  x_relabeled              <- matrix(NA_integer_, S, N)
+  lambda_per_item          <- matrix(NA_real_,    S, N)     # per-player λ after relabel (S x N)
+  cluster_lambda_ordered   <- vector("list", S)             # per-iter numeric vector (length = K_iter)
+  n_clusters_each_iter     <- integer(S)
+  top_block_count_per_iter <- integer(S)
+
+  for (iter in seq_len(S)) {
+    xi <- as.integer(x_samples[iter, ])
+    # sanitize: map raw labels to consecutive 1..H to avoid 0/neg ids
+    occ_raw <- sort(unique(xi))
+    map_raw_to_seq <- match(xi, occ_raw)   # 1..H
+    xi_seq <- map_raw_to_seq
+    H <- max(xi_seq)
+
+    lam_vec_full <- get_lambda_vec(iter)   # sparse per-label λ with NAs at non-occupied ids
+
+    # pull λ for the occupied *raw* labels, keep order aligned with occ_raw
+    lam_occ <- rep(NA_real_, length(occ_raw))
+    ok_idx  <- occ_raw <= length(lam_vec_full)
+    lam_occ[ok_idx] <- lam_vec_full[occ_raw[ok_idx]]
+
+    # order clusters by decreasing λ (NAs last)
+    ord <- order(lam_occ, decreasing = TRUE, na.last = TRUE)
+    occ_ord <- occ_raw[ord]
+    lam_ord <- lam_occ[ord]
+    # if any NA sneaks in (shouldn't for truly occupied), set tiny finite
+    if (anyNA(lam_ord)) lam_ord[is.na(lam_ord)] <- .Machine$double.xmin
+
+    # map seq labels 1..H (current xi_seq) to new labels by λ order: new ids = 1..H
+    # first we need mapping from raw->seq, then seq->raw, then raw->ordered rank
+    # raw->seq existed via match; we need seq->raw:
+    seq_to_raw <- occ_raw
+    # raw label -> new ordered id
+    raw_to_ord_id <- integer(max(occ_ord))
+    raw_to_ord_id[occ_ord] <- seq_len(H)
+    # now xi_seq -> new ordered id:
+    xi_new <- raw_to_ord_id[ seq_to_raw[ xi_seq ] ]
+    x_relabeled[iter, ] <- xi_new
+
+    # per-player λ after relabel: assign each player the λ of its relabeled cluster
+    # we have lam_ord[k] = λ for cluster k (ordered)
+    lambda_per_item[iter, ] <- lam_ord[ xi_new ]
+
+    # store per-iter ordered cluster λ vector (length = H)
+    cluster_lambda_ordered[[iter]] <- lam_ord
+
+    # metrics
+    n_clusters_each_iter[iter]     <- H
+    top_block_count_per_iter[iter] <- sum(xi_new == 1L)
+  }
+
+  # Posterior similarity & hard partitions (on relabeled x)
+  psm <- mcclust::comp.psm(x_relabeled)
+  partition_binder <- mcclust.ext::minbinder.ext(psm,cls.draw = x_relabeled,method = 'avg')$cl
+  partition_minVI  <- mcclust.ext::minVI(psm,cls.draw = x_relabeled,method = 'all')$cl[1,]
+
+  # Per-item assignment probabilities P(item i -> k), with k up to Kmax
+  Kmax <- N
+  assignment_probs <- matrix(0, nrow = N, ncol = Kmax)
+  for (k in seq_len(Kmax)) {
+    assignment_probs[, k] <- colMeans(x_relabeled == k, na.rm = TRUE)
+  }
+  colnames(assignment_probs) <- paste0("Cluster_", seq_len(Kmax))
+  rownames(assignment_probs) <- paste0("Item_", seq_len(N))
+  assignment_probs_df <- as.data.frame(assignment_probs)
+
+  # Block-count distribution across iterations
+  bc_tab <- table(n_clusters_each_iter)
+  block_count_df <- data.frame(
+    num_blocks = as.integer(names(bc_tab)),
+    count      = as.vector(bc_tab),
+    prob       = as.vector(bc_tab) / sum(bc_tab)
+  )
+
+  list(
+    # what your downstream code expects
+    x_samples_relabel            = x_relabeled,             # S x N (labels 1..H ordered by λ)
+    lambda_samples_relabel       = lambda_per_item,         # S x N (per-player λ of its cluster)
+    item_cluster_assignment_probs= assignment_probs_df,     # N x Kmax
+    block_count_distribution     = block_count_df,
+    avg_top_block_count          = mean(top_block_count_per_iter),
+
+    # extra summaries you may want
+    co_clustering                = psm,
+    minVI_partition              = partition_minVI,
+    partition_binder             = partition_binder,
+    n_clusters_each_iter         = n_clusters_each_iter,
+    top_block_count_per_iter     = top_block_count_per_iter,
+    # ordered cluster-level λ per iteration (clean, NA-free)
+    cluster_lambda_ordered       = cluster_lambda_ordered
+  )
+}
+
+
+
+#' Map \eqn{\lambda} to Bradley–Terry \eqn{\theta = \lambda_i / (\lambda_i + \lambda_j)}
+#'
+#' @param lambda Numeric vector of positive rates \eqn{\lambda_i}.
+#' @return A matrix with entries \eqn{\theta_{ij} = \lambda_i / (\lambda_i + \lambda_j)}.
+#' Diagonal is 1/2 by the formula; you may overwrite if you prefer NA on the diagonal.
+#' @examples
+#' lambda_to_theta(c(1,2,4))
+#' @export
+lambda_to_theta <- function(lambda) {
+  outer(lambda, lambda, function(a, b) a / (a + b))
 }

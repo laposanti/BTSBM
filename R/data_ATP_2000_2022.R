@@ -50,7 +50,7 @@
 #' \emph{tennis\_atp} datasets by Jeff Sackmann) and internal preprocessing.
 #' See the package vignette for provenance and cleaning steps.
 #'
-#' @examples
+#' @examples  \dontrun{
 #' data(ATP_2000_2022)
 #' names(ATP_2000_2022)
 #' year <- "2000"
@@ -66,5 +66,5 @@
 #'
 #' # Join player metadata to indices used in the matrices:
 #' head(ATP_2000_2022[[year]]$players_df)
-#'
+#'}
 "ATP_2000_2022"

@@ -13,11 +13,11 @@ Authors@R:
       )
     )
 Description: Implements Bayesian inference for Bradley–Terry models with a 
-    Stochastic Block Model (SBM) prior on the players or items being compared. 
-    Includes Gibbs-type MCMC samplers, posterior relabeling, model diagnostics, 
-    and visualization utilities for inferred skill clusters and block 
-    interaction strengths. Suitable for applications such as sports analytics, 
-    psychometrics, and ranking problems with latent group structure.
+    Stochastic Block Model (SBM) prior on the items or players being compared. 
+    Provides Gibbs-type MCMC samplers, posterior relabeling, diagnostics, and 
+    visualization utilities for skill clusters and block interaction strengths. 
+    Useful for applications in sports analytics, psychometrics, and ranking 
+    problems with latent group structures.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -25,11 +25,18 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.2)
+LinkingTo: Rcpp
 Imports:
-    mcclust,
-    mcclust.ext,
     stats,
-    loo
+    Rcpp,
+    mcclust.ext,
+    mcclust,
+    dplyr,
+    ggplot2,
+    tidyr,
+    ggrepel,
+    magrittr,
+    scales
 Remotes:
     sarawade/mcclust.ext
 Suggests:
@@ -37,20 +44,14 @@ Suggests:
     knitr,
     rmarkdown,
     pkgdown,
-    knitr,
-    rmarkdown,
     coda,
+    loo,
     lattice,
-    dplyr,
-    tidyr,
-    ggplot2,
-    ggrepel,
     kableExtra,
     reshape2,
     stringr,
     ggside,
-    mcclust,
-    mcclust.ext
+    fossil
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://github.com/laposanti/BTSBM, https://laposanti.github.io/BTSBM/
