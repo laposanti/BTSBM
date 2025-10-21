@@ -126,7 +126,7 @@ out <- BTSBM::gibbs_bt_sbm(
   prior  = "GN",       # "DP", "PY", "DM", or "GN"
   gamma_GN =  0.8,
   T_iter = T_iter, 
-  T_burn = burnin,
+  T_burn = T_burn,
   verbose = T
 )
 ```
@@ -141,7 +141,7 @@ library(ggplot2)
 post <- BTSBM::relabel_by_lambda(out$x_samples, out$lambda_samples)
 
 
-as.data.frame(table(post$n_clusters_each_iter[(burnin + 1):n_iter])) %>%
+as.data.frame(table(post$n_clusters_each_iter[(T_burn + 1):T_iter])) %>%
   rename(K = Var1, count = Freq) %>%
   mutate(
     K = as.integer(as.character(K)),
