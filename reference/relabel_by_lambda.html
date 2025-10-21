@@ -27,6 +27,7 @@ and assignment probabilities."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with BTSBM</a></li>
+    <li><a class="dropdown-item" href="../articles/Notation.html">Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -75,7 +76,7 @@ and assignment probabilities.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with components:</p><dl><dt>x_samples_relabel</dt>
-<dd><p>S x N integer matrix of relabeled draws (1..H per iter, ordered by \(\lambda\)).</p></dd>
+<dd><p>S x N integer matrix of relabeled draws (1..K per iter, ordered by \(\lambda\)).</p></dd>
 
 <dt>lambda_samples_relabel</dt>
 <dd><p>S x N numeric matrix assigning each item its cluster's \(\lambda\) after relabeling.</p></dd>
@@ -105,13 +106,13 @@ and assignment probabilities.</p>
 <dd><p>Integer vector length S with size of the top block per iteration.</p></dd>
 
 <dt>cluster_lambda_ordered</dt>
-<dd><p>List length S of ordered \(\lambda\) vectors (length H per iter).</p></dd>
+<dd><p>List length S of ordered \(\lambda\) vectors (length K per iter).</p></dd>
 
 
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The function first compacts raw labels to 1..H within each iteration,
+    <p>The function first compacts raw labels to 1..K within each iteration,
 then orders the occupied labels by decreasing \(\lambda\), producing a
 canonical labeling. Co-clustering summaries use <span class="pkg">mcclust</span> and <span class="pkg">mcclust.ext</span>.</p>
     </div>
@@ -126,7 +127,6 @@ canonical labeling. Co-clustering summaries use <span class="pkg">mcclust</span>
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">relabel_by_lambda</span><span class="op">(</span><span class="va">x_samps</span>, <span class="va">lam_list</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">block_count_distribution</span><span class="op">$</span><span class="va">num_blocks</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
