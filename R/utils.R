@@ -544,10 +544,12 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
     top_block_count_per_iter[iter] <- sum(xi_new == 1L)
   }
 
+  unique_count <- apply(x_samples, 1, function(z) length(unique(z)))
+  modal_K = as.numeric(names(which.max(table(unique_count))))
   # Posterior similarity & hard partitions (on relabeled x)
   psm <- mcclust::comp.psm(x_relabeled)
-  partition_binder <- mcclust.ext::minbinder.ext(psm, cls.draw = x_relabeled, method = "avg")$cl
-  partition_minVI  <- mcclust.ext::minVI(psm, cls.draw = x_relabeled, method = "all")$cl[1, ]
+  partition_binder <- mcclust.ext::minbinder.ext(psm, cls.draw = x_relabeled,method = "avg",max.k = modal_K)$cl
+  partition_minVI  <- mcclust.ext::minVI(psm, cls.draw = x_relabeled, method = "all",max.k = modal_K)$cl[1, ]
 
   # Per-item assignment probabilities P(item i -> k), with k up to Kmax = N
   Kmax <- N
