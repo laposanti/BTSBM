@@ -7,14 +7,14 @@
 urn_PY(v_minus, alpha_PY, sigma_PY)
 }
 \arguments{
-\item{v_minus}{integer sizes of occupied clusters (excluding current item).}
+\item{v_minus}{integer sizes of occupied clusters (excluding focal item).}
 
-\item{alpha_PY}{numeric concentration.}
+\item{alpha_PY}{numeric concentration (> -sigma_PY).}
 
 \item{sigma_PY}{numeric discount in [0,1).}
 }
 \value{
-Numeric vector of length \eqn{H+1}.
+Numeric vector length \eqn{K+1}.
 }
 \description{
 Urn weight: Pitman–Yor process

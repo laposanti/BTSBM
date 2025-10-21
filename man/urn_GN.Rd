@@ -7,12 +7,12 @@
 urn_GN(v_minus, gamma)
 }
 \arguments{
-\item{v_minus}{integer sizes of occupied clusters (excluding current item).}
+\item{v_minus}{integer sizes of occupied clusters (excluding focal item).}
 
-\item{gamma}{numeric parameter.}
+\item{gamma}{numeric parameter (>0).}
 }
 \value{
-Numeric vector of length \eqn{H+1}.
+Numeric vector length \eqn{K+1}.
 }
 \description{
 Urn weight: Gnedin heuristic

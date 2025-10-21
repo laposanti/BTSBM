@@ -2,7 +2,7 @@
 % Please edit documentation in R/gibbs_bt_sbm.R
 \name{gibbs_bt_sbm}
 \alias{gibbs_bt_sbm}
-\title{Gibbs sampler for a Bradley–Terry Stochastic Block Model (BT–SBM)}
+\title{Gibbs sampler for the Bradley–Terry Stochastic Block Model (BT–SBM)}
 \usage{
 gibbs_bt_sbm(
   w_ij,
@@ -11,10 +11,10 @@ gibbs_bt_sbm(
   alpha_PY = NA_real_,
   sigma_PY = NA_real_,
   beta_DM = NA_real_,
-  H_DM = NA_integer_,
+  K_DM = NA_integer_,
   gamma_GN = NA_real_,
-  n_iter = 2000,
-  burnin = 1000,
+  T_iter = 2000,
+  T_burn = 1000,
   init_x = NULL,
   store_z = FALSE,
   verbose = TRUE
@@ -22,41 +22,51 @@ gibbs_bt_sbm(
 }
 \arguments{
 \item{w_ij}{Integer or numeric square matrix \eqn{n \times n} of directed wins
-(e.g., \code{w_ij[i,j]} is wins of \eqn{i} over \eqn{j}). Must have nonnegative
-entries and \code{n_ij <= w_ij + t(w_ij)} elementwise.}
+(i over j). Must be nonnegative with zero diagonal. The function builds
+\eqn{n_{ij} = w_{ij} + w_{ji}} internally.}
 
-\item{a}{positive parameter for the Gamma prior \eqn{\lambda_k \sim \mathrm{Gamma}(a,b)}.
-The algorithm uses \eqn{b=\exp(\psi(a))} to align the prior with the likelihood expectation on log \eqn{\lambda_k}}
+\item{a}{Positive shape parameter for the Gamma prior
+\eqn{\lambda_k \sim \mathrm{Gamma}(a,b)}. The algorithm uses
+\eqn{b = \exp(\psi(a))} so that \eqn{\mathbb{E}[\log \lambda_k] = 0} a priori.}
 
 \item{prior}{Character scalar, one of \code{"DP"}, \code{"PY"}, \code{"DM"}, \code{"GN"}.}
 
-\item{alpha_PY, sigma_PY}{Hyperparameters for Pitman–Yor/Dirichlet Process.
-For \code{prior="DP"} use \code{alpha_PY}; for \code{prior="PY"} use both
-\code{alpha_PY} and \code{sigma_PY in (0,1)}.}
+\item{alpha_PY, sigma_PY}{Hyperparameters for Pitman–Yor / Dirichlet Process.
+For \code{prior="DP"} use \code{alpha_PY} (with \code{sigma_PY} ignored).
+For \code{prior="PY"} use both \code{alpha_PY} and \code{sigma_PY \in (0,1)}.}
 
-\item{beta_DM, H_DM}{Hyperparameters for the Dirichlet–Multinomial prior
-where \code{H_DM} gives the maximum number of allowed clusters.}
+\item{beta_DM, K_DM}{Hyperparameters for the finite Dirichlet–Multinomial prior.
+\code{K_DM} is the maximum number of allowed clusters.}
 
 \item{gamma_GN}{Hyperparameter for the Gnedin prior.}
 
-\item{n_iter, burnin}{Integers, total iterations and burn-in. Must satisfy \code{burnin < n_iter}.}
+\item{T_iter, T_burn}{Integers: total iterations and burn-in. Must satisfy \code{T_burn < T_iter}.}
 
 \item{init_x}{Optional integer vector of length \code{n} with initial labels (1-based).}
 
-\item{store_z}{Logical, store latent \code{Z} draws (heavy; defaults \code{FALSE}).}
+\item{store_z}{Logical; if \code{TRUE}, store latent \code{Z} draws (heavy).}
 
-\item{verbose}{Logical, progress every 1000 iterations.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress every 1000 iterations.}
 }
 \value{
-A plain \code{list} with the following elements:
-list with \code{x} (matrix \code{S x n} of raw labels),
-\code{K} (vector length \code{S})
+A \code{list} with:
+\itemize{
+\item \code{x_samples}: integer matrix \eqn{S \times n} of raw labels (\eqn{S = T_{\mathrm{iter}}-T_{\mathrm{burn}}}).
+\item \code{lambda_samples}: list of length \eqn{S}; each element is a numeric vector
+of length \eqn{L_{\mathrm{cap}}} for that draw, with \code{NA} at empty labels.
+\item \code{K_per_iter}: integer vector length \eqn{S} (occupied cluster count per saved draw).
+\item \code{L_cap_per_iter}: integer vector length \eqn{S} (label capacity trace).
+\item \code{z_samples}: if \code{store_z=TRUE}, a numeric array \eqn{S \times n \times n}; otherwise \code{NULL}.
+}
 }
 \description{
-Runs the Gibbs sampler for the BT–SBM.
-It then returns relabeled samples and computes minimal posterior summaries.
-Row names of \code{w_ij} (if present) are propagated to all item-level outputs;
-otherwise items are named \code{Item_1, ..., Item_N}.
+Runs a Gibbs sampler for the BT–SBM with optional DP/PY/DM/GN priors on
+the partition. Returns raw draws plus minimal summaries; \code{n_ij} is
+computed internally as \code{w_ij + t(w_ij)}.
+}
+\details{
+Row names of \code{w_ij} (if present) are propagated to item-level outputs;
+otherwise items are named \code{Item_1, ..., Item_n}.
 }
 \examples{
 \dontrun{
@@ -64,7 +74,11 @@ set.seed(1)
 n <- 6L
 w <- matrix(0L, n, n)
 w[lower.tri(w)] <- rpois(sum(lower.tri(w)), 2)
+diag(w) <- 0
 rownames(w) <- colnames(w) <- paste0("P", seq_len(n))
-fit <- gibbs_bt_sbm(w, prior="GN", gamma_GN=0.5, n_iter=200, burnin=100)
+fit <- gibbs_bt_sbm(
+  w_ij = w, prior = "GN", gamma_GN = 0.5,
+  T_iter = 200, T_burn = 100, verbose = FALSE
+)
 }
 }

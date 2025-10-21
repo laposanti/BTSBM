@@ -19,7 +19,7 @@ relabel_by_lambda(x_samples, lambda_samples)
 \value{
 A list with components:
 \describe{
-\item{x_samples_relabel}{S x N integer matrix of relabeled draws (1..H per iter, ordered by \eqn{\lambda}).}
+\item{x_samples_relabel}{S x N integer matrix of relabeled draws (1..K per iter, ordered by \eqn{\lambda}).}
 \item{lambda_samples_relabel}{S x N numeric matrix assigning each item its cluster's \eqn{\lambda} after relabeling.}
 \item{item_cluster_assignment_probs}{N x Kmax data frame of marginal assignment probabilities.}
 \item{block_count_distribution}{Data frame of the distribution of the number of blocks across iterations.}
@@ -29,7 +29,7 @@ A list with components:
 \item{partition_binder}{Hard partition via Binder's loss.}
 \item{n_clusters_each_iter}{Integer vector length S with number of blocks per iteration.}
 \item{top_block_count_per_iter}{Integer vector length S with size of the top block per iteration.}
-\item{cluster_lambda_ordered}{List length S of ordered \eqn{\lambda} vectors (length H per iter).}
+\item{cluster_lambda_ordered}{List length S of ordered \eqn{\lambda} vectors (length K per iter).}
 }
 }
 \description{
@@ -40,7 +40,7 @@ cluster 2 the second largest, etc. Also computes co-clustering summaries
 and assignment probabilities.
 }
 \details{
-The function first compacts raw labels to 1..H within each iteration,
+The function first compacts raw labels to 1..K within each iteration,
 then orders the occupied labels by decreasing \eqn{\lambda}, producing a
 canonical labeling. Co-clustering summaries use \pkg{mcclust} and \pkg{mcclust.ext}.
 }
@@ -53,5 +53,4 @@ lam_list <- replicate(S, { v <- rep(NA_real_, 5); v[1:3] <- runif(3, 0.5, 2); v 
 out <- relabel_by_lambda(x_samps, lam_list)
 table(out$block_count_distribution$num_blocks)
 }
-
 }

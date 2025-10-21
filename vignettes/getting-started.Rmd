@@ -117,15 +117,16 @@ for (krow in seq_len(nrow(idx))) {
 
 ```{r}
 
-n_iter = 4000
-burnin = 1000
+T_iter = 4000
+T_burn = 1000
 
 out <- BTSBM::gibbs_bt_sbm(
   w_ij   = w_ij,
   a = 4,
   prior  = "GN",       # "DP", "PY", "DM", or "GN"
   gamma_GN =  0.8,
-  n_iter = n_iter, burnin = burnin,
+  T_iter = T_iter, 
+  T_burn = burnin,
   verbose = T
 )
 ```

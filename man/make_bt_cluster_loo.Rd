@@ -4,39 +4,39 @@
 \alias{make_bt_cluster_loo}
 \title{Log-likelihood matrix for the BT–SBM (clustered) model}
 \usage{
-make_bt_cluster_loo(w_ij, n_ij, lambda_samples, x_samples)
+make_bt_cluster_loo(w_ij, lambda_samples, x_samples)
 
-make_bt_cluster_loo(w_ij, n_ij, lambda_samples, x_samples)
+make_bt_cluster_loo(w_ij, lambda_samples, x_samples)
 }
 \arguments{
-\item{w_ij}{integer/numeric K x K wins (i over j).}
+\item{w_ij}{integer/numeric \eqn{n \times n} wins (i over j).}
 
-\item{n_ij}{integer/numeric K x K total matches (symmetric, diag=0).}
+\item{lambda_samples}{numeric \eqn{S \times K} matrix of cluster rates \eqn{\lambda_k}.}
 
-\item{lambda_samples}{numeric S x K matrix of cluster rates \eqn{\lambda_k}.}
-
-\item{x_samples}{integer S x K matrix of cluster labels for each player.}
+\item{x_samples}{integer \eqn{S \times n} matrix of cluster labels for each item.}
 }
 \value{
 A list with:
 \itemize{
-\item \code{ll} — S x D matrix of log-likelihoods.
+\item \code{ll} — T_iter x D matrix of log-likelihoods.
 \item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
 }
 
 A list with:
 \itemize{
-\item \code{ll} — S x D matrix of log-likelihoods.
-\item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
+\item \code{ll} — \eqn{S \times D} matrix of log-likelihoods.
+\item \code{obs_idx} — \eqn{D \times 2} matrix of (i,j) indices defining each column.
 }
 }
 \description{
-Builds an S x D matrix of log-likelihood values using cluster labels \eqn{x_i}
+Builds an T_iter x D matrix of log-likelihood values using cluster labels \eqn{x_i}
 and cluster rates \eqn{\lambda_k}. Assumes \code{x_samples} and
 \code{lambda_samples} are \emph{relabelled consistently} (e.g. via \code{inference_helper}).
 
-Builds an S x D matrix of log-likelihood values using cluster labels \eqn{x_i}
-and cluster rates \eqn{\lambda_k}. Assumes inputs are \emph{relabelled consistently}.
+Builds an \eqn{S \times D} matrix using cluster labels \eqn{x_i}
+and cluster rates \eqn{\lambda_k}. Assumes inputs are \emph{relabelled consistently}
+or that cluster ids in \code{x_samples[s, ]} are in \code{1..K} where
+\code{K = ncol(lambda_samples)}.
 }
 \examples{
 \dontrun{

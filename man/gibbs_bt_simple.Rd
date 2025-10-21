@@ -6,27 +6,24 @@
 \usage{
 gibbs_bt_simple(
   w_ij,
-  n_ij,
   a = 0.01,
   b = 1,
-  n_iter = 5000,
-  burnin = 1000,
+  T_iter = 5000,
+  T_burn = 1000,
   verbose = TRUE
 )
 }
 \arguments{
-\item{w_ij}{integer/numeric K x K wins from i over j.}
-
-\item{n_ij}{integer/numeric K x K total matches (symmetric, diag = 0).}
+\item{w_ij}{integer/numeric \eqn{n \times n} wins from i over j (diag = 0, nonnegative).}
 
 \item{a, b}{numeric(1) Gamma(a,b) prior on each \eqn{\lambda_i}.}
 
-\item{n_iter, burnin}{integers; total iterations and burn-in.}
+\item{T_iter, T_burn}{integers; total iterations and burn-in. Require \code{T_burn < T_iter}.}
 
-\item{verbose}{logical; print progress.}
+\item{verbose}{logical; print progress every 1000 iterations.}
 }
 \value{
-A list with \code{lambda_samples} (matrix of size (n_iter-burnin) x K).
+A list with \code{lambda_samples} (matrix of size \eqn{S \times n}, \eqn{S=T_{\text{iter}}-T_{\text{burn}}}).
 }
 \description{
 Simple Bradley–Terry Gibbs sampler (no clustering)
@@ -34,11 +31,10 @@ Simple Bradley–Terry Gibbs sampler (no clustering)
 \examples{
 \dontrun{
 set.seed(1)
-K <- 6
-n <- matrix(0, K, K); n[upper.tri(n)] <- sample(0:3, sum(upper.tri(n)), TRUE)
-n <- n + t(n); diag(n) <- 0
-w <- matrix(0, K, K); w[upper.tri(w)] <- rbinom(sum(upper.tri(n)), n[upper.tri(n)], 0.5)
-w <- w + t(n - w); diag(w) <- 0
-fit <- gibbs_bt_simple(w, n, a = 1, b = 1, n_iter = 500, burnin = 100, verbose = FALSE)
+n <- 6L
+w <- matrix(0L, n, n)
+w[upper.tri(w)] <- rpois(sum(upper.tri(w)), 2)
+w <- w + t(w) - diag(diag(w))
+fit <- gibbs_bt_simple(w, a = 1, b = 1, T_iter = 500, T_burn = 100, verbose = FALSE)
 }
 }

@@ -2,19 +2,19 @@
 % Please edit documentation in R/utils.R
 \name{HGnedin}
 \alias{HGnedin}
-\title{Gnedin prior normalization weight H(V,h)}
+\title{Gnedin prior normalization weight K(n,k)}
 \usage{
-HGnedin(V, h, gamma = 0.5)
+HGnedin(n, k, gamma = 0.5)
 }
 \arguments{
-\item{V}{integer(1) total items.}
+\item{n}{integer(1) total items.}
 
-\item{h}{integer vector of block counts.}
+\item{k}{integer vector of block counts.}
 
 \item{gamma}{numeric(1) parameter \eqn{\gamma > 0}.}
 }
 \value{
-Numeric vector of weights \eqn{H(V,h)}.
+Numeric vector of weights \eqn{K(n,k)}.
 }
 \description{
 Computes the unnormalized mass function term used in Gnedin-type priors.

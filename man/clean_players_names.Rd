@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{clean_players_names}
 \alias{clean_players_names}
-\title{Format player names as "Surname F."}
+\title{Format player/item names as "Surname F."}
 \usage{
 clean_players_names(name)
 }
@@ -13,7 +13,7 @@ clean_players_names(name)
 Character vector with formatted names (e.g., "Federer R.").
 }
 \description{
-Format player names as "Surname F."
+Format player/item names as "Surname F."
 }
 \examples{
 clean_players_names(c("Roger Federer", "Nadal"))

@@ -1,0 +1,261 @@
+---
+title: "Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: false
+vignette: >
+ %\VignetteIndexEntry{Getting started with BTSBM}
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+We consider a set of (n) items/players with observed directed wins ($w_{ij}$). The total number of encounters is ($n_{ij} = w_{ij} + w_{ji}$). In the clustered Bradley–Terry–SBM (BT–SBM), each item (i) belongs to a latent block ($x_i \in {1,\dots,K}$), and blocks have intensities ($\lambda_k>0$). The simple BT model corresponds to ($K=n$) with item-specific intensities.
+
+This vignette documents **symbols**, **R object names**, and **dimensions** used throughout the package.
+
+## Symbols and R names
+
+| Meaning                            | Math symbol                        | Constraints / Type                               | R name                    | Dimensions                      |
+|------------------------------------|------------------------------------|--------------------------------------------------|---------------------------|----------------------------------|
+| Number of items                    | \( n \)                            | integer (>0)                                     | `n` (derived)             | scalar                           |
+| Saved iterations              | \( S = T_{\text{iter}} - T_{\text{burn}} \) | integer (≥ 1)                              | `S` (implicit)            | scalar                           |
+| Wins (i over j)                    | \( w_{ij} \)                       | ≥ 0, diag = 0                                   | `w_ij`                    | `n × n` matrix                   |
+| Encounters                         | \( n_{ij} = w_{ij} + w_{ji} \)     | symmetric, diag = 0                              | computed internally       | `n × n` matrix                   |
+| Total iterations                   | \( T_{\text{iter}} \)              | integer (>0)                                     | `T_iter`                  | scalar                           |
+| Burn-in                            | \( T_{\text{burn}} \)              | \( 0 \le T_{\text{burn}} < T_{\text{iter}} \)   | `T_burn`                  | scalar                           |
+| Occupied clusters per draw         | \( K \)                            | 1..n                                             | `K_per_iter`              | length `S` vector                |
+| Label capacity (allocated ids)     | \( L_{\text{cap}} \)               | \( K \le L_{\text{cap}} \le n \) (or ≤ \( K_{DM} \)) | `L_cap_per_iter`   | length `S` vector                |
+| Max allowed clusters (finite prior)| \( K_{DM} \)                     | 1..n or ∞                                        | `K_DM`                   | scalar                           
+| Observed pairs count             | \( D \)                                  | \( D = \#\{(i,j): i<j,\ n_{ij}>0\} \), \(0 \le D \le \tfrac{n(n-1)}{2}\) | implicit                | scalar        |
+| Cluster label of item i            | \( x_i \)                          | in {1..K}                                        | `x_samples`               | `S × n` integer matrix           |
+| Cluster intensities                | \( \lambda_k \)                    | > 0                                              | `lambda_list[[s]]`        | ragged numeric, length `L_cap[s]`|
+| Item intensity (post relabel)      | \( \lambda_{x_i} \)                | > 0                                              | `lambda_samples_relabel`  | `S × n` numeric matrix           |
+| Latent auxiliaries                 | \( Z_{ij} \)                       | ≥ 0                                              | `z_samples`               | `S × n × n` array or `NULL`      |
+| DP concentration                   | \( \alpha \)                       | > 0                                              | `alpha_PY`                | scalar                           |
+| PY discount                        | \( \sigma \)                       | [0,1)                                            | `sigma_PY`                | scalar                           |
+| DM concentration                   | \( \beta \)                        | > 0                                              | `beta_DM`                 | scalar                           |
+| GN parameter                       | \( \gamma \)                       | > 0                                              | `gamma_GN`                | scalar                           |
+| Gamma prior on λ                   | \( \lambda \sim \mathrm{Gamma}(a,b) \) | a>0, b>0                                    | `a`, `b_eff = exp(ψ(a))`  | scalars                          |
+
+Notes:
+
+* We **never** require the user to pass `n_ij`; it is constructed and validated internally.
+* After relabeling by decreasing ($\lambda$), cluster ids are canonicalized as ($1...K$) with cluster 1 the largest ($\lambda$).
+
+## Dimensions at a glance
+
+Let ($S = T_{\text{iter}} - T_{\text{burn}}$).
+
+* `w_ij`: `n x n`
+* internally computed `n_ij`: `n x n`
+* `x_samples`: `S x n`
+* `lambda_list`: length `S`, element `s` has length `L_cap[s]`, with `NA` at empty labels
+* `lambda_samples_relabel`: `S x n`
+* `z_samples` (if stored): `S x n x n`
+* `K_per_iter`, `L_cap_per_iter`: length `S`
+* LOO log-likelihood matrices: `ll` is `S x D`, where `D = # {(i,j): i<j, n_ij[i,j]>0}` and `obs_idx` is `D x 2`
+
+
+### Gibbs samplers
+
+```r
+# Clustered BT–SBM
+gibbs_bt_sbm(
+  w_ij,
+  prior   = c("DP","PY","DM","GN"),
+  a       = 4,
+  alpha_PY = NA_real_,
+  sigma_PY = NA_real_,
+  beta_DM  = NA_real_,
+  K_DM    = NA_integer_,
+  gamma_GN = NA_real_,
+  T_iter = 2000,
+  T_burn = 1000,
+  init_x = NULL,
+  store_z = FALSE,
+  verbose = TRUE
+)
+```
+
+**Returns** (sizes in terms of `n` and `S`):
+
+```r
+list(
+  x_samples            = integer matrix [S x n],
+  lambda_samples       = list length S; each numeric vector length L_cap[s], NA for empty labels,
+  K_per_iter           = integer vector [S],
+  L_cap_per_iter       = integer vector [S],
+  z_samples            = NULL or numeric array [S x n x n]
+)
+```
+
+```r
+# Simple BT (no clustering)
+gibbs_bt_simple(
+  w_ij,
+  a = 0.01,
+  b = 1,
+  T_iter = 5000,
+  T_burn = 1000,
+  verbose = TRUE
+)
+```
+
+**Returns**:
+
+```r
+list(lambda_samples = numeric matrix [S x n])
+```
+
+### Relabeling and summaries
+
+```r
+relabel_by_lambda(x_samples, lambda_samples)
+```
+
+* `x_samples`: integer matrix `[S x n]` (raw ids per draw)
+* `lambda_samples`: either a list length `S` of per-label vectors (ragged, `NA` for empties), or a matrix `[S x L_cap_max]` with `NA`s.
+
+**Returns**:
+
+```r
+list(
+  x_samples_relabel              = integer matrix [S x n],
+  lambda_samples_relabel         = numeric matrix  [S x n],
+  item_cluster_assignment_probs  = data.frame [n x K_max] (columns named "Cluster_k"),
+  block_count_distribution       = data.frame with columns {num_blocks, count, prob},
+  avg_top_block_count            = numeric(1),
+  co_clustering                  = numeric matrix [n x n],
+  minVI_partition                = integer vector length n,
+  partition_binder               = integer vector length n,
+  n_clusters_each_iter           = integer vector length S,
+  top_block_count_per_iter       = integer vector length S,
+  cluster_lambda_ordered         = list length S; numeric vectors length K[s]
+)
+```
+
+### LOO log-likelihood builders
+
+```r
+make_bt_simple_loo(w_ij, lambda_samples)
+make_bt_cluster_loo(w_ij, lambda_samples, x_samples)
+```
+
+**Both return**:
+
+```r
+list(
+  ll = numeric matrix [S x D],
+  obs_idx = integer matrix [D x 2]  # i,j pairs with n_ij[i,j] > 0
+)
+```
+
+### Model comparison
+
+```r
+compare_bt_models_loo(simple_llo, cluster_llo)
+```
+
+**Returns** a list with `simple`, `cluster` (both `loo` objects) and `comparison` (from `loo::compare_models`).
+
+### Plotting helpers (selected)
+
+* `plot_block_adjacency(fit, w_ij, ...)` – square heatmap ordered by block and marginal wins.
+* `plot_assignment_probabilities(fit, w_ij = NULL, ...)` – item-by-cluster assignment heatmap.
+* `plot_lambda_uncertainty(fit, w_ij, ...)` – forest plot of per-item (\lambda) intervals (on log scale).
+
+These accept `w_ij` to recover names and marginal summaries. They do **not** require `n_ij`.
+
+## Internal bookkeeping: `L_cap` vs `K`
+
+We distinguish:
+
+* `K` – number of occupied clusters in a draw (size of `{k: csize[k] > 0}`).
+* `L_cap` – **label capacity**, the current size of the allocated label id space. It satisfies `K ≤ L_cap ≤ min(n, K_max)` and is used to size arrays such as `lambda_curr`. Empty labels have `NA` intensity.
+
+Diagnostics stored per saved draw: `K_per_iter` and `L_cap_per_iter`.
+
+## Validation rules
+
+* `w_ij` must be a square non-negative integer/numeric matrix with zero diagonal.
+* Internally computed `n_ij = w_ij + t(w_ij)` is symmetric with zero diagonal; we error if not.
+* For finite-cap priors, we enforce `K ≤ K_max` in both the urn weight and capacity growth.
+
+## Minimal end-to-end example
+
+```r
+set.seed(1)
+n <- 6L
+w <- matrix(0L, n, n)
+w[lower.tri(w)] <- rpois(sum(lower.tri(w)), 2)
+w <- w + t(w) - diag(diag(w + t(w)))  # keep diag 0, symmetric wins implied through n_ij
+rownames(w) <- colnames(w) <- paste0("P", seq_len(n))
+
+fit <- gibbs_bt_sbm(
+  w_ij = w,
+  prior = "GN",
+  gamma_GN = 0.5,
+  T_iter = 300,
+  T_burn = 150,
+  verbose = FALSE
+)
+
+rel <- relabel_by_lambda(fit$x_samples, fit$lambda_samples)
+loo_simple  <- make_bt_simple_loo(w, lambda_samples = gibbs_bt_simple(w, T_iter=200, T_burn=100, verbose=FALSE)$lambda_samples)
+loo_cluster <- make_bt_cluster_loo(w, rel$cluster_lambda_ordered, rel$x_samples_relabel)
+comp <- compare_bt_models_loo(loo_simple, loo_cluster)
+```
+
+## Package documentation style
+
+* Arguments use **snake_case**.
+* Matrices with indexed entries use the `_ij` suffix.
+* Iteration counts are `T_iter` and `T_burn`.
+* Finite-cap prior parameter is `K_max`.
+* Roxygen: use `@param w_ij` (wins), state that `n_ij` is computed internally.
+* Equations in roxygen use `\eqn{}` and `\deqn{}`; in articles use inline `\( \)` and display `\[ \]`.
+
+## Linking this vignette in pkgdown
+
+Add to `_pkgdown.yml`:
+
+```yaml
+articles:
+  - title: Concepts
+    contents:
+      - notation
+navbar:
+  structure:
+    left: [reference, articles]
+  components:
+    articles:
+      text: Articles
+      menu:
+        - text: "Notation & Conventions"
+          href: articles/notation.html
+```
+
+Ensure the vignette file is saved as `vignettes/notation.Rmd` and that `DESCRIPTION` contains:
+
+```text
+Suggests: knitr, rmarkdown, pkgdown
+VignetteBuilder: knitr
+```
+
+## Appendix: Probability parameterizations
+
+* **Bradley–Terry mapping**: given item-level rates (\lambda), define
+  [\theta_{ij} = \frac{\lambda_i}{\lambda_i + \lambda_j}]
+  The helper `lambda_to_theta(lambda)` returns the full (n\times n) matrix with (\theta_{ii}=1/2).
+
+* **Gamma prior centering**: we use rate parameter (b_\text{eff} = \exp(\psi(a))) so that (\mathbb{E}[\log \lambda] = 0) a priori, aiding identifiability via global rescaling.
+
+* **Relabeling convention**: in each saved draw we order occupied clusters by decreasing (\lambda) and remap labels to (1..K). Item-level intensities after relabeling are stored as `lambda_samples_relabel` with shape `S x n`.
+
+---
+
+**Version note.** If you previously used `n_iter`, `burnin`, or `H_DM` in earlier versions, these are now `T_iter`, `T_burn`, and `K_max`. Backward-compatibility shims may emit deprecation warnings.

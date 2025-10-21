@@ -4,19 +4,21 @@
 \alias{make_bt_loo_cluster}
 \title{Build BT clustered log-likelihood matrix (player-level)}
 \usage{
-make_bt_loo_cluster(x_draws, lambda_draws, w_ij, n_ij)
+make_bt_loo_cluster(x_draws, lambda_draws, w_ij)
 }
 \arguments{
-\item{x_draws}{integer S x K matrix of cluster labels per draw.}
+\item{x_draws}{integer \eqn{S \times n} matrix of cluster labels per draw.}
 
-\item{lambda_draws}{numeric S x K matrix of cluster rates per draw.}
+\item{lambda_draws}{numeric \eqn{S \times K} matrix of cluster rates per draw.}
 
-\item{w_ij, }{n_ij K x K wins and matches.}
+\item{w_ij}{\eqn{n \times n} pairwise wins matrix (i over j, diag = 0).}
 }
 \value{
-Numeric matrix S x P of log-likelihoods.
+Numeric matrix \eqn{S \times D} of log-likelihoods.
 }
 \description{
-Convenience alternative returning a plain S x P matrix (P = #pairs).
+Convenience alternative returning a plain \eqn{S \times D} matrix
+(\eqn{D} = #pairs with i<j). Here \code{x_draws} are labels and
+\code{lambda_draws} are cluster rates per draw.
 }
 \keyword{internal}

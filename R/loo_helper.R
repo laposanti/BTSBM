@@ -1,46 +1,35 @@
 #' Log-likelihood matrix for the *simple* Bradley–Terry model
 #'
-#' Builds an S x D matrix of log-likelihood values, where S is the number of
+#' Builds an T_iter x D matrix of log-likelihood values, where T_iter is the number of
 #' posterior draws and D is the number of observed unordered pairs (i<j) with
 #' \code{n_ij > 0}. This is suitable as input to \pkg{loo}.
 #'
-#' @param w_ij integer/numeric K x K wins (i over j).
-#' @param n_ij integer/numeric K x K total matches (symmetric, diag=0).
-#' @param lambda_samples numeric S x K matrix of player-specific rates \eqn{\lambda_i}.
+#' @param w_ij integer/numeric n x n wins (i over j).
+#' @param lambda_samples numeric T_iter x n matrix of player-specific rates \eqn{\lambda_i}.
 #'
 #' @return A list with:
 #' \itemize{
-#' \item \code{ll} — S x D matrix of log-likelihoods.
+#' \item \code{ll} — T_iter x D matrix of log-likelihoods.
 #' \item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
 #' }
 #'
-#' @examples
-#' \dontrun{
-#' set.seed(1)
-#' K <- 5
-#' n <- matrix(0, K, K); n[upper.tri(n)] <- sample(0:4, sum(upper.tri(n)), TRUE)
-#' n <- n + t(n); diag(n) <- 0
-#' w <- matrix(0, K, K); w[upper.tri(w)] <- rbinom(sum(upper.tri(w)), n[upper.tri(n)], 0.5)
-#' w <- w + t(n - w); diag(w) <- 0
-#' lam <- matrix(rexp(200*K), 200, K)
-#' ll_obj <- make_bt_simple_loo(w, n, lam)
-#' }
 #' @export
 #'
-make_bt_simple_loo <- function(w_ij, n_ij, lambda_samples) {
+make_bt_simple_loo <- function(w_ij, lambda_samples) {
+  n_ij = w_ij + t(w_ij)
   stopifnot(is.matrix(w_ij), is.matrix(n_ij), is.matrix(lambda_samples))
   K <- nrow(w_ij)
   if (!identical(dim(w_ij), dim(n_ij))) stop("w_ij and n_ij must have same dims.")
   if (!isTRUE(all.equal(n_ij, t(n_ij)))) stop("n_ij must be symmetric.")
   if (any(diag(n_ij) != 0)) stop("Diagonal of n_ij must be zero.")
-  S <- nrow(lambda_samples)
+  T_iter <- nrow(lambda_samples)
   if (ncol(lambda_samples) != K) stop("lambda_samples must have K columns.")
 
   idx <- which(upper.tri(n_ij) & n_ij > 0, arr.ind = TRUE)
   D <- nrow(idx)
-  ll <- matrix(NA_real_, S, D)
+  ll <- matrix(NA_real_, T_iter, D)
 
-  for (s in seq_len(S)) {
+  for (s in seq_len(T_iter)) {
     lam <- lambda_samples[s, ]
     for (d in seq_len(D)) {
       i <- idx[d, 1]; j <- idx[d, 2]
@@ -54,18 +43,17 @@ make_bt_simple_loo <- function(w_ij, n_ij, lambda_samples) {
 
 #' Log-likelihood matrix for the BT–SBM (clustered) model
 #'
-#' Builds an S x D matrix of log-likelihood values using cluster labels \eqn{x_i}
+#' Builds an T_iter x D matrix of log-likelihood values using cluster labels \eqn{x_i}
 #' and cluster rates \eqn{\lambda_k}. Assumes \code{x_samples} and
 #' \code{lambda_samples} are *relabelled consistently* (e.g. via \code{inference_helper}).
 #'
-#' @param w_ij integer/numeric K x K wins (i over j).
-#' @param n_ij integer/numeric K x K total matches (symmetric, diag=0).
-#' @param lambda_samples numeric S x K matrix of cluster rates \eqn{\lambda_k}.
-#' @param x_samples integer S x K matrix of cluster labels for each player.
+#' @param w_ij integer/numeric n x n wins (i over j).
+#' @param lambda_samples numeric T_iter x n matrix of cluster rates \eqn{\lambda_k}.
+#' @param x_samples integer T_iter x n matrix of cluster labels for each player.
 #'
 #' @return A list with:
 #' \itemize{
-#' \item \code{ll} — S x D matrix of log-likelihoods.
+#' \item \code{ll} — T_iter x D matrix of log-likelihoods.
 #' \item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
 #' }
 #'
@@ -75,22 +63,23 @@ make_bt_simple_loo <- function(w_ij, n_ij, lambda_samples) {
 #' # ll_obj <- make_bt_cluster_loo(w, n, out$lambda_samples_relabel, out$x_samples_relabel)
 #' }
 #' @export
-make_bt_cluster_loo <- function(w_ij, n_ij, lambda_samples, x_samples) {
+make_bt_cluster_loo <- function(w_ij, lambda_samples, x_samples) {
   stopifnot(is.matrix(w_ij), is.matrix(n_ij),
             is.matrix(lambda_samples), is.matrix(x_samples))
+  n_ij = w_ij + t(w_ij)
   K <- nrow(w_ij)
   if (!identical(dim(w_ij), dim(n_ij))) stop("w_ij and n_ij must have same dims.")
   if (!isTRUE(all.equal(n_ij, t(n_ij)))) stop("n_ij must be symmetric.")
   if (any(diag(n_ij) != 0)) stop("Diagonal of n_ij must be zero.")
   if (!identical(dim(lambda_samples), dim(x_samples)))
-    stop("lambda_samples and x_samples must have identical dims (S x K).")
+    stop("lambda_samples and x_samples must have identical dims (T_iter x K).")
 
-  S <- nrow(x_samples)
+  T_iter <- nrow(x_samples)
   idx <- which(upper.tri(n_ij) & n_ij > 0, arr.ind = TRUE)
   D <- nrow(idx)
-  ll <- matrix(NA_real_, S, D)
+  ll <- matrix(NA_real_, T_iter, D)
 
-  for (s in seq_len(S)) {
+  for (s in seq_len(T_iter)) {
     lam <- lambda_samples[s, ]  # λ_1..λ_K (cluster-level, after relabel)
     xs  <- x_samples[s, ]       # labels in {1..K}
     # precompute player-level rates for this draw
@@ -122,6 +111,7 @@ make_bt_cluster_loo <- function(w_ij, n_ij, lambda_samples, x_samples) {
 #' \item \code{comparison} — result of \code{loo::compare_models()}.
 #' }
 #' @export
+#'
 compare_bt_models_loo <- function(simple_llo, cluster_llo) {
   if (!requireNamespace("loo", quietly = TRUE))
     stop("Package 'loo' not installed. Install it to run LOO.")

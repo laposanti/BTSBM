@@ -25,7 +25,7 @@ A list with:
 \itemize{
 \item \code{simple} — \code{loo} object for the simple BT.
 \item \code{cluster} — \code{loo} object for the clustered BT–SBM.
-\item \code{comparison} — result of \code{loo::compare()}.
+\item \code{comparison} — result of \code{loo::compare_models()}.
 }
 }
 \description{

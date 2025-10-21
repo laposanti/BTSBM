@@ -7,12 +7,12 @@
 urn_DP(v_minus, alpha_PY)
 }
 \arguments{
-\item{v_minus}{integer sizes of occupied clusters (excluding current item).}
+\item{v_minus}{integer sizes of occupied clusters (excluding focal item).}
 
-\item{alpha_PY}{numeric concentration.}
+\item{alpha_PY}{numeric concentration (>0).}
 }
 \value{
-Numeric vector of length \eqn{H+1}: existing weights and new-cluster mass.
+Numeric vector length \eqn{K+1}: existing weights and new-cluster mass.
 }
 \description{
 Urn weight: Dirichlet Process

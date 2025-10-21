@@ -4,48 +4,34 @@
 \alias{make_bt_simple_loo}
 \title{Log-likelihood matrix for the \emph{simple} Bradley–Terry model}
 \usage{
-make_bt_simple_loo(w_ij, n_ij, lambda_samples)
+make_bt_simple_loo(w_ij, lambda_samples)
 
-make_bt_simple_loo(w_ij, n_ij, lambda_samples)
+make_bt_simple_loo(w_ij, lambda_samples)
 }
 \arguments{
-\item{w_ij}{integer/numeric K x K wins (i over j).}
+\item{w_ij}{integer/numeric \eqn{n \times n} wins (i over j).}
 
-\item{n_ij}{integer/numeric K x K total matches (symmetric, diag=0).}
-
-\item{lambda_samples}{numeric S x K matrix of player-specific rates \eqn{\lambda_i}.}
+\item{lambda_samples}{numeric \eqn{S \times n} matrix of player-specific rates \eqn{\lambda_i}.}
 }
 \value{
 A list with:
 \itemize{
-\item \code{ll} — S x D matrix of log-likelihoods.
+\item \code{ll} — T_iter x D matrix of log-likelihoods.
 \item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
 }
 
 A list with:
 \itemize{
-\item \code{ll} — S x D matrix of log-likelihoods.
-\item \code{obs_idx} — D x 2 matrix of (i,j) indices defining each column.
+\item \code{ll} — \eqn{S \times D} matrix of log-likelihoods.
+\item \code{obs_idx} — \eqn{D \times 2} matrix of (i,j) indices defining each column.
 }
 }
 \description{
-Builds an S x D matrix of log-likelihood values, where S is the number of
+Builds an T_iter x D matrix of log-likelihood values, where T_iter is the number of
 posterior draws and D is the number of observed unordered pairs (i<j) with
 \code{n_ij > 0}. This is suitable as input to \pkg{loo}.
 
-Builds an S x D matrix of log-likelihood values, where S is the number of
-posterior draws and D is the number of observed unordered pairs (i<j) with
-\code{n_ij > 0}.
-}
-\examples{
-\dontrun{
-set.seed(1)
-K <- 5
-n <- matrix(0, K, K); n[upper.tri(n)] <- sample(0:4, sum(upper.tri(n)), TRUE)
-n <- n + t(n); diag(n) <- 0
-w <- matrix(0, K, K); w[upper.tri(w)] <- rbinom(sum(upper.tri(w)), n[upper.tri(n)], 0.5)
-w <- w + t(n - w); diag(w) <- 0
-lam <- matrix(rexp(200*K), 200, K)
-ll_obj <- make_bt_simple_loo(w, n, lam)
-}
+Builds an \eqn{S \times D} matrix of log-likelihood values, where \eqn{S}
+is the number of posterior draws and \eqn{D} is the number of observed
+unordered pairs (i<j) with \eqn{n_{ij} > 0}.
 }

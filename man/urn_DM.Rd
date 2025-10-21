@@ -2,21 +2,21 @@
 % Please edit documentation in R/utils.R
 \name{urn_DM}
 \alias{urn_DM}
-\title{Urn weight: Dirichlet–Multinomial with max H_DM clusters}
+\title{Urn weight: Dirichlet–Multinomial with finite cap K_DM}
 \usage{
-urn_DM(v_minus, beta_DM, H_DM)
+urn_DM(v_minus, beta_DM, K_DM)
 }
 \arguments{
-\item{v_minus}{integer sizes of occupied clusters (excluding current item).}
+\item{v_minus}{integer sizes of occupied clusters (excluding focal item).}
 
-\item{beta_DM}{numeric concentration.}
+\item{beta_DM}{numeric concentration (>0).}
 
-\item{H_DM}{integer maximum number of clusters.}
+\item{K_DM}{integer maximum number of clusters (>=1).}
 }
 \value{
-Numeric vector of length \eqn{H+1}: existing weights and new-cluster mass.
+Numeric vector length \eqn{K+1}: existing weights and new-cluster mass.
 }
 \description{
-Urn weight: Dirichlet–Multinomial with max H_DM clusters
+Urn weight: Dirichlet–Multinomial with finite cap K_DM
 }
 \keyword{internal}

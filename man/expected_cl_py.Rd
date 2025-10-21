@@ -4,7 +4,7 @@
 \alias{expected_cl_py}
 \title{Expected number of clusters under finite/inf PY/DM-like priors (helper)}
 \usage{
-expected_cl_py(n, sigma, theta, H)
+expected_cl_py(n, sigma, theta, K_DM)
 }
 \arguments{
 \item{n}{integer(1) number of items.}
@@ -13,7 +13,7 @@ expected_cl_py(n, sigma, theta, H)
 
 \item{theta}{numeric(1) concentration parameter.}
 
-\item{H}{integer(1) maximum number of clusters, or \code{Inf}.}
+\item{K_DM}{integer(1) maximum number of clusters, or \code{Inf}.}
 }
 \value{
 Numeric(1) expected number of clusters.
