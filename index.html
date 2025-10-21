@@ -54,36 +54,70 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="description">Description<a class="anchor" aria-label="anchor" href="#description"></a>
+<div class="page-header"><h1 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h1></div>
-<p>Implements Bayesian inference for Bradley–Terry models with a Stochastic Block Model (SBM) prior on the players or items being compared. Includes Gibbs-type MCMC samplers, posterior relabeling, model diagnostics, and visualization utilities for inferred skill clusters and block interaction strengths. Suitable for applications such as sports analytics, psychometrics, and ranking problems with latent group structure.</p>
+<p><strong>BTSBM</strong> implements Bayesian inference for the <em>Bradley–Terry Stochastic Block Model</em> (BT–SBM),<br>
+a model that combines <strong>pairwise comparison data</strong> with <strong>block clustering</strong> of items.</p>
+<p>The package provides: - Gibbs-type MCMC samplers for inference on the posterior distribution; - Posterior relabeling and model diagnostics; - Visualization tools for cluster assignments and block interaction strengths.</p>
+<p>Applications include <strong>sports analytics</strong>, <strong>psychometrics</strong>, and <strong>ranking problems</strong> with hidden group structure.</p>
+<p>➡️ Jump directly to: - <a href="reference/index.html">Function Reference</a> - <a href="articles/getting-started.html">Getting Started Vignette</a></p>
+<hr>
+<div class="section level2">
+<h2 id="model-summary">Model Summary<a class="anchor" aria-label="anchor" href="#model-summary"></a>
+</h2>
+<p>The BT–SBM assumes that each item belongs to a latent cluster,<br>
+and that the probability of one item defeating another depends on both<br>
+their cluster-level <em>interaction strength</em> and their individual <em>skill parameter</em>.</p>
+<p>Formally, for items \( i, j \): \[ (i  j) =  \] where: - \( _{x_i} \) is the individual skill of item \( i \); - \( x_i \in {1, , K} \) is its latent cluster label;</p>
+</div>
+<div class="section level2">
+<h2 id="this-implies-that-all-items-in-the-same-cluster-i-x_i--k--share-the-same-strength--_i--k-">This implies that all items in the same cluster \(i: x_i = k \) share the same strength \( _i = k \)<a class="anchor" aria-label="anchor" href="#this-implies-that-all-items-in-the-same-cluster-i-x_i--k--share-the-same-strength--_i--k-"></a>
+</h2>
+</div>
+<div class="section level2">
+<h2 id="required-inputs">Required Inputs<a class="anchor" aria-label="anchor" href="#required-inputs"></a>
+</h2>
+<p>To fit the model, you need <strong>aggregated pairwise comparison data</strong> in the form of a square matrix:</p>
+<ul>
+<li>
+<code>w</code>, the matrix of <em>wins</em>, where <code>w[i, j]</code> is the number of times item <code>i</code> succeeds over item <code>j</code>;</li>
+<li>Diagonal entries must be 0</li>
+</ul>
+<hr>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span></span>
-<span><span class="co"># install.packages("devtools")</span></span>
+<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"laposanti/BTSBM"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">Example</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span><span class="va">K</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">K</span>, <span class="va">K</span><span class="op">)</span></span>
-<span><span class="va">n</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="va">n</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span></span>
-<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">K</span>, <span class="va">K</span><span class="op">)</span></span>
-<span><span class="va">w</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">w</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">w</span><span class="op">)</span><span class="op">)</span>, <span class="va">n</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">]</span>, <span class="fl">0.5</span><span class="op">)</span></span>
-<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="va">w</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="va">w</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">w</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span><span class="va">w</span>, <span class="va">n</span>, a <span class="op">=</span> <span class="fl">1</span>, b <span class="op">=</span> <span class="fl">1</span>, prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
-<span>                    n_iter <span class="op">=</span> <span class="fl">500</span>, burnin <span class="op">=</span> <span class="fl">250</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+</h2>
+<p>Below is a minimal working example simulating toy data and fitting the BT–SBM with a Gnedin prior:</p>
+<p>```r set.seed(123) K &lt;- 6</p>
 </div>
 </div>
+<div class="section level1">
+<h1 id="number-of-matches-per-block-pair">number of matches per block pair<a class="anchor" aria-label="anchor" href="#number-of-matches-per-block-pair"></a>
+</h1>
+<p>n &lt;- matrix(0, K, K) n[upper.tri(n)] &lt;- sample(0:5, sum(upper.tri(n)), TRUE) n &lt;- n + t(n); diag(n) &lt;- 0</p>
+</div>
+<div class="section level1">
+<h1 id="number-of-wins-per-block-pair">number of wins per block pair<a class="anchor" aria-label="anchor" href="#number-of-wins-per-block-pair"></a>
+</h1>
+<p>w &lt;- matrix(0, K, K) w[upper.tri(w)] &lt;- rbinom(sum(upper.tri(w)), n[upper.tri(n)], 0.5) w &lt;- w + t(n - w); diag(w) &lt;- 0</p>
+</div>
+<div class="section level1">
+<h1 id="fit-the-model">fit the model<a class="anchor" aria-label="anchor" href="#fit-the-model"></a>
+</h1>
+<p>fit &lt;- gibbs_bt_sbm(w, n, a = 1, b = 1, prior = “GN”, n_iter = 500, burnin = 250, verbose = FALSE)</p>
+</div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
