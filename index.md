@@ -25,25 +25,6 @@ Applications include **sports analytics**, **psychometrics**, and **ranking prob
 
 ---
 
-## Model Summary
-
-The BT–SBM assumes that each item belongs to a latent cluster,  
-and that the probability of one item defeating another depends on both  
-their cluster-level *interaction strength* and their individual *skill parameter*.
-
-Formally, for items $ i, j $:
-$$
-\Pr(i \text{ beats } j) = \frac{\lambda_{x_i}}{\lambda_{x_i}+\lambda_{x_j}}
-$$
-where:
-
-- $ \lambda_{x_i} $ is the individual skill of item $ i $;
-- $ x_i \in \{1, \dots, K\} $ is its latent cluster label;
-
-This implies that all items in the same cluster $i: x_i = k $ share the same strength $ \lambda_i = k $.
-
----
-
 ## Required Inputs
 
 To fit the model, you need **aggregated pairwise comparison data** in the form of a square matrix:
