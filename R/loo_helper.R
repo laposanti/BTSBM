@@ -63,38 +63,57 @@ make_bt_simple_loo <- function(w_ij, lambda_samples) {
 #' # ll_obj <- make_bt_cluster_loo(w, n, out$lambda_samples_relabel, out$x_samples_relabel)
 #' }
 #' @export
+# Drop-in replacement: accepts lambda_samples as either
+#  - matrix S x Kmax (with NA padding), or
+#  - list length S with numeric vectors of length K_s
 make_bt_cluster_loo <- function(w_ij, lambda_samples, x_samples) {
-  stopifnot(is.matrix(w_ij), is.matrix(n_ij),
-            is.matrix(lambda_samples), is.matrix(x_samples))
-  n_ij = w_ij + t(w_ij)
-  K <- nrow(w_ij)
-  if (!identical(dim(w_ij), dim(n_ij))) stop("w_ij and n_ij must have same dims.")
+  stopifnot(is.matrix(w_ij), is.matrix(x_samples))
+  n <- nrow(w_ij); stopifnot(n == ncol(w_ij))
+  S <- nrow(x_samples); stopifnot(S > 0)
+
+  # Accessor for lambda at iteration s (length K_s)
+  if (is.list(lambda_samples)) {
+    get_lam <- function(s) {
+      lam <- lambda_samples[[s]]
+      if (!is.numeric(lam)) stop("lambda_samples[[s]] must be numeric.")
+      lam
+    }
+    Kmax <- max(vapply(lambda_samples, length, 1L))
+  } else if (is.matrix(lambda_samples)) {
+    stopifnot(nrow(lambda_samples) == S)
+    get_lam <- function(s) {
+      lam <- lambda_samples[s, ]
+      lam[is.finite(lam)]  # allow NA padding on the right
+    }
+    Kmax <- ncol(lambda_samples)
+  } else stop("lambda_samples must be list(S) or matrix S x Kmax.")
+
+  n_ij <- w_ij + t(w_ij)
   if (!isTRUE(all.equal(n_ij, t(n_ij)))) stop("n_ij must be symmetric.")
   if (any(diag(n_ij) != 0)) stop("Diagonal of n_ij must be zero.")
-  if (!identical(dim(lambda_samples), dim(x_samples)))
-    stop("lambda_samples and x_samples must have identical dims (T_iter x K).")
 
-  T_iter <- nrow(x_samples)
-  idx <- which(upper.tri(n_ij) & n_ij > 0, arr.ind = TRUE)
+  idx <- which(upper.tri(n_ij) & n_ij > 0, arr.ind = TRUE)   # MATCH simple builder
   D <- nrow(idx)
-  ll <- matrix(NA_real_, T_iter, D)
+  ll <- matrix(NA_real_, S, D)
 
-  for (s in seq_len(T_iter)) {
-    lam <- lambda_samples[s, ]  # λ_1..λ_K (cluster-level, after relabel)
-    xs  <- x_samples[s, ]       # labels in {1..K}
-    # precompute player-level rates for this draw
-    lam_player <- lam[xs]
+  for (s in seq_len(S)) {
+    xs <- as.integer(x_samples[s, ])
+    lam <- get_lam(s)                   # length K_s
+    Ks  <- length(lam)
+    if (any(xs < 1 | xs > Ks, na.rm = TRUE))
+      stop(sprintf("x_samples row %d has labels outside 1..K_s (K_s=%d).", s, Ks))
+    lam_player <- lam[xs]               # length n
+
     for (d in seq_len(D)) {
       i <- idx[d, 1]; j <- idx[d, 2]
-      n <- n_ij[i, j]
-      if (n == 0) { ll[s, d] <- 0; next }
-      w <- w_ij[i, j]
-      p <- lam_player[i] / (lam_player[i] + lam_player[j])
-      ll[s, d] <- stats::dbinom(w, size = n, prob = p, log = TRUE)
+      nij <- n_ij[i, j]; wij <- w_ij[i, j]
+      pij <- lam_player[i] / (lam_player[i] + lam_player[j])
+      ll[s, d] <- stats::dbinom(wij, size = nij, prob = pij, log = TRUE)
     }
   }
   list(ll = ll, obs_idx = idx)
 }
+
 
 #' Compare BT models with Pareto-smoothed importance sampling LOO
 #'
@@ -114,13 +133,13 @@ make_bt_cluster_loo <- function(w_ij, lambda_samples, x_samples) {
 #'
 compare_bt_models_loo <- function(simple_llo, cluster_llo) {
   if (!requireNamespace("loo", quietly = TRUE))
-    stop("Package 'loo' not installed. Install it to run LOO.")
-  if (!is.list(simple_llo) || !is.list(cluster_llo) ||
-      is.null(simple_llo$ll) || is.null(cluster_llo$ll))
-    stop("Inputs must be lists with an 'll' matrix component.")
-
+    stop("Package 'loo' not installed.")
+  for (x in list(simple_llo, cluster_llo)) {
+    if (!is.list(x) || is.null(x$ll)) stop("Each input must be a list with $ll.")
+  }
   loo_simple  <- loo::loo(simple_llo$ll)
   loo_cluster <- loo::loo(cluster_llo$ll)
-  comp <- loo::compare_models(loo_simple, loo_cluster)
+  comp <- loo::loo_compare(loo_simple, loo_cluster)
   list(simple = loo_simple, cluster = loo_cluster, comparison = comp)
 }
+

@@ -195,7 +195,7 @@ expected_cl_py <- function(n, sigma, theta, K_DM) {
 #' @export
 gibbs_bt_simple <- function(
     w_ij,
-    a = 0.01, b = 1,
+    a = 0.01, b = 0.1,
     T_iter = 5000, T_burn = 1000,
     verbose = TRUE
 ) {
@@ -270,12 +270,15 @@ gibbs_bt_simple <- function(
 make_bt_simple_loo <- function(w_ij, lambda_samples) {
   stopifnot(is.matrix(w_ij), is.matrix(lambda_samples))
   n <- nrow(w_ij); stopifnot(n == ncol(w_ij))
-  if (any(diag(w_ij) != 0)) stop("Diagonal of w_ij must be zero.")
+  if (any(diag(w_ij) != 0, na.rm = TRUE)) stop("Diagonal of w_ij must be zero (ignoring NAs).")
   S <- nrow(lambda_samples)
   if (ncol(lambda_samples) != n) stop("lambda_samples must have n columns.")
+
+  # Symmetric match counts; may contain NAs if w_ij has NAs
   n_ij <- w_ij + t(w_ij)
 
-  idx <- which(upper.tri(n_ij) & n_ij > 0, arr.ind = TRUE)
+  # Only keep pairs with finite, positive counts
+  idx <- which(upper.tri(n_ij) & is.finite(n_ij) & (n_ij > 0), arr.ind = TRUE)
   D <- nrow(idx)
   ll <- matrix(NA_real_, S, D)
 
@@ -283,8 +286,29 @@ make_bt_simple_loo <- function(w_ij, lambda_samples) {
     lam <- lambda_samples[s, ]
     for (d in seq_len(D)) {
       i <- idx[d, 1]; j <- idx[d, 2]
-      nij <- n_ij[i, j]; wij <- w_ij[i, j]
-      p <- lam[i] / (lam[i] + lam[j])
+      nij <- n_ij[i, j]
+      wij <- w_ij[i, j]
+
+      # validity checks (NA-safe)
+      if (!is.finite(nij) || !is.finite(wij)) {
+        ll[s, d] <- NA_real_; next
+      }
+      li <- lam[i]; lj <- lam[j]
+      if (!is.finite(li) || !is.finite(lj)) {
+        ll[s, d] <- NA_real_; next
+      }
+      denom <- li + lj
+      if (!is.finite(denom) || denom <= 0) {
+        # undefined p when both zero or negative/NaN
+        ll[s, d] <- NA_real_; next
+      }
+
+      p <- li / denom
+      # ensure p is in [0,1]; tiny numeric noise guard
+      if (!is.finite(p) || p < 0 || p > 1) {
+        ll[s, d] <- NA_real_; next
+      }
+
       ll[s, d] <- stats::dbinom(wij, size = nij, prob = p, log = TRUE)
     }
   }
