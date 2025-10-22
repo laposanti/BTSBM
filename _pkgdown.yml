@@ -1,9 +1,9 @@
 # _pkgdown.yml
 package: BTSBM
-title: "BTSBM:Bradley–Terry meets Stochastic Block Model"
+title: "BTSBM: Bradley–Terry Stochastic Block Model"
 url: https://laposanti.github.io/BTSBM/
 template:
-  bootstrap: 5
+  math-rendering: mathjax   
 home:
   title: "Bradley–Terry SBM"
   description: >

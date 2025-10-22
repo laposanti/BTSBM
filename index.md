@@ -1,5 +1,5 @@
 ---
-title: "BTSBM: Bradley–Terry Stochastic Block Model"
+title: 'BTSBM: Bradley–Terry Stochastic Block Model'
 ---
 
 # Overview

@@ -3,8 +3,8 @@ pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
-  Post_processing_BTSBM: Post_processing_BTSBM.html
-last_built: 2025-09-16T17:52Z
+  Notation: Notation.html
+last_built: 2025-10-22T16:05Z
 urls:
   reference: https://laposanti.github.io/BTSBM/reference
   article: https://laposanti.github.io/BTSBM/articles

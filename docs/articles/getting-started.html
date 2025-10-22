@@ -4,66 +4,87 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Getting started with BTSBM • BTSBM:Bradley–Terry meets Stochastic Block Model</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started with BTSBM">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getting started with BTSBM • BTSBM: Bradley–Terry Stochastic Block Model</title>
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Getting started with BTSBM">
+<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
 </head>
-<body>
-    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
+<body data-spy="scroll" data-target="#toc">
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <div class="container template-article">
+      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">BTSBM: Bradley–Terry Stochastic Block Model</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+      </span>
+    </div>
 
-    <a class="navbar-brand me-2" href="../index.html">BTSBM:Bradley–Terry meets Stochastic Block Model</a>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+<li>
+  <a href="../reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
-
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with BTSBM</a></li>
-    <li><a class="dropdown-item" href="../articles/Post_processing_BTSBM.html">Post-processing and Summary Plots for BT-SBM</a></li>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/getting-started.html">Getting started with BTSBM</a>
+    </li>
+    <li>
+      <a href="../articles/Notation.html">Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model</a>
+    </li>
   </ul>
 </li>
       </ul>
-<ul class="navbar-nav">
-<li class="nav-item"><form class="form-inline" role="search">
- <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
-</form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/laposanti/BTSBM/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/laposanti/BTSBM/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
       </ul>
 </div>
-
-
+<!--/.nav-collapse -->
   </div>
-</nav><div class="container template-article">
+<!--/.container -->
+</div>
+<!--/.navbar -->
 
 
 
-
-<div class="row">
-  <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Getting started with BTSBM</h1>
-                        <h4 data-toc-skip class="author">BTSBM
-authors</h4>
+      </header><div class="row">
+  <div class="col-md-9 contents">
+    <div class="page-header toc-ignore">
+      <h1 data-toc-skip>Getting started with BTSBM</h1>
+                        <h4 data-toc-skip class="author">Lapo Santi</h4>
             
-            <h4 data-toc-skip class="date">2025-09-16</h4>
+            <h4 data-toc-skip class="date">2025-10-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/laposanti/BTSBM/blob/HEAD/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
-      <div class="d-none name"><code>getting-started.Rmd</code></div>
+      <div class="hidden name"><code>getting-started.Rmd</code></div>
+
     </div>
 
     
@@ -76,138 +97,156 @@ but focuses on a single value of K and a single dataset to keep things
 simple and fast</p>
 <p>-simulate a sparse paired-comparison topology,</p>
 <p>-simulate latent blocks and block rates,</p>
-<p>-generate win counts
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">w_{ij}</annotation></semantics></math></p>
+<p>-generate win counts <span class="math inline">\(w_{ij}\)</span></p>
 <p>-run the clustered Gibbs sampler (gibbs_bt_sbm),</p>
 <p>-relabel and summarize (inference_helper),</p>
 <p>-compare the inferred partition to truth via VI distance.</p>
-<p>Helpers</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Random sparse match topology via Poisson counts on each unordered pair</span></span>
-<span><span class="va">sample_Nij</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_players</span>, <span class="va">lambda</span> <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span>
+<span><span class="co"># 2.1 Sparse-ish match topology</span></span>
+<span><span class="va">sample_Nij</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_players</span>, <span class="va">mean_matches</span> <span class="op">=</span> <span class="fl">10</span>, <span class="va">p_edge</span> <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">N</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="va">n_players</span>, <span class="va">n_players</span><span class="op">)</span></span>
 <span>  <span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/combn.html" class="external-link">combn</a></span><span class="op">(</span><span class="va">n_players</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span>  <span class="va">N_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="va">n_players</span>, <span class="va">n_players</span><span class="op">)</span></span>
-<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">pairs</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">m</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">pairs</span><span class="op">)</span></span>
+<span>  <span class="va">keep</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">p_edge</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="va">keep</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">pairs</span><span class="op">[</span><span class="fl">1</span>, <span class="va">k</span><span class="op">]</span>; <span class="va">j</span> <span class="op">&lt;-</span> <span class="va">pairs</span><span class="op">[</span><span class="fl">2</span>, <span class="va">k</span><span class="op">]</span></span>
-<span>    <span class="va">n_ij</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">lambda</span><span class="op">)</span></span>
-<span>    <span class="va">N_out</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">N_out</span><span class="op">[</span><span class="va">j</span>, <span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">n_ij</span></span>
+<span>    <span class="va">n_ij</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">mean_matches</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">n_ij</span> <span class="op">&gt;</span> <span class="fl">0L</span><span class="op">)</span> <span class="op">{</span> <span class="va">N</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">N</span><span class="op">[</span><span class="va">j</span>, <span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">n_ij</span> <span class="op">}</span></span>
 <span>  <span class="op">}</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">N_out</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
-<span>  <span class="va">N_out</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
+<span>  <span class="va">N</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># Map block rates to pairwise BT probabilities</span></span>
-<span><span class="va">from_lambda_to_theta</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="co"># Calculate theta</span></span>
-<span>  <span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span><span class="op">)</span></span>
-<span>  </span>
-<span>  <span class="co"># Replace -Inf values in theta with a very small number</span></span>
-<span>  <span class="va">theta</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.infinite</a></span><span class="op">(</span><span class="va">theta</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">theta</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">.Machine</span><span class="op">$</span><span class="va">double.xmin</span> <span class="co"># Replace with the smallest positive number</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">theta</span><span class="op">)</span></span>
+<span><span class="va">n</span>    <span class="op">&lt;-</span> <span class="fl">150</span></span>
+<span><span class="va">N_sim</span> <span class="op">&lt;-</span> <span class="fu">sample_Nij</span><span class="op">(</span><span class="va">n</span>, mean_matches <span class="op">=</span> <span class="fl">5</span>, p_edge <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="va">K</span><span class="op">=</span><span class="fl">4</span></span>
+<span><span class="va">x_star</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">K</span>,length.out<span class="op">=</span><span class="va">n</span><span class="op">)</span>    </span>
+<span></span>
+<span></span>
+<span><span class="va">lambda_to_theta</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/outer.html" class="external-link">outer</a></span><span class="op">(</span><span class="va">lambda</span>, <span class="va">lambda</span>, <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span> <span class="va">a</span> <span class="op">/</span> <span class="op">(</span><span class="va">a</span> <span class="op">+</span> <span class="va">b</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">make_lambda_geometric</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">K</span>, <span class="va">base</span><span class="op">=</span><span class="fl">1</span>, <span class="va">ratio</span><span class="op">=</span><span class="fl">2.3</span><span class="op">)</span> <span class="va">base</span> <span class="op">*</span> <span class="va">ratio</span><span class="op">^</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="va">K</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">lambda_star</span> <span class="op">&lt;-</span> <span class="fu">make_lambda_geometric</span><span class="op">(</span><span class="va">K</span>, base<span class="op">=</span><span class="fl">0.08</span>, ratio<span class="op">=</span><span class="fl">2.3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">theta_star</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lambda_to_theta.html">lambda_to_theta</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">lambda_star</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">theta_star</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;            [,1]      [,2]      [,3]      [,4]</span></span>
+<span><span class="co">#&gt; [1,] 0.50000000 0.6969697 0.8410175 0.9240526</span></span>
+<span><span class="co">#&gt; [2,] 0.30303030 0.5000000 0.6969697 0.8410175</span></span>
+<span><span class="co">#&gt; [3,] 0.15898251 0.3030303 0.5000000 0.6969697</span></span>
+<span><span class="co">#&gt; [4,] 0.07594744 0.1589825 0.3030303 0.5000000</span></span></code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># ---- generate outcome counts ----</span></span>
+<span><span class="va">w_ij</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
+<span><span class="va">idx</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">N_sim</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">N_sim</span> <span class="op">&gt;</span> <span class="fl">0L</span>, arr.ind <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">krow</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">idx</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">idx</span><span class="op">[</span><span class="va">krow</span>, <span class="fl">1</span><span class="op">]</span>; <span class="va">j</span> <span class="op">&lt;-</span> <span class="va">idx</span><span class="op">[</span><span class="va">krow</span>, <span class="fl">2</span><span class="op">]</span></span>
+<span>  <span class="va">nij</span> <span class="op">&lt;-</span> <span class="va">N_sim</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span></span>
+<span>  <span class="va">pij</span> <span class="op">&lt;-</span> <span class="va">theta_star</span><span class="op">[</span><span class="va">x_star</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">x_star</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">wij</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nij</span>, <span class="va">pij</span><span class="op">)</span></span>
+<span>  <span class="va">w_ij</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">wij</span></span>
+<span>  <span class="va">w_ij</span><span class="op">[</span><span class="va">j</span>, <span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">nij</span> <span class="op">-</span> <span class="va">wij</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<ol style="list-style-type: decimal">
-<li>Simulate one dataset (single K)</li>
-</ol>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">K</span> <span class="op">&lt;-</span> <span class="fl">4</span>                  <span class="co"># single K for this vignette</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span>                 <span class="co"># number of players/items</span></span>
-<span></span>
-<span><span class="va">N_ij</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
-<span><span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="kw">for</span><span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="op">(</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">n</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
-<span><span class="op">}</span></span>
-<span><span class="va">N_ij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span></span>
-<span></span>
-<span><span class="co"># ---------------------------</span></span>
-<span><span class="co"># 2) Assign each node to one of K clusters</span></span>
-<span><span class="co">#    (z_star[i] in {1,...,K})</span></span>
-<span><span class="co"># ---------------------------</span></span>
-<span><span class="va">x_star</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">K</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">lambda_star</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">2</span>, length.out<span class="op">=</span><span class="va">K</span><span class="op">)</span></span>
-<span><span class="va">theta_star</span> <span class="op">=</span> <span class="fu">from_lambda_to_theta</span><span class="op">(</span><span class="va">lambda_star</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ---------------------------</span></span>
-<span><span class="co"># 3) Generate adjacency Y_ij</span></span>
-<span><span class="co">#    using your binomial logic</span></span>
-<span><span class="co"># ---------------------------</span></span>
-<span><span class="va">w_ij</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="op">(</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw">if</span><span class="op">(</span><span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">{</span></span>
-<span>      <span class="kw">for</span><span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">N_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span><span class="op">)</span><span class="op">{</span></span>
-<span>        <span class="va">w_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">=</span> <span class="va">w_ij</span><span class="op">[</span><span class="va">i</span>,<span class="va">j</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="va">theta_star</span><span class="op">[</span><span class="va">x_star</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="va">x_star</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span>      <span class="op">}</span></span>
-<span>    <span class="op">}</span></span>
-<span>  <span class="op">}</span></span>
-<span><span class="op">}</span></span>
-<span><span class="co"># Mirror for lower triangle</span></span>
-<span><span class="va">w_ij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="va">N_ij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">N_ij</span><span class="op">)</span><span class="op">]</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">lower.tri</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li>Run the clustered Gibbs sampler (short chain)</li>
 </ol>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">T_iter</span> <span class="op">=</span> <span class="fl">4000</span></span>
+<span><span class="va">T_burn</span> <span class="op">=</span> <span class="fl">1000</span></span>
+<span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">BTSBM</span><span class="fu">::</span><span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
 <span>  w_ij   <span class="op">=</span> <span class="va">w_ij</span>,</span>
-<span>  n_ij   <span class="op">=</span> <span class="va">N_ij</span>,</span>
-<span>  a      <span class="op">=</span> <span class="fl">0.01</span>, b <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  a <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  prior  <span class="op">=</span> <span class="st">"GN"</span>,       <span class="co"># "DP", "PY", "DM", or "GN"</span></span>
 <span>  gamma_GN <span class="op">=</span>  <span class="fl">0.8</span>,</span>
-<span>  n_iter <span class="op">=</span> <span class="fl">1000</span>, burnin <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>  T_iter <span class="op">=</span> <span class="va">T_iter</span>, </span>
+<span>  T_burn <span class="op">=</span> <span class="va">T_burn</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">T</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Iteration: 200 - #occupied = 6 </span></span>
-<span><span class="co">#&gt; Iteration: 400 - #occupied = 4 </span></span>
-<span><span class="co">#&gt; Iteration: 600 - #occupied = 4 </span></span>
-<span><span class="co">#&gt; Iteration: 800 - #occupied = 4 </span></span>
-<span><span class="co">#&gt; Iteration: 1000 - #occupied = 4</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; iter 1000 occupied = 4 </span></span>
+<span><span class="co">#&gt; iter 2000 occupied = 4 </span></span>
+<span><span class="co">#&gt; iter 3000 occupied = 4 </span></span>
+<span><span class="co">#&gt; iter 4000 occupied = 4</span></span></code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Relabel and summarize</li>
 </ol>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inference_helper.html">inference_helper</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">out</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Average number of clusters, and distribution over #clusters</span></span>
-<span><span class="va">post</span><span class="op">$</span><span class="va">avg_n_clusters</span></span>
-<span><span class="co">#&gt; [1] 4.02</span></span></code></pre></div>
-<p>Posterior similarity matrix (PSM):</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="va">psm</span> <span class="op">&lt;-</span> <span class="va">post</span><span class="op">$</span><span class="va">co_clustering</span></span>
-<span><span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">x_star</span>, decreasing <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>   <span class="co"># or TRUE if you prefer</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">psm</span><span class="op">[</span><span class="va">o</span>, <span class="va">o</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"Posterior Similarity Matrix"</span>, axes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;"></p>
+<span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu">BTSBM</span><span class="fu">::</span><span class="fu"><a href="../reference/relabel_by_lambda.html">relabel_by_lambda</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">out</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">n_clusters_each_iter</span><span class="op">[</span><span class="op">(</span><span class="va">T_burn</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">T_iter</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>K <span class="op">=</span> <span class="va">Var1</span>, count <span class="op">=</span> <span class="va">Freq</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    K <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">K</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    prob <span class="op">=</span> <span class="va">count</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">count</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">K</span>, y <span class="op">=</span> <span class="va">prob</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    x <span class="op">=</span> <span class="st">"K"</span>,</span>
+<span>    y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu">Pr</span><span class="op">(</span><span class="va">K</span><span class="op">==</span><span class="va">k</span> <span class="op">~</span> <span class="st">"|"</span> <span class="op">~</span> <span class="va">W</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    title <span class="op">=</span> <span class="st">"Posterior distribution of K"</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;"></p>
 <ol start="4" style="list-style-type: decimal">
 <li>Compare partitions to truth (VI distance)</li>
 </ol>
 <p>We compute VI distances for the minVI and Binder partitions against
 the true labels z_star.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">vi_minvi</span>  <span class="op">&lt;-</span> <span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/vi.dist.html" class="external-link">vi.dist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span>,   <span class="va">x_star</span><span class="op">)</span></span>
-<span><span class="va">vi_exp</span> <span class="op">&lt;-</span> <span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/vi.dist.html" class="external-link">vi.dist</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">partition_expected</span>,  <span class="va">x_star</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>VI_minVI <span class="op">=</span> <span class="va">vi_minvi</span>, vi_exp <span class="op">=</span> <span class="va">vi_exp</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  VI_minVI    vi_exp </span></span>
-<span><span class="co">#&gt; 0.1205321 0.1205321</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">point_estimate_VI</span> <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">partition_binder</span></span>
+<span><span class="fu">mcclust</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mcclust/man/arandi.html" class="external-link">arandi</a></span><span class="op">(</span><span class="va">point_estimate_VI</span>, <span class="va">x_star</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] 1</span></span></code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>Plot reordered adjacency matrix</li>
+</ol>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>,</span>
+<span>                     w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;"></p>
+<ol start="6" style="list-style-type: decimal">
+<li>Plot assignment uncertainty</li>
+</ol>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_assignment_probabilities.html">plot_assignment_probabilities</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;"></p>
+<ol start="7" style="list-style-type: decimal">
+<li>Plot lambda uncertainty</li>
+</ol>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_lambda_uncertainty.html">plot_lambda_uncertainty</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span>, clean_fun <span class="op">=</span> <span class="va">clean_players_names</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;"></p>
 </div>
-  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
-    </nav></aside>
+  </div>
+
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+
+      </div>
+
 </div>
 
 
 
-    <footer><div class="pkgdown-footer-left">
-  <p>Developed by Lapo Santi.</p>
+      <footer><div class="copyright">
+  <p></p>
+<p>Developed by Lapo Santi.</p>
 </div>
 
-<div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<div class="pkgdown">
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
-    </footer>
+      </footer>
 </div>
+
 
 
 
