@@ -85,7 +85,7 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>This vignette shows a minimal workflow with the <code>BTSBM</code>
-functions. We take the 2017 Men’s ATP season, as in the paper for
+functions. We use as illustrative dataset the 2017 Men’s ATP season for
 convenience.</p>
 <div class="section level3">
 <h3 id="set-up-the-data">Set up the data<a class="anchor" aria-label="anchor" href="#set-up-the-data"></a>
@@ -107,7 +107,7 @@ design. In practice, sparse rows/columns correspond to players with few
 matches.</p>
 </div>
 <div class="section level3">
-<h3 id="set-the-prior-hyperparameters">Set the prior Hyperparameters<a class="anchor" aria-label="anchor" href="#set-the-prior-hyperparameters"></a>
+<h3 id="prior-elicitation">Prior elicitation<a class="anchor" aria-label="anchor" href="#prior-elicitation"></a>
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Gamma hyper.</span></span>
@@ -131,7 +131,7 @@ noisy.</p>
 <pre><code><span><span class="co">#&gt; [1] 45.95132</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="run-the-clustered-gibbs-sampler-short-chain">Run the clustered Gibbs sampler (short chain)<a class="anchor" aria-label="anchor" href="#run-the-clustered-gibbs-sampler-short-chain"></a>
+<h3 id="run-the-mcmc">Run the MCMC<a class="anchor" aria-label="anchor" href="#run-the-mcmc"></a>
 </h3>
 <p>We now draw samples from the joint posterior distribution using a
 collapsed Gibbs sampler. In this simplified demonstration the chain
@@ -282,7 +282,7 @@ between players as well.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://github.com/laposanti" class="external-link">Lapo Santi</a>.</p>
+  <p>Developed by <a href="https://github.com/laposanti" class="external-link">Lapo Santi</a>, <a href="https://maths.ucd.ie/~nial/" class="external-link">Nial Friel</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
