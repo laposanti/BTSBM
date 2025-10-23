@@ -16,7 +16,7 @@
 #' @param prior Character scalar, one of \code{"DP"}, \code{"PY"}, \code{"DM"}, \code{"GN"}.
 #' @param alpha_PY,sigma_PY Hyperparameters for Pitman–Yor / Dirichlet Process.
 #'   For \code{prior="DP"} use \code{alpha_PY} (with \code{sigma_PY} ignored).
-#'   For \code{prior="PY"} use both \code{alpha_PY} and \code{sigma_PY \in (0,1)}.
+#'   For \code{prior="PY"} use both \code{alpha_PY} and \code{sigma_PY in (0,1)}.
 #' @param beta_DM,K_DM Hyperparameters for the finite Dirichlet–Multinomial prior.
 #'   \code{K_DM} is the maximum number of allowed clusters.
 #' @param gamma_GN Hyperparameter for the Gnedin prior.

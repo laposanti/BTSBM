@@ -1,5 +1,5 @@
 ---
-title: "Getting started with BTSBM"
+title: "Getting started with BTSBM: the R package for the BT-SBM paper"
 author: "Lapo Santi"
 date: "`r Sys.Date()`"
 output:
@@ -45,86 +45,56 @@ library(tidyr)
 
 # Overview
 
-This vignette replicates the spirit of a larger simulation pipeline, but focuses on a single value of K and a single dataset to keep things simple and fast
-
--simulate a sparse paired-comparison topology,
-
--simulate latent blocks and block rates,
-
--generate win counts $w_{ij}$
-
--run the clustered Gibbs sampler (gibbs_bt_sbm),
-
--relabel and summarize (inference_helper),
-
--compare the inferred partition to truth via VI distance.
+This vignette shows a minimal workflow with the `BTSBM` functions. We take the 2017 Men's ATP season, as in the paper for convenience. 
 
 
-
-
+## Set up the data
 
 ```{r}
-set.seed(12)
-# 2.1 Sparse-ish match topology
-sample_Nij <- function(n_players, mean_matches = 10, p_edge = 0.5) {
-  N <- matrix(0L, n_players, n_players)
-  pairs <- utils::combn(n_players, 2)
-  m     <- ncol(pairs)
-  keep  <- which(runif(m) < p_edge)
-  for (k in keep) {
-    i <- pairs[1, k]; j <- pairs[2, k]
-    n_ij <- rpois(1, mean_matches)
-    if (n_ij > 0L) { N[i, j] <- N[j, i] <- n_ij }
-  }
-  diag(N) <- 0L
-  N
-}
+#choosing the 2017 season
+w_ij = ATP_2000_2022$`2017`$Y_ij
 
-n    <- 150
-N_sim <- sample_Nij(n, mean_matches = 5, p_edge = 0.5)
-K=4
-x_star <- rep(1:K,length.out=n)    
+#quick look at the matrix
+head(w_ij[1:3,1:3])
+```
+Each entry (`w_{ij}`) counts how many matches player (`i`) won against (`j`) in the chosen season. The matrix is directed (wins aren’t symmetric), and the diagonal is zero by design. In practice, sparse rows/columns correspond to players with few matches.
 
+## Set the prior Hyperparameters
 
-lambda_to_theta = function(lambda){
-  outer(lambda, lambda, function(a, b) a / (a + b))
-}
+```{r}
+# Gamma hyper.
+a_strength = 2 # robust choice
+```
 
-make_lambda_geometric <- function(K, base=1, ratio=2.3) base * ratio^(0:(K-1))
-lambda_star <- make_lambda_geometric(K, base=0.08, ratio=2.3)
+Choosing a prior on ($K$). The number of clusters is unknown. on (K) to let the data negotiate between parsimony (few blocks) and expressiveness (many blocks). This also curbs the classic tendency of mixture-like models to over-split when data are noisy.
 
-theta_star  <- lambda_to_theta(rev(lambda_star))
-theta_star
+```{r}
+#Gnedin model chosen (Other possible choices "DM", "PY", "DP")
+prior = 'GN'
+gamma_GN = 0.8
+n = nrow(w_ij)
+#check E[K | gamma, n]
+round(gnedin_K_mean(n,gamma_GN))
+
+#check Var[K | gamma, n]
+gnedin_K_var(n,gamma_GN)
 ```
 
 
-```{r}
-# ---- generate outcome counts ----
-w_ij <- matrix(0L, n, n)
-idx  <- which(upper.tri(N_sim) & N_sim > 0L, arr.ind = TRUE)
-for (krow in seq_len(nrow(idx))) {
-  i <- idx[krow, 1]; j <- idx[krow, 2]
-  nij <- N_sim[i, j]
-  pij <- theta_star[x_star[i], x_star[j]]
-  wij <- rbinom(1, nij, pij)
-  w_ij[i, j] <- wij
-  w_ij[j, i] <- nij - wij
-}
+## Run the clustered Gibbs sampler (short chain)
 
-```
-
-2) Run the clustered Gibbs sampler (short chain)
+We now draw samples from the joint posterior distribution using a collapsed Gibbs sampler. In this simplified demonstration the chain length is intentionally short; in empirical applications, longer runs or parallel chains are recommended.
 
 ```{r}
-
-T_iter = 4000
-T_burn = 1000
+set.seed(123)
+T_iter = 10000 #for real use set it to 30,000
+T_burn = 2000
 
 out <- BTSBM::gibbs_bt_sbm(
   w_ij   = w_ij,
-  a = 4,
-  prior  = "GN",       # "DP", "PY", "DM", or "GN"
-  gamma_GN =  0.8,
+  a = a_strength,
+  prior  = prior,       # "DP", "PY", "DM", or "GN"
+  gamma_GN =  gamma_GN,
   T_iter = T_iter, 
   T_burn = T_burn,
   verbose = T
@@ -132,49 +102,46 @@ out <- BTSBM::gibbs_bt_sbm(
 ```
 
 
-3) Relabel and summarize
+## Relabel and summarize
+
+The posterior distribution of latent block-assignments is invariant under permutations of cluster labels. Consequently, averaging or summarizing raw samples is meaningless without post-processing. Relabeling methods align label permutations across iterations, enabling consistent summaries of cluster-specific parameters.
 
 ```{r}
 library(dplyr)
 library(ggplot2)
-
+library(kableExtra)
 post <- BTSBM::relabel_by_lambda(out$x_samples, out$lambda_samples)
 
-
-as.data.frame(table(post$n_clusters_each_iter[(T_burn + 1):T_iter])) %>%
-  rename(K = Var1, count = Freq) %>%
-  mutate(
-    K = as.integer(as.character(K)),
-    prob = count / sum(count)
-  ) %>%
-  ggplot(aes(x = K, y = prob)) +
-  geom_col() +
-  theme_minimal() +
-  labs(
-    x = "K",
-    y = expression(Pr(K==k ~ "|" ~ W)),
-    title = "Posterior distribution of K"
-  )
+# Pretty table of the K posterior distribution
+pretty_table_K_distribution(post)
 ```
+## Obtain point estimates
 
-4) Compare partitions to truth (VI distance)
-
-We compute VI distances for the minVI and Binder partitions against the true labels z_star.
+Partition estimates such as the Binder or Minimum Variation of Information (MinVI) losses are the state-of-the-art point estimate methods for partition samples. Binder’s loss tends to favor slightly finer partitions, while MinVI is more conservative. Comparing these estimates provides insight into the stability of the inferred grouping structure.
 
 ```{r}
-point_estimate_VI = post$partition_binder
-mcclust::arandi(point_estimate_VI, x_star)
+x_binder <- post$partition_binder #partition with Binder loss
+table(x_binder) #Block sizes
+
+x_minVI <- post$minVI_partition #partition with MIN-VI loss
+table(x_minVI) #Block sizes
 ```
 
-5) Plot reordered adjacency matrix
+
+## Plot reordered adjacency matrix
+
+The reordered adjacency matrix reveals the empirical interaction pattern between inferred blocks. Dark-green colour in the right off-diagonal region correspond to high winning proportions, while uniform colours along the main diagonal indicate balanced competitiveness within clusters. This visualization serves as a qualitative validation of the inferred block structure.
 
 ```{r}
+
 plot_block_adjacency(fit = post,
                      w_ij = w_ij)
 ```
 
 
-6) Plot assignment uncertainty        
+## Plot assignment uncertainty        
+
+Posterior probabilities of assignment $p(x_i = k | W)$ quantify the uncertainty of player-to-block allocations. High uncertainty for certain individuals typically signals boundary cases or transitional players whose performance profile lies between different clusters.
 
 ```{r}
 plot_assignment_probabilities(fit = post, w_ij = w_ij)
@@ -182,7 +149,9 @@ plot_assignment_probabilities(fit = post, w_ij = w_ij)
 
 
 
-7) Plot lambda uncertainty        
+## Plot lambda uncertainty        
+
+Posterior uncertainty in $\lambda_{x_i}$, the strength of player i. Since all players assigned to the same block share the same $\lambda$, the uncertainty here is driven by the assignment uncertainty. Reporting credible intervals gives a precise idea of the relative strength differences between clusters, and between players as well.
 
 ```{r}
 plot_lambda_uncertainty(fit = post, w_ij = w_ij, clean_fun = clean_players_names)

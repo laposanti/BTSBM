@@ -7,7 +7,7 @@
 gibbs_bt_simple(
   w_ij,
   a = 0.01,
-  b = 1,
+  b = 0.1,
   T_iter = 5000,
   T_burn = 1000,
   verbose = TRUE

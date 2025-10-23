@@ -35,8 +35,8 @@
 #'   }
 #'
 #' @details
-#' The player ordering in `players_df` defines the row/column indexing of
-#' `Y_ij` and `N_ij` for the corresponding year. The diagonal entries of both
+#' The player ordering in \code{players_df} defines the row/column indexing of
+#' \code{Y_ij} and \code{N_ij} for the corresponding year. The diagonal entries of both
 #' matrices are zero by definition. In typical usage for Bradley–Terry-type
 #' models, one can treat \code{Y_ij[i, j]} as the number of “successes” for
 #' \eqn{i} vs. \eqn{j}, with the binomial denominator \code{N_ij[i, j]}.

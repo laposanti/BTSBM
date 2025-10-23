@@ -10,7 +10,6 @@
 #' @param clean_fun Optional function to prettify player names. Default: identity.
 #' @param palette Named colors for blocks (as character vector). Defaults to a
 #'   Wimbledon-ish palette.
-#' @param max_n_clust Where to filter the mcmc x_t. If not specified we use the modal K
 #' @param fill_low,fill_high Colors for the heatmap gradient low/high.
 #' @return A \code{ggplot} object.
 #' @examples
@@ -142,7 +141,7 @@ plot_block_adjacency <- function(
 plot_assignment_probabilities <- function(
     fit,
     w_ij = NULL,
-    max_n_clust=NULL,
+    max_n_clust= NULL,
     clean_fun = clean_players_names,
     k_show = NULL,
     fill_low = "#FFFFCC",

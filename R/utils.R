@@ -619,3 +619,61 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
 lambda_to_theta <- function(lambda) {
   outer(lambda, lambda, function(a, b) a / (a + b))
 }
+
+
+
+
+#' Format a block-count posterior distribution as a pretty- table
+#'
+#' Given the output of relabel_by_lambda, this function produces a pretty table
+#' with the posterior distribution of K, the number of blocks induced by the partition x.
+#' It formats the result with `knitr::kable` and `kableExtra::kable_styling`.
+#'
+#' @param post The output of relabel_by_lambda()
+#' @param p_min Numeric scalar. Probabilities \eqn{\le} this threshold are
+#'   dropped before pivoting. Defaults to \code{0.05}.
+#' @param format Character string. The format of the output table.
+#' Default is "html". Switch to "latex" for a document-ready table.
+#' @param digits Integer passed to \code{knitr::kable} for rounding. Defaults to \code{3}.
+#' @param latex_options Character vector of LaTeX options passed to
+#'   \code{kableExtra::kable_styling}. Defaults to \code{c("striped","hold_position")}.
+#'
+#' @return A \code{kableExtra} / \code{knitr_kable} object (suitable for LaTeX or HTML,
+#'   depending on \code{format}).
+#'
+#' @details
+#' The function produces a pretty table with the posterior distribution of K,
+#' the number of blocks induced by the partition x.
+#' it filters the clusters that have a p(K > \code{p_min}).
+#'
+#'
+#' @importFrom dplyr select filter
+#' @importFrom tidyr pivot_wider
+#' @importFrom tidyselect all_of
+#' @importFrom knitr kable
+#' @importFrom kableExtra kable_styling
+#' @export
+pretty_table_K_distribution <- function(
+    post,
+    format = 'html',
+    p_min   = 0.05,
+    digits     = 3,
+    latex_options = c("striped", "hold_position")
+) {
+  # sanity checks
+
+  df_wide <-
+    post$block_count_distribution |>
+    dplyr::select(
+      num_blocks = num_blocks,
+      prob       = prob
+    ) |>
+    dplyr::filter(prob > p_min) |>
+    tidyr::pivot_wider(
+      names_from  = num_blocks,
+      values_from = prob
+    )
+
+  knitr::kable(df_wide, digits = digits,format = format) |>
+    kableExtra::kable_styling(latex_options = latex_options)
+}

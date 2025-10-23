@@ -25,8 +25,6 @@ plot_block_adjacency(
 Wimbledon-ish palette.}
 
 \item{fill_low, fill_high}{Colors for the heatmap gradient low/high.}
-
-\item{max_n_clust}{Where to filter the mcmc x_t. If not specified we use the modal K}
 }
 \value{
 A \code{ggplot} object.
