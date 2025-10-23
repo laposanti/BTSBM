@@ -79,9 +79,9 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div class="section level1">
-<div class="page-header"><h1 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
-</h1></div>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
 <p><strong>BTSBM</strong> implements Bayesian inference for the <em>Bradley–Terry Stochastic Block Model</em> (BT–SBM),<br>
 combining <strong>pairwise comparison data</strong> with <strong>latent block clustering</strong> of items.</p>
 <p>The package provides:</p>
@@ -92,17 +92,17 @@ combining <strong>pairwise comparison data</strong> with <strong>latent block cl
 </ol>
 <p>Applications include <strong>sports analytics</strong>, <strong>psychometrics</strong>, and <strong>ranking problems</strong> with hidden group structure.</p>
 <hr>
-<div class="section level2">
-<h2 id="quick-links">Quick Links<a class="anchor" aria-label="anchor" href="#quick-links"></a>
-</h2>
+<div class="section level3">
+<h3 id="quick-links">Quick Links<a class="anchor" aria-label="anchor" href="#quick-links"></a>
+</h3>
 <p>For a complete overview of all functions, see the 👉 <a href="https://laposanti.github.io/BTSBM/reference/index.html">Function Reference</a><br>
 For a step-by-step example using tennis data, visit the 👉 <a href="https://laposanti.github.io/BTSBM/articles/getting-started.html">Getting Started Vignette</a></p>
 <hr>
 </div>
 </div>
-<div class="section level1">
-<h1 id="when-to-use-btsbm">When to Use BTSBM<a class="anchor" aria-label="anchor" href="#when-to-use-btsbm"></a>
-</h1>
+<div class="section level2">
+<h2 id="when-to-use-btsbm">When to Use BTSBM<a class="anchor" aria-label="anchor" href="#when-to-use-btsbm"></a>
+</h2>
 <p>Use this model whenever outcomes can be summarized as <em>pairwise preferences</em> (<code>i</code> beats <code>j</code>):</p>
 <table class="table">
 <thead><tr class="header">
@@ -136,9 +136,9 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <p>From now on, we will adopt a sport-related jargon for simplicity, but this framework well adapts to the aforementioned contexts as well.</p>
 <hr>
 </div>
-<div class="section level1">
-<h1 id="required-inputs">Required Inputs<a class="anchor" aria-label="anchor" href="#required-inputs"></a>
-</h1>
+<div class="section level2">
+<h2 id="required-inputs">Required Inputs<a class="anchor" aria-label="anchor" href="#required-inputs"></a>
+</h2>
 <p>To fit the model, you need one object:</p>
 <div class="section level3">
 <h3 id="w-pairwise-interaction-matrix">
@@ -168,12 +168,12 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <code class="sourceCode R"><span><span class="co"># items: A, B, C, D</span></span>
 <span><span class="co"># w[i, j] = number of times i beat j</span></span>
 <span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span>, <span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">2</span>,</span>
-<span>     <span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">4</span>, <span class="fl">0</span>,</span>
-<span>     <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>,</span>
-<span>     <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">0</span> <span class="op">)</span>,</span>
-<span>  nrow <span class="op">=</span> <span class="fl">4</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span>, <span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">2</span>,</span>
+<span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">4</span>, <span class="fl">0</span>,</span>
+<span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>,</span>
+<span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">0</span> <span class="op">)</span>,</span>
+<span>nrow <span class="op">=</span> <span class="fl">4</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div style="flex: 1;">
@@ -182,12 +182,12 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <code class="sourceCode R"><span><span class="co"># one comparison per pair observed (0/1 wins)</span></span>
 <span><span class="co"># w[i, j] is binary</span></span>
 <span><span class="va">w_bin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>,</span>
-<span>     <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span>,</span>
-<span>     <span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>,</span>
-<span>     <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">0</span> <span class="op">)</span>,</span>
-<span>  nrow <span class="op">=</span> <span class="fl">4</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>,</span>
+<span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span>,</span>
+<span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>,</span>
+<span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">0</span> <span class="op">)</span>,</span>
+<span>nrow <span class="op">=</span> <span class="fl">4</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -195,9 +195,9 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <hr>
 </div>
 </div>
-<div class="section level1">
-<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h1>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
@@ -205,9 +205,9 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
-<div class="section level1">
-<h1 id="minimal-example">Minimal Example<a class="anchor" aria-label="anchor" href="#minimal-example"></a>
-</h1>
+<div class="section level2">
+<h2 id="minimal-example">Minimal Example<a class="anchor" aria-label="anchor" href="#minimal-example"></a>
+</h2>
 <p>Let’s fit the BT–SBM with a Gnedin prior on 2017 ATP season data:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># choosing the 2017 season</span></span>
@@ -215,12 +215,12 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <span></span>
 <span><span class="co"># fit the model</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
-<span>  <span class="va">w_ij</span>,</span>
-<span>  a <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
-<span>  n_iter <span class="op">=</span> <span class="fl">500</span>,</span>
-<span>  burnin <span class="op">=</span> <span class="fl">250</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="va">w_ij</span>,</span>
+<span>a <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
+<span>n_iter <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>burnin <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># relabel output</span></span>
@@ -228,15 +228,14 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <span></span>
 <span><span class="co"># plot adjacency matrix</span></span>
 <span><span class="fu"><a href="reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
-<div align="center">
-<p><img src="inst/geom_adjacency_fixed.png" alt="Reordered Adjacency Matrix" width="70%"></p>
-<p><em>Reordered adjacency matrix highlighting inferred block structure.</em></p>
+<div class="float">
+<img src="reference/figures/geom_adjacency_fixed.png" alt="Reordered Adjacency matrix"><div class="figcaption">Reordered Adjacency matrix</div>
 </div>
 <hr>
 </div>
-<div class="section level1">
-<h1 id="workflow-at-a-glance">Workflow at a Glance<a class="anchor" aria-label="anchor" href="#workflow-at-a-glance"></a>
-</h1>
+<div class="section level2">
+<h2 id="workflow-at-a-glance">Workflow at a Glance<a class="anchor" aria-label="anchor" href="#workflow-at-a-glance"></a>
+</h2>
 <ol style="list-style-type: decimal">
 <li>
 <strong>Prepare input matrix</strong> <code>w</code>
@@ -253,16 +252,16 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 </ol>
 <hr>
 </div>
-<div class="section level1">
-<h1 id="learn-more">Learn More<a class="anchor" aria-label="anchor" href="#learn-more"></a>
-</h1>
+<div class="section level2">
+<h2 id="learn-more">Learn More<a class="anchor" aria-label="anchor" href="#learn-more"></a>
+</h2>
 <p>👉 <a href="https://laposanti.github.io/BTSBM/reference/index.html">Function Reference</a></p>
 <p>👉 <a href="https://laposanti.github.io/BTSBM/articles/getting-started.html">Getting Started Vignette</a></p>
 <hr>
 </div>
-<div class="section level1">
-<h1 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
-</h1>
+<div class="section level2">
+<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h2>
 <p>Santi, L., &amp; Friel, N. (2025). <em>The Bradley–Terry Stochastic Block Model.</em> Working paper, University College Dublin.</p>
 <hr>
 </div>
@@ -278,19 +277,18 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 </ul>
 </div>
 
+<div class="table-of-contents">
+<h2 data-toc-skip>Table of contents</h2>
+<ul class="list-unstyled">
+<li><nav id="toc"></nav></li>
+</ul>
+</div>
+
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
 <li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
-</ul>
-</div>
-
-
-<div class="citation">
-<h2 data-toc-skip>Citation</h2>
-<ul class="list-unstyled">
-<li><a href="authors.html#citation">Citing BTSBM</a></li>
 </ul>
 </div>
 
