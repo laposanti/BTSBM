@@ -78,59 +78,94 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
 <div class="section level1">
 <div class="page-header"><h1 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h1></div>
-<p><strong>BTSBM</strong> implements Bayesian inference for the <em>Bradley–Terry Stochastic Block Model</em> (BT–SBM), a model that combines <strong>pairwise comparison data</strong> with <strong>block clustering</strong> of items.</p>
+<p><strong>BTSBM</strong> implements Bayesian inference for the <em>Bradley–Terry Stochastic Block Model</em> (BT–SBM),<br>
+combining <strong>pairwise comparison data</strong> with <strong>latent block clustering</strong> of items.</p>
 <p>The package provides:</p>
 <ol style="list-style-type: decimal">
-<li><p>Gibbs-type MCMC samplers for inference on the posterior distribution;</p></li>
-<li><p>Posterior relabeling and model diagnostics;</p></li>
-<li><p>Visualization tools for cluster assignments and block interaction strengths.</p></li>
+<li><p>⚙️ Gibbs-type MCMC samplers for posterior inference</p></li>
+<li><p>🎯 Posterior relabeling, point estimates and uncertainty quantification</p></li>
+<li><p>🌐 Visualization tools for clusters and block interactions</p></li>
 </ol>
 <p>Applications include <strong>sports analytics</strong>, <strong>psychometrics</strong>, and <strong>ranking problems</strong> with hidden group structure.</p>
-<p>➡️ Jump directly to:</p>
-<ul>
-<li><p>The complete list of functions provided : <a href="https://laposanti.github.io/BTSBM/reference/index.html">Function Reference</a></p></li>
-<li><p>A vignette where a minimal workflow is provided: <a href="https://laposanti.github.io/BTSBM/articles/getting-started.html">Getting Started Vignette</a></p></li>
-</ul>
 <hr>
 <div class="section level2">
-<h2 id="when-this-applies">When this applies<a class="anchor" aria-label="anchor" href="#when-this-applies"></a>
+<h2 id="quick-links">Quick Links<a class="anchor" aria-label="anchor" href="#quick-links"></a>
 </h2>
-<p>Use this model whenever outcomes can be summarized as pairwise wins/losses or preferences:</p>
-<ul>
-<li>Sports &amp; games: player/team <code>i</code> beats <code>j</code>.</li>
-<li>Information retrieval / ranking: document <code>i</code> preferred to <code>j</code> by a judge/user.</li>
-<li>A/B testing at scale: variant <code>i</code> preferred over <code>j</code> in head-to-head trials.</li>
-<li>Psychometrics &amp; sensory studies: stimulus <code>i</code> chosen over <code>j</code>.</li>
-<li>Model selection by humans: method <code>i</code> judged better than <code>j</code>.</li>
-</ul>
-<p>The model only requires that each comparison yields a binary outcome (“<code>i</code> over <code>j</code>”), possibly repeated and aggregated into counts.</p>
+<p>For a complete overview of all functions, see the 👉 <a href="https://laposanti.github.io/BTSBM/reference/index.html">Function Reference</a><br>
+For a step-by-step example using tennis data, visit the 👉 <a href="https://laposanti.github.io/BTSBM/articles/getting-started.html">Getting Started Vignette</a></p>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="required-inputs">Required Inputs<a class="anchor" aria-label="anchor" href="#required-inputs"></a>
-</h2>
-<p>Required inputs</p>
-<p>To fit the model, provide aggregated pairwise comparison data as a square matrix:</p>
+</div>
+<div class="section level1">
+<h1 id="when-to-use-btsbm">When to Use BTSBM<a class="anchor" aria-label="anchor" href="#when-to-use-btsbm"></a>
+</h1>
+<p>Use this model whenever outcomes can be summarized as <em>pairwise preferences</em> (<code>i</code> beats <code>j</code>):</p>
+<table class="table">
+<thead><tr class="header">
+<th align="left">Domain</th>
+<th align="left">Example</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">⚽ Sports &amp; games</td>
+<td align="left">Player <code>i</code> beats player <code>j</code>
+</td>
+</tr>
+<tr class="even">
+<td align="left">🔍 Information retrieval</td>
+<td align="left">Document <code>i</code> preferred to <code>j</code>
+</td>
+</tr>
+<tr class="odd">
+<td align="left">🧠 Psychometrics</td>
+<td align="left">Stimulus <code>i</code> chosen over <code>j</code>
+</td>
+</tr>
+<tr class="even">
+<td align="left">🧪 A/B testing</td>
+<td align="left">Variant <code>i</code> performs better than <code>j</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Only a binary outcome per pair (“<code>i</code> over <code>j</code>”) is required — possibly aggregated into counts.</p>
+<p>From now on, we will adopt a sport-related jargon for simplicity, but this framework well adapts to the aforementioned contexts as well.</p>
+<hr>
+</div>
+<div class="section level1">
+<h1 id="required-inputs">Required Inputs<a class="anchor" aria-label="anchor" href="#required-inputs"></a>
+</h1>
+<p>To fit the model, you need one object:</p>
+<div class="section level3">
+<h3 id="w-pairwise-interaction-matrix">
+<code>w</code>: pairwise interaction matrix<a class="anchor" aria-label="anchor" href="#w-pairwise-interaction-matrix"></a>
+</h3>
+<p><em>It is as a directed weighted adjacency matrix of preferences.</em></p>
 <ul>
-<li><p><code>w</code>: an (<code>n \times n</code>) matrix of wins/preferences, where <code>w[i, j]</code> is the number of times item (<code>i</code>) is preferred to item (<code>j</code>).</p></li>
-<li><p>Diagonal entries must be 0: <code>w[i, i] = 0</code> for all (<code>i</code>).</p></li>
+<li>Square matrix (<code>n × n</code>), where <code>w[i, j]</code> = number of times player <em>i</em> beats <em>j</em><br>
+</li>
+<li>Diagonal must be 0 (<code>w[i, i] = 0</code>)<br>
+</li>
+<li>For each unordered pair <code>{i,j}</code>:<br>
+( n_{ij} = w_{ij} + w_{ji} )</li>
 </ul>
-<p>It follows that, for each unordered pair (<code>{i,j}</code>), the total number of comparisons is <code>n_{ij} ;=; w_{ij} + w_{ji}</code>, with <code>n_{ij} \in N</code> and <code>n{ii}=0</code>. Throughout, we use the language of competition (e.g., “player (<code>i</code>) beats player (<code>j</code>)”), but the same structure applies to any pairwise comparison task (products, algorithms, stimuli, judges’ preferences, etc.).</p>
-<p>What entries mean</p>
-<ul>
-<li><p><code>w[i, j] = k</code> means item <code>i</code> beat/was preferred to <code>j</code> exactly <code>k</code> times.</p></li>
-<li><p>Binary data from single encounters are a special case: <code>w[i, j] ∈ {0,1}</code> and <code>w[i, j] + w[j, i] = 1</code> if they were compared once (or 0 if never compared).</p></li>
-</ul>
-<p>Examples of <code>w</code></p>
-<ol style="list-style-type: upper-alpha">
-<li>Aggregated counts (general case)</li>
-</ol>
+<hr>
+<p>Good idea — putting them <em>side by side</em> makes the comparison immediate. In <strong>R Markdown / HTML vignettes</strong>, you can’t use Markdown tables with code blocks directly (they break rendering), but you can use a small chunk of <strong>HTML</strong> safely inside Markdown.</p>
+<p>Here’s a clean version that displays the two code examples next to each other in two equal-width columns:</p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+</h3>
+<div style="display: flex; gap: 1.5em;">
+<div style="flex: 1;">
+<p><strong>(A) Aggregated counts</strong></p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># items: A, B, C, D</span></span>
+<code class="sourceCode R"><span><span class="co"># items: A, B, C, D</span></span>
 <span><span class="co"># w[i, j] = number of times i beat j</span></span>
 <span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span>, <span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">2</span>,</span>
@@ -140,12 +175,12 @@
 <span>  nrow <span class="op">=</span> <span class="fl">4</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<ol start="2" style="list-style-type: upper-alpha">
-<li>Binary outcomes (single round)</li>
-</ol>
+</div>
+<div style="flex: 1;">
+<p><strong>(B) Binary outcomes</strong></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># one comparison per pair observed (0/1 wins)</span></span>
+<code class="sourceCode R"><span><span class="co"># one comparison per pair observed (0/1 wins)</span></span>
+<span><span class="co"># w[i, j] is binary</span></span>
 <span><span class="va">w_bin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>,</span>
 <span>     <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span>,</span>
@@ -155,77 +190,83 @@
 <span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="attention-the-w-matrix-must-not-be-symmetric">Attention: the w matrix must not be symmetric!<a class="anchor" aria-label="anchor" href="#attention-the-w-matrix-must-not-be-symmetric"></a>
-</h2>
 </div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
+<p>⚠️ The matrix must <strong>not</strong> be symmetric!</p>
+<hr>
+</div>
+</div>
+<div class="section level1">
+<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h1>
 <p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"laposanti/BTSBM"</span><span class="op">)</span></span></code></pre></div>
-<p>Then load the package:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"laposanti/BTSBM"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
-</h2>
-<p>Below is a minimal working example simulating toy data and fitting the BT–SBM with a Gnedin prior:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span><span class="va">K</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
-<span></span>
-<span><span class="co"># number of matches per block pair</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">K</span>, <span class="va">K</span><span class="op">)</span></span>
-<span><span class="va">n</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="va">n</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span></span>
-<span><span class="co"># number of wins per block pair</span></span>
-<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">K</span>, <span class="va">K</span><span class="op">)</span></span>
-<span><span class="va">w</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">w</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">w</span><span class="op">)</span><span class="op">)</span>, <span class="va">n</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html" class="external-link">upper.tri</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">]</span>, <span class="fl">0.5</span><span class="op">)</span></span>
-<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="va">w</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="va">w</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">w</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<div class="section level1">
+<h1 id="minimal-example">Minimal Example<a class="anchor" aria-label="anchor" href="#minimal-example"></a>
+</h1>
+<p>Let’s fit the BT–SBM with a Gnedin prior on 2017 ATP season data:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># choosing the 2017 season</span></span>
+<span><span class="va">w_ij</span> <span class="op">&lt;-</span> <span class="va">ATP_2000_2022</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span></span>
 <span></span>
 <span><span class="co"># fit the model</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span><span class="va">w</span>, a <span class="op">=</span> <span class="fl">4</span>, prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
-<span>                    n_iter <span class="op">=</span> <span class="fl">500</span>, burnin <span class="op">=</span> <span class="fl">250</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
+<span>  <span class="va">w_ij</span>,</span>
+<span>  a <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
+<span>  n_iter <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  burnin <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># relabel output</span></span>
+<span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu">BTSBM</span><span class="fu">::</span><span class="fu"><a href="reference/relabel_by_lambda.html">relabel_by_lambda</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">fit</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot adjacency matrix</span></span>
+<span><span class="fu"><a href="reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
+<div align="center">
+<p><img src="inst/geom_adjacency_fixed.png" alt="Reordered Adjacency Matrix" width="70%"></p>
+<p><em>Reordered adjacency matrix highlighting inferred block structure.</em></p>
+</div>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="workflow-at-a-glance">Workflow at a Glance<a class="anchor" aria-label="anchor" href="#workflow-at-a-glance"></a>
-</h2>
+<div class="section level1">
+<h1 id="workflow-at-a-glance">Workflow at a Glance<a class="anchor" aria-label="anchor" href="#workflow-at-a-glance"></a>
+</h1>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Prepare input matrix</strong> (<code>w</code>) from your pairwise data.</li>
-<li>
-<strong>Check the Gnedin prior hyperparameters</strong> using <code>gnedin_K_mean</code> and <code>gnedin_K_var</code>
+<strong>Prepare input matrix</strong> <code>w</code>
 </li>
 <li>
-<strong>Fit the model</strong> with <a href="https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html"><code>gibbs_bt_sbm()</code></a>.</li>
+<strong>Inspect prior</strong> using <code><a href="reference/gnedin_K_mean.html">gnedin_K_mean()</a></code> and <code><a href="reference/gnedin_K_var.html">gnedin_K_var()</a></code>
+</li>
 <li>
-<strong>Relabel the output</strong> with <a href="https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html"><code>relabel_by_lambda()</code></a>.</li>
-<li><h2 id="visualize-clustering-structure-using-plot_block_adjacency">
-<strong>Visualize clustering structure</strong> using <a href="https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html"><code>plot_block_adjacency()</code></a>.</h2></li>
+<strong>Fit the model</strong> via <a href="https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html"><code>gibbs_bt_sbm()</code></a>
+</li>
+<li>
+<strong>Relabel samples</strong> with <a href="https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html"><code>relabel_by_lambda()</code></a> 5.️ <strong>Visualize clusters</strong> using <a href="https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html"><code>plot_block_adjacency()</code></a>
+</li>
 </ol>
-</div>
-<div class="section level2">
-<h2 id="learn-more">Learn More<a class="anchor" aria-label="anchor" href="#learn-more"></a>
-</h2>
-<ul>
-<li>📘 <a href="https://laposanti.github.io/BTSBM/reference/index.html">Function Reference</a>: Complete list of functions and documentation.</li>
-<li>📄 <a href="https://laposanti.github.io/BTSBM/articles/getting-started.html">Getting Started Vignette</a>: Conceptual background and reproducible examples.</li>
-</ul>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
-</h2>
-<p>Santi, L., Friel, N. (2025). <em>The Bradley–Terry Stochastic Block Model.</em> (Working paper, University College Dublin)</p>
+<div class="section level1">
+<h1 id="learn-more">Learn More<a class="anchor" aria-label="anchor" href="#learn-more"></a>
+</h1>
+<p>👉 <a href="https://laposanti.github.io/BTSBM/reference/index.html">Function Reference</a></p>
+<p>👉 <a href="https://laposanti.github.io/BTSBM/articles/getting-started.html">Getting Started Vignette</a></p>
+<hr>
 </div>
+<div class="section level1">
+<h1 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h1>
+<p>Santi, L., &amp; Friel, N. (2025). <em>The Bradley–Terry Stochastic Block Model.</em> Working paper, University College Dublin.</p>
+<hr>
 </div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
