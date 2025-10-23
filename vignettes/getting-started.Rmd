@@ -45,7 +45,7 @@ library(tidyr)
 
 # Overview
 
-This vignette shows a minimal workflow with the `BTSBM` functions. We take the 2017 Men's ATP season, as in the paper for convenience. 
+This vignette shows a minimal workflow with the `BTSBM` functions. We use as illustrative dataset the 2017 Men's ATP season for convenience. 
 
 
 ## Set up the data
@@ -59,7 +59,7 @@ head(w_ij[1:3,1:3])
 ```
 Each entry (`w_{ij}`) counts how many matches player (`i`) won against (`j`) in the chosen season. The matrix is directed (wins aren’t symmetric), and the diagonal is zero by design. In practice, sparse rows/columns correspond to players with few matches.
 
-## Set the prior Hyperparameters
+## Prior elicitation
 
 ```{r}
 # Gamma hyper.
@@ -81,7 +81,7 @@ gnedin_K_var(n,gamma_GN)
 ```
 
 
-## Run the clustered Gibbs sampler (short chain)
+## Run the MCMC
 
 We now draw samples from the joint posterior distribution using a collapsed Gibbs sampler. In this simplified demonstration the chain length is intentionally short; in empirical applications, longer runs or parallel chains are recommended.
 

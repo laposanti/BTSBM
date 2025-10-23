@@ -163,10 +163,14 @@ plot_block_adjacency(fit = post, w_ij = w_ij)
 
 ## Workflow at a Glance
 
-1. **Prepare input matrix** [`w`]
-2. **Inspect prior** using [`gnedin_K_mean()`] and [`gnedin_K_var()`]
+1. **Prepare input matrix** `w`
+
+2. **Inspect prior** using [`gnedin_K_mean()`](https://laposanti.github.io/BTSBM/reference/gnedin_K_mean.html) and [`gnedin_K_var()`](https://laposanti.github.io/BTSBM/reference/gnedin_K_var.html)
+
 3. **Fit the model** via [`gibbs_bt_sbm()`](https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html)
+
 4. **Relabel samples** with [`relabel_by_lambda()`](https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html)
+
 5.️ **Visualize clusters** using [`plot_block_adjacency()`](https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html)
 
 ---

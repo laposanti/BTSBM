@@ -9,7 +9,15 @@ Authors@R:
         family = "Santi",
         email = "lapo.santi@gmail.com",
         role = c("aut", "cre"),
-        comment = c(ORCID = "0000-0000-0000-0000")
+        comment = c(ORCID = "0009-0005-9363-3353")
+      ),
+      person(
+        given = "Nial",
+        family = "Friel",
+        email = "nial.friel@ucd.ie",
+        role = c("aut"),
+        comment = c(ORCID = "0000-0003-4778-0254",
+                    affiliation = "University College Dublin")
       )
     )
 Description: Implements Bayesian inference for Bradley–Terry models with a 

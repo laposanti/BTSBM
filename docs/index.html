@@ -6,14 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Bradley–Terry SBM • BTSBM: Bradley–Terry Stochastic Block Model</title>
-<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/Inter-0.4.9/font.css" rel="stylesheet">
-<link href="deps/JetBrains_Mono-0.4.9/font.css" rel="stylesheet">
-<link href="deps/Inter_Tight-0.4.9/font.css" rel="stylesheet">
-<link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Bradley–Terry SBM">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><script src="deps/MathJax-3.2.2/tex-chtml.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Bradley–Terry SBM">
 <meta name="description" content="Gibbs sampler + post-processing utilities for Bradley–Terry Stochastic Block Models (DP, PY, DM, GN priors).
 ">
 <meta property="og:description" content="Gibbs sampler + post-processing utilities for Bradley–Terry Stochastic Block Models (DP, PY, DM, GN priors).
@@ -23,7 +20,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">BTSBM: Bradley–Terry Stochastic Block Model</a>
 
@@ -50,6 +47,14 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/laposanti/BTSBM/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -122,7 +127,7 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <h3 id="w-pairwise-interaction-matrix">
 <code>w</code>: pairwise interaction matrix<a class="anchor" aria-label="anchor" href="#w-pairwise-interaction-matrix"></a>
 </h3>
-<p><em>It is as a directed weighted adjacency matrix of preferences.</em></p>
+<p><em>It is as a directed weighted/binary adjacency matrix.</em></p>
 <ul>
 <li>Square matrix (<code>n × n</code>), where <code>w[i, j]</code> = number of times player <em>i</em> beats <em>j</em><br>
 </li>
@@ -131,9 +136,6 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <li>For each unordered pair <code>{i,j}</code>:<br>
 ( n_{ij} = w_{ij} + w_{ji} )</li>
 </ul>
-<hr>
-<p>Good idea — putting them <em>side by side</em> makes the comparison immediate. In <strong>R Markdown / HTML vignettes</strong>, you can’t use Markdown tables with code blocks directly (they break rendering), but you can use a small chunk of <strong>HTML</strong> safely inside Markdown.</p>
-<p>Here’s a clean version that displays the two code examples next to each other in two equal-width columns:</p>
 <hr>
 </div>
 <div class="section level3">
@@ -215,19 +217,12 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <h2 id="workflow-at-a-glance">Workflow at a Glance<a class="anchor" aria-label="anchor" href="#workflow-at-a-glance"></a>
 </h2>
 <ol style="list-style-type: decimal">
-<li>
-<strong>Prepare input matrix</strong> <code>w</code>
-</li>
-<li>
-<strong>Inspect prior</strong> using <code><a href="reference/gnedin_K_mean.html">gnedin_K_mean()</a></code> and <code><a href="reference/gnedin_K_var.html">gnedin_K_var()</a></code>
-</li>
-<li>
-<strong>Fit the model</strong> via <a href="https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html"><code>gibbs_bt_sbm()</code></a>
-</li>
-<li>
-<strong>Relabel samples</strong> with <a href="https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html"><code>relabel_by_lambda()</code></a> 5.️ <strong>Visualize clusters</strong> using <a href="https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html"><code>plot_block_adjacency()</code></a>
-</li>
+<li><p><strong>Prepare input matrix</strong> <code>w</code></p></li>
+<li><p><strong>Inspect prior</strong> using <a href="https://laposanti.github.io/BTSBM/reference/gnedin_K_mean.html"><code>gnedin_K_mean()</code></a> and <a href="https://laposanti.github.io/BTSBM/reference/gnedin_K_var.html"><code>gnedin_K_var()</code></a></p></li>
+<li><p><strong>Fit the model</strong> via <a href="https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html"><code>gibbs_bt_sbm()</code></a></p></li>
+<li><p><strong>Relabel samples</strong> with <a href="https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html"><code>relabel_by_lambda()</code></a></p></li>
 </ol>
+<p>5.️ <strong>Visualize clusters</strong> using <a href="https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html"><code>plot_block_adjacency()</code></a></p>
 <hr>
 </div>
 <div class="section level2">
@@ -270,7 +265,11 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Lapo Santi <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0000-0000-0000" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>
+<a href="https://github.com/laposanti" class="external-link">Lapo Santi</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0009-0005-9363-3353" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>
+<a href="https://maths.ucd.ie/~nial/" class="external-link">Nial Friel</a> <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0003-4778-0254" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 
@@ -281,7 +280,7 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Lapo Santi.</p>
+  <p>Developed by <a href="https://github.com/laposanti" class="external-link">Lapo Santi</a>, <a href="https://maths.ucd.ie/~nial/" class="external-link">Nial Friel</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
