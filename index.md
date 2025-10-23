@@ -3,9 +3,8 @@ title: "BTSBM: Bayesian Inference for the Bradley–Terry Stochastic Block Model
 output:
   rmarkdown::html_document:
     toc: true
-    toc_float: true
-    toc_depth: 2
-    number_sections: false
+    toc_depth: 3
+    toc_float: true 
 vignette: >
   %\VignetteIndexEntry{BTSBM: Bayesian Inference for the Bradley–Terry Stochastic Block Model}
   %\VignetteEngine{knitr::rmarkdown}
@@ -60,7 +59,7 @@ To fit the model, you need one object:
 
 ### `w`: pairwise interaction matrix
 
-*It is as a directed weighted adjacency matrix of preferences.*
+*It is as a directed weighted/binary adjacency matrix.*
 
 - Square matrix (`n × n`), where `w[i, j]` = number of times player *i* beats *j*  
 - Diagonal must be 0 (`w[i, i] = 0`)  
@@ -70,12 +69,6 @@ To fit the model, you need one object:
 
 ---
 
-Good idea — putting them *side by side* makes the comparison immediate.
-In **R Markdown / HTML vignettes**, you can’t use Markdown tables with code blocks directly (they break rendering), but you can use a small chunk of **HTML** safely inside Markdown.
-
-Here’s a clean version that displays the two code examples next to each other in two equal-width columns:
-
----
 
 ### Examples
 
@@ -170,8 +163,8 @@ plot_block_adjacency(fit = post, w_ij = w_ij)
 
 ## Workflow at a Glance
 
-1. **Prepare input matrix** `w`
-2. **Inspect prior** using `gnedin_K_mean()` and `gnedin_K_var()`
+1. **Prepare input matrix** [`w`]
+2. **Inspect prior** using [`gnedin_K_mean()`] and [`gnedin_K_var()`]
 3. **Fit the model** via [`gibbs_bt_sbm()`](https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html)
 4. **Relabel samples** with [`relabel_by_lambda()`](https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html)
 5.️ **Visualize clusters** using [`plot_block_adjacency()`](https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html)

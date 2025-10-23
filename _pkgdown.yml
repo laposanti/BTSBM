@@ -3,7 +3,15 @@ package: BTSBM
 title: "BTSBM: Bradley–Terry Stochastic Block Model"
 url: https://laposanti.github.io/BTSBM/
 template:
-  math-rendering: mathjax   
+  bootstrap: 5
+  bslib:
+    bootswatch: litera           # try: litera, cosmo, minty, quartz
+    primary: "#4F46E5"           # indigo
+    secondary: "#06B6D4"         # cyan
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter Tight"}
+    code_font: {google: "JetBrains Mono"}
+    font_scale: 1.05
 home:
   title: "Bradley–Terry SBM"
   sidebar:
