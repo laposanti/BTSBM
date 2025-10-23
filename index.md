@@ -1,69 +1,90 @@
 ---
-title: 'BTSBM: a package for Bradley–Terry Stochastic Block Model'
+title: "BTSBM: Bayesian Inference for the Bradley–Terry Stochastic Block Model"
+output:
+  rmarkdown::html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: false
+vignette: >
+  %\VignetteIndexEntry{BTSBM: Bayesian Inference for the Bradley–Terry Stochastic Block Model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 # Overview
 
-**BTSBM** implements Bayesian inference for the *Bradley–Terry Stochastic Block Model* (BT–SBM), a model that combines **pairwise comparison data** with **block clustering** of items.
+**BTSBM** implements Bayesian inference for the *Bradley–Terry Stochastic Block Model* (BT–SBM),  
+combining **pairwise comparison data** with **latent block clustering** of items.
 
 The package provides:
 
-1) Gibbs-type MCMC samplers for inference on the posterior distribution;
+1. ⚙️ Gibbs-type MCMC samplers for posterior inference
 
-2) Posterior relabeling and model diagnostics;
+2. 🎯 Posterior relabeling, point estimates and uncertainty quantification
 
-3) Visualization tools for cluster assignments and block interaction strengths.
+3. 🌐 Visualization tools for clusters and block interactions
 
 Applications include **sports analytics**, **psychometrics**, and **ranking problems** with hidden group structure.
 
-➡️ Jump directly to:
+---
 
+## Quick Links
 
-- The complete list of functions provided : [Function Reference](https://laposanti.github.io/BTSBM/reference/index.html)
-
-- A vignette where a minimal workflow is provided: [Getting Started Vignette](https://laposanti.github.io/BTSBM/articles/getting-started.html)
+For a complete overview of all functions, see the 👉 [Function Reference](https://laposanti.github.io/BTSBM/reference/index.html)  
+For a step-by-step example using tennis data, visit the 👉 [Getting Started Vignette](https://laposanti.github.io/BTSBM/articles/getting-started.html)
 
 ---
 
-## When this applies
+# When to Use BTSBM
 
-Use this model whenever outcomes can be summarized as pairwise wins/losses or preferences:
+Use this model whenever outcomes can be summarized as *pairwise preferences* (`i` beats `j`):
 
-* Sports & games: player/team `i` beats `j`.
-* Information retrieval / ranking: document `i` preferred to `j` by a judge/user.
-* A/B testing at scale: variant `i` preferred over `j` in head-to-head trials.
-* Psychometrics & sensory studies: stimulus `i` chosen over `j`.
-* Model selection by humans: method `i` judged better than `j`.
+| Domain | Example |
+|:--|:--|
+| ⚽ Sports & games | Player `i` beats player `j` |
+| 🔍 Information retrieval | Document `i` preferred to `j` |
+| 🧠 Psychometrics | Stimulus `i` chosen over `j` |
+| 🧪 A/B testing | Variant `i` performs better than `j` |
 
-The model only requires that each comparison yields a binary outcome (“`i` over `j`”), possibly repeated and aggregated into counts.
+Only a binary outcome per pair (“`i` over `j`”) is required — possibly aggregated into counts.
+
+From now on, we will adopt a sport-related jargon for simplicity, but this framework well adapts to the aforementioned contexts as well.
 
 ---
 
-## Required Inputs
+# Required Inputs
 
-Required inputs
+To fit the model, you need one object:
 
-To fit the model, provide aggregated pairwise comparison data as a square matrix:
+### `w`: pairwise interaction matrix
 
-* `w`: an (`n \times n`) matrix of wins/preferences, where `w[i, j]` is the number of times item (`i`) is preferred to item (`j`).
+ *It is as a directed weighted adjacency matrix of preferences.*
 
-* Diagonal entries must be 0: `w[i, i] = 0` for all (`i`).
+- Square matrix (`n × n`), where `w[i, j]` = number of times player *i* beats *j*  
+- Diagonal must be 0 (`w[i, i] = 0`)  
+- For each unordered pair `{i,j}`:  
+  \( n_{ij} = w_{ij} + w_{ji} \)
 
-It follows that, for each unordered pair (`{i,j}`), the total number of comparisons is `n_{ij} ;=; w_{ij} + w_{ji}`, with `n_{ij} \in N` and `n{ii}=0`.
-Throughout, we use the language of competition (e.g., “player (`i`) beats player (`j`)”), but the same structure applies to any pairwise comparison task (products, algorithms, stimuli, judges’ preferences, etc.).
 
-What entries mean
+---
 
-* `w[i, j] = k` means item `i` beat/was preferred to `j` exactly `k` times.
+Good idea — putting them *side by side* makes the comparison immediate.
+In **R Markdown / HTML vignettes**, you can’t use Markdown tables with code blocks directly (they break rendering), but you can use a small chunk of **HTML** safely inside Markdown.
 
-* Binary data from single encounters are a special case: `w[i, j] ∈ {0,1}` and `w[i, j] + w[j, i] = 1` if they were compared once (or 0 if never compared).
+Here’s a clean version that displays the two code examples next to each other in two equal-width columns:
 
-Examples of `w`
+---
 
-(A) Aggregated counts (general case)
+### Examples
+
+<div style="display: flex; gap: 1.5em;">
+
+<div style="flex: 1;">
+
+**(A) Aggregated counts**
 
 ```r
-
 # items: A, B, C, D
 # w[i, j] = number of times i beat j
 w <- matrix(
@@ -74,13 +95,17 @@ w <- matrix(
   nrow = 4, byrow = TRUE,
   dimnames = list(c("A","B","C","D"), c("A","B","C","D"))
 )
-```
+````
 
-(B) Binary outcomes (single round)
+</div>
+
+<div style="flex: 1;">
+
+**(B) Binary outcomes**
 
 ```r
-
 # one comparison per pair observed (0/1 wins)
+# w[i, j] is binary
 w_bin <- matrix(
   c( 0, 1, 0, 1,
      0, 0, 1, 0,
@@ -91,69 +116,85 @@ w_bin <- matrix(
 )
 ```
 
-Attention: the w matrix must not be symmetric!
+</div>
+</div>
+
+⚠️ The matrix must **not** be symmetric!
+
+
+
 ---
 
-## Installation
+# Installation
 
 Install the development version from GitHub:
 
 ```r
 # install.packages("devtools")
 devtools::install_github("laposanti/BTSBM")
-````
-
-Then load the package:
-
-```r
 library(BTSBM)
 ```
 
 ---
 
-## Example
+# Minimal Example
 
-Below is a minimal working example simulating toy data and fitting the BT–SBM with a Gnedin prior:
+Let’s fit the BT–SBM with a Gnedin prior on 2017 ATP season data:
 
 ```r
-set.seed(123)
-K <- 6
-
-# number of matches per block pair
-n <- matrix(0, K, K)
-n[upper.tri(n)] <- sample(0:5, sum(upper.tri(n)), TRUE)
-n <- n + t(n); diag(n) <- 0
-
-# number of wins per block pair
-w <- matrix(0, K, K)
-w[upper.tri(w)] <- rbinom(sum(upper.tri(w)), n[upper.tri(n)], 0.5)
-w <- w + t(n - w); diag(w) <- 0
+# choosing the 2017 season
+w_ij <- ATP_2000_2022$`2017`$Y_ij
 
 # fit the model
-fit <- gibbs_bt_sbm(w, a = 4, prior = "GN",
-                    n_iter = 500, burnin = 250, verbose = FALSE)
+fit <- gibbs_bt_sbm(
+  w_ij,
+  a = 4,
+  prior = "GN",
+  n_iter = 500,
+  burnin = 250,
+  verbose = FALSE
+)
+
+# relabel output
+post <- BTSBM::relabel_by_lambda(fit$x_samples, fit$lambda_samples)
+
+# plot adjacency matrix
+plot_block_adjacency(fit = post, w_ij = w_ij)
 ```
 
----
+<div align="center">
 
-## Workflow at a Glance
+<img src="inst/geom_adjacency_fixed.png" alt="Reordered Adjacency Matrix" width="70%"/>
 
-1. **Prepare input matrix** (`w`) from your pairwise data.
-2. **Check the Gnedin prior hyperparameters** using `gnedin_K_mean` and `gnedin_K_var`
-3. **Fit the model** with [`gibbs_bt_sbm()`](https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html).
-4. **Relabel the output** with [`relabel_by_lambda()`](https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html).
-5. **Visualize clustering structure** using [`plot_block_adjacency()`](https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html).
----
+*Reordered adjacency matrix highlighting inferred block structure.*
 
-## Learn More
-
-* 📘 [Function Reference](https://laposanti.github.io/BTSBM/reference/index.html): Complete list of functions and documentation.
-* 📄 [Getting Started Vignette](https://laposanti.github.io/BTSBM/articles/getting-started.html): Conceptual background and reproducible examples.
+</div>
 
 ---
 
-## Citation
+# Workflow at a Glance
 
-Santi, L., Friel, N. (2025). *The Bradley–Terry Stochastic Block Model.*
-(Working paper, University College Dublin)
+1. **Prepare input matrix** `w`
+2. **Inspect prior** using `gnedin_K_mean()` and `gnedin_K_var()`
+3. **Fit the model** via [`gibbs_bt_sbm()`](https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html)
+4. **Relabel samples** with [`relabel_by_lambda()`](https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html)
+5.️ **Visualize clusters** using [`plot_block_adjacency()`](https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html)
+
+---
+
+# Learn More
+
+👉 [Function Reference](https://laposanti.github.io/BTSBM/reference/index.html)
+
+👉 [Getting Started Vignette](https://laposanti.github.io/BTSBM/articles/getting-started.html)
+
+---
+
+# Citation
+
+Santi, L., & Friel, N. (2025). *The Bradley–Terry Stochastic Block Model.*
+Working paper, University College Dublin.
+
+---
+
 

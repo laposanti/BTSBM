@@ -3,21 +3,21 @@ title: "Getting started with BTSBM: the R package for the BT-SBM paper"
 author: "Lapo Santi"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_vignette:
+  rmarkdown::html_document:
     toc: true
-    number_sections: false
+    toc_depth: 3
+    toc_float: true   # (optional) floating/scrolling TOC
+number_sections: true  # (optional) numbered headings
 vignette: >
- %\VignetteIndexEntry{Getting started with BTSBM}
-   %\VignetteEngine{knitr::rmarkdown}
-   %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{My Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
    
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
 comment = "#>",
 fig.align = "center",
-fig.width = 7,
-fig.height = 5,
 warning = FALSE,
 message = FALSE,
 eval = T
@@ -132,7 +132,7 @@ table(x_minVI) #Block sizes
 
 The reordered adjacency matrix reveals the empirical interaction pattern between inferred blocks. Dark-green colour in the right off-diagonal region correspond to high winning proportions, while uniform colours along the main diagonal indicate balanced competitiveness within clusters. This visualization serves as a qualitative validation of the inferred block structure.
 
-```{r}
+```{r, fig.width = 9, fig.height = 7}
 
 plot_block_adjacency(fit = post,
                      w_ij = w_ij)
@@ -143,7 +143,7 @@ plot_block_adjacency(fit = post,
 
 Posterior probabilities of assignment $p(x_i = k | W)$ quantify the uncertainty of player-to-block allocations. High uncertainty for certain individuals typically signals boundary cases or transitional players whose performance profile lies between different clusters.
 
-```{r}
+```{r, fig.width = 9, fig.height = 7}
 plot_assignment_probabilities(fit = post, w_ij = w_ij)
 ```
 
@@ -153,7 +153,8 @@ plot_assignment_probabilities(fit = post, w_ij = w_ij)
 
 Posterior uncertainty in $\lambda_{x_i}$, the strength of player i. Since all players assigned to the same block share the same $\lambda$, the uncertainty here is driven by the assignment uncertainty. Reporting credible intervals gives a precise idea of the relative strength differences between clusters, and between players as well.
 
-```{r}
+```{r, fig.width = 10, fig.height = 9}
+
 plot_lambda_uncertainty(fit = post, w_ij = w_ij, clean_fun = clean_players_names)
 ```
 
