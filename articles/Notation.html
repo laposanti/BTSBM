@@ -6,12 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model • BTSBM: Bradley–Terry Stochastic Block Model</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/Inter_Tight-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model">
 </head>
@@ -19,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">BTSBM: Bradley–Terry Stochastic Block Model</a>
 
@@ -46,6 +49,14 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/laposanti/BTSBM/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -73,17 +84,13 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>We consider a set of (n) items/players with observed directed wins
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">w_{ij}</annotation></semantics></math>).
-The total number of encounters is
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>n</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>+</mo><msub><mi>w</mi><mrow><mi>j</mi><mi>i</mi></mrow></msub></mrow><annotation encoding="application/x-tex">n_{ij} = w_{ij} + w_{ji}</annotation></semantics></math>).
-In the clustered Bradley–Terry–SBM (BT–SBM), each item (i) belongs to a
-latent block
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub><mo>∈</mo><mrow><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>K</mi></mrow></mrow><annotation encoding="application/x-tex">x_i \in {1,\dots,K}</annotation></semantics></math>),
-and blocks have intensities
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mi>k</mi></msub><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\lambda_k&gt;0</annotation></semantics></math>).
-The simple BT model corresponds to
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>=</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">K=n</annotation></semantics></math>)
-with item-specific intensities.</p>
+(<span class="math inline">\(w_{ij}\)</span>). The total number of
+encounters is (<span class="math inline">\(n_{ij} = w_{ij} +
+w_{ji}\)</span>). In the clustered Bradley–Terry–SBM (BT–SBM), each item
+(i) belongs to a latent block (<span class="math inline">\(x_i \in
+{1,\dots,K}\)</span>), and blocks have intensities (<span class="math inline">\(\lambda_k&gt;0\)</span>). The simple BT model
+corresponds to (<span class="math inline">\(K=n\)</span>) with
+item-specific intensities.</p>
 <p>This vignette documents <strong>symbols</strong>, <strong>R object
 names</strong>, and <strong>dimensions</strong> used throughout the
 package.</p>
@@ -109,7 +116,7 @@ package.</p>
 <tbody>
 <tr class="odd">
 <td>Number of items</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math></td>
+<td><span class="math inline">\(n\)</span></td>
 <td>integer (&gt;0)</td>
 <td>
 <code>n</code> (derived)</td>
@@ -117,7 +124,8 @@ package.</p>
 </tr>
 <tr class="even">
 <td>Saved iterations</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mo>=</mo><msub><mi>T</mi><mtext mathvariant="normal">iter</mtext></msub><mo>−</mo><msub><mi>T</mi><mtext mathvariant="normal">burn</mtext></msub></mrow><annotation encoding="application/x-tex">S = T_{\text{iter}} - T_{\text{burn}}</annotation></semantics></math></td>
+<td><span class="math inline">\(S = T_{\text{iter}} -
+T_{\text{burn}}\)</span></td>
 <td>integer (≥ 1)</td>
 <td>
 <code>S</code> (implicit)</td>
@@ -125,7 +133,7 @@ package.</p>
 </tr>
 <tr class="odd">
 <td>Wins (i over j)</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">w_{ij}</annotation></semantics></math></td>
+<td><span class="math inline">\(w_{ij}\)</span></td>
 <td>≥ 0, diag = 0</td>
 <td><code>w_ij</code></td>
 <td>
@@ -133,7 +141,7 @@ package.</p>
 </tr>
 <tr class="even">
 <td>Encounters</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>n</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>+</mo><msub><mi>w</mi><mrow><mi>j</mi><mi>i</mi></mrow></msub></mrow><annotation encoding="application/x-tex">n_{ij} = w_{ij} + w_{ji}</annotation></semantics></math></td>
+<td><span class="math inline">\(n_{ij} = w_{ij} + w_{ji}\)</span></td>
 <td>symmetric, diag = 0</td>
 <td>computed internally</td>
 <td>
@@ -141,55 +149,56 @@ package.</p>
 </tr>
 <tr class="odd">
 <td>Total iterations</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mtext mathvariant="normal">iter</mtext></msub><annotation encoding="application/x-tex">T_{\text{iter}}</annotation></semantics></math></td>
+<td><span class="math inline">\(T_{\text{iter}}\)</span></td>
 <td>integer (&gt;0)</td>
 <td><code>T_iter</code></td>
 <td>scalar</td>
 </tr>
 <tr class="even">
 <td>Burn-in</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mtext mathvariant="normal">burn</mtext></msub><annotation encoding="application/x-tex">T_{\text{burn}}</annotation></semantics></math></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>≤</mo><msub><mi>T</mi><mtext mathvariant="normal">burn</mtext></msub><mo>&lt;</mo><msub><mi>T</mi><mtext mathvariant="normal">iter</mtext></msub></mrow><annotation encoding="application/x-tex">0 \le T_{\text{burn}} &lt; T_{\text{iter}}</annotation></semantics></math></td>
+<td><span class="math inline">\(T_{\text{burn}}\)</span></td>
+<td><span class="math inline">\(0 \le T_{\text{burn}} &lt;
+T_{\text{iter}}\)</span></td>
 <td><code>T_burn</code></td>
 <td>scalar</td>
 </tr>
 <tr class="odd">
 <td>Occupied clusters per draw</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math></td>
+<td><span class="math inline">\(K\)</span></td>
 <td>1..n</td>
 <td><code>K_per_iter</code></td>
 <td>length <code>S</code> vector</td>
 </tr>
 <tr class="even">
 <td>Label capacity (allocated ids)</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>L</mi><mtext mathvariant="normal">cap</mtext></msub><annotation encoding="application/x-tex">L_{\text{cap}}</annotation></semantics></math></td>
+<td><span class="math inline">\(L_{\text{cap}}\)</span></td>
 <td>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>≤</mo><msub><mi>L</mi><mtext mathvariant="normal">cap</mtext></msub><mo>≤</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">K \le L_{\text{cap}} \le n</annotation></semantics></math>
-(or ≤
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mrow><mi>D</mi><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">K_{DM}</annotation></semantics></math>)</td>
+<span class="math inline">\(K \le L_{\text{cap}} \le n\)</span> (or
+≤ <span class="math inline">\(K_{DM}\)</span>)</td>
 <td><code>L_cap_per_iter</code></td>
 <td>length <code>S</code> vector</td>
 </tr>
 <tr class="odd">
 <td>Max allowed clusters (finite prior)</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mrow><mi>D</mi><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">K_{DM}</annotation></semantics></math></td>
+<td><span class="math inline">\(K_{DM}\)</span></td>
 <td>1..n or ∞</td>
 <td><code>K_DM</code></td>
 <td>scalar</td>
 </tr>
 <tr class="even">
 <td>Observed pairs count</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math></td>
+<td><span class="math inline">\(D\)</span></td>
 <td>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>=</mo><mi>#</mi><mo stretchy="false" form="prefix">{</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>:</mo><mi>i</mi><mo>&lt;</mo><mi>j</mi><mo>,</mo><mspace width="0.222em"></mspace><msub><mi>n</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>&gt;</mo><mn>0</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">D = \#\{(i,j): i&lt;j,\ n_{ij}&gt;0\}</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>≤</mo><mi>D</mi><mo>≤</mo><mfrac displaystyle="false"><mrow><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mn>2</mn></mfrac></mrow><annotation encoding="application/x-tex">0 \le D \le \tfrac{n(n-1)}{2}</annotation></semantics></math>
+<span class="math inline">\(D = \#\{(i,j): i&lt;j,\
+n_{ij}&gt;0\}\)</span>, <span class="math inline">\(0 \le D \le
+\tfrac{n(n-1)}{2}\)</span>
 </td>
 <td>implicit</td>
 <td>scalar</td>
 </tr>
 <tr class="odd">
 <td>Cluster label of item i</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>x</mi><mi>i</mi></msub><annotation encoding="application/x-tex">x_i</annotation></semantics></math></td>
+<td><span class="math inline">\(x_i\)</span></td>
 <td>in {1..K}</td>
 <td><code>x_samples</code></td>
 <td>
@@ -197,7 +206,7 @@ package.</p>
 </tr>
 <tr class="even">
 <td>Cluster intensities</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\lambda_k</annotation></semantics></math></td>
+<td><span class="math inline">\(\lambda_k\)</span></td>
 <td>&gt; 0</td>
 <td><code>lambda_list[[s]]</code></td>
 <td>ragged numeric, length <code>L_cap[s]</code>
@@ -205,7 +214,7 @@ package.</p>
 </tr>
 <tr class="odd">
 <td>Item intensity (post relabel)</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><msub><mi>x</mi><mi>i</mi></msub></msub><annotation encoding="application/x-tex">\lambda_{x_i}</annotation></semantics></math></td>
+<td><span class="math inline">\(\lambda_{x_i}\)</span></td>
 <td>&gt; 0</td>
 <td><code>lambda_samples_relabel</code></td>
 <td>
@@ -213,7 +222,7 @@ package.</p>
 </tr>
 <tr class="even">
 <td>Latent auxiliaries</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Z</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">Z_{ij}</annotation></semantics></math></td>
+<td><span class="math inline">\(Z_{ij}\)</span></td>
 <td>≥ 0</td>
 <td><code>z_samples</code></td>
 <td>
@@ -222,35 +231,36 @@ package.</p>
 </tr>
 <tr class="odd">
 <td>DP concentration</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></td>
+<td><span class="math inline">\(\alpha\)</span></td>
 <td>&gt; 0</td>
 <td><code>alpha_PY</code></td>
 <td>scalar</td>
 </tr>
 <tr class="even">
 <td>PY discount</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></td>
+<td><span class="math inline">\(\sigma\)</span></td>
 <td>[0,1)</td>
 <td><code>sigma_PY</code></td>
 <td>scalar</td>
 </tr>
 <tr class="odd">
 <td>DM concentration</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math></td>
+<td><span class="math inline">\(\beta\)</span></td>
 <td>&gt; 0</td>
 <td><code>beta_DM</code></td>
 <td>scalar</td>
 </tr>
 <tr class="even">
 <td>GN parameter</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></td>
+<td><span class="math inline">\(\gamma\)</span></td>
 <td>&gt; 0</td>
 <td><code>gamma_GN</code></td>
 <td>scalar</td>
 </tr>
 <tr class="odd">
 <td>Gamma prior on λ</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi><mo>∼</mo><mrow><mi mathvariant="normal">G</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">m</mi><mi mathvariant="normal">m</mi><mi mathvariant="normal">a</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>a</mi><mo>,</mo><mi>b</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\lambda \sim \mathrm{Gamma}(a,b)</annotation></semantics></math></td>
+<td><span class="math inline">\(\lambda \sim
+\mathrm{Gamma}(a,b)\)</span></td>
 <td>a&gt;0, b&gt;0</td>
 <td>
 <code>a</code>, <code>b_eff = exp(ψ(a))</code>
@@ -263,19 +273,16 @@ package.</p>
 <ul>
 <li>We <strong>never</strong> require the user to pass
 <code>n_ij</code>; it is constructed and validated internally.</li>
-<li>After relabeling by decreasing
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>),
-cluster ids are canonicalized as
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>.</mi><mi>.</mi><mi>.</mi><mi>K</mi></mrow><annotation encoding="application/x-tex">1...K</annotation></semantics></math>)
-with cluster 1 the largest
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>).</li>
+<li>After relabeling by decreasing (<span class="math inline">\(\lambda\)</span>), cluster ids are canonicalized
+as (<span class="math inline">\(1...K\)</span>) with cluster 1 the
+largest (<span class="math inline">\(\lambda\)</span>).</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="dimensions-at-a-glance">Dimensions at a glance<a class="anchor" aria-label="anchor" href="#dimensions-at-a-glance"></a>
 </h2>
-<p>Let
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mo>=</mo><msub><mi>T</mi><mtext mathvariant="normal">iter</mtext></msub><mo>−</mo><msub><mi>T</mi><mtext mathvariant="normal">burn</mtext></msub></mrow><annotation encoding="application/x-tex">S = T_{\text{iter}} - T_{\text{burn}}</annotation></semantics></math>).</p>
+<p>Let (<span class="math inline">\(S = T_{\text{iter}} -
+T_{\text{burn}}\)</span>).</p>
 <ul>
 <li>
 <code>w_ij</code>: <code>n x n</code>
@@ -539,7 +546,7 @@ shims may emit deprecation warnings.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Lapo Santi.</p>
+  <p>Developed by <a href="https://github.com/laposanti" class="external-link">Lapo Santi</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
