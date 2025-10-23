@@ -1,17 +1,21 @@
 # _pkgdown.yml
 package: BTSBM
 title: "BTSBM: Bradley–Terry Stochastic Block Model"
+authors:
+  Lapo Santi:
+    href: https://github.com/laposanti
+  Nial Friel:
+    href: https://maths.ucd.ie/~nial/
 url: https://laposanti.github.io/BTSBM/
 template:
   bootstrap: 5
+  math-rendering: mathjax
+  light-switch: true
   bslib:
-    bootswatch: litera           # try: litera, cosmo, minty, quartz
-    primary: "#4F46E5"           # indigo
-    secondary: "#06B6D4"         # cyan
-    base_font: {google: "Inter"}
-    heading_font: {google: "Inter Tight"}
-    code_font: {google: "JetBrains Mono"}
-    font_scale: 1.05
+    primary: "#0054AD"
+    border-radius: 0.5rem
+    btn-border-radius: 0.25rem
+    danger: "#A6081A"
 home:
   title: "Bradley–Terry SBM"
   sidebar:
