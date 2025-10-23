@@ -18,6 +18,8 @@
 <url><loc>https://laposanti.github.io/BTSBM/reference/expected_cl_py.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/gibbs_bt_simple.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/gnedin_K_mean.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/gnedin_K_var.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/index.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/lambda_to_theta.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/make_bt_cluster_loo.html</loc></url>
@@ -26,7 +28,9 @@
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_assignment_probabilities.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_lambda_uncertainty.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/pretty_table_K_distribution.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/sample_from_BTSBM.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/shannon_entropy.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/updateZ_and_rowsums.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/urn_DM.html</loc></url>

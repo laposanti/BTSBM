@@ -132,7 +132,7 @@ table(x_minVI) #Block sizes
 
 The reordered adjacency matrix reveals the empirical interaction pattern between inferred blocks. Dark-green colour in the right off-diagonal region correspond to high winning proportions, while uniform colours along the main diagonal indicate balanced competitiveness within clusters. This visualization serves as a qualitative validation of the inferred block structure.
 
-```{r, fig.width = 9, fig.height = 7}
+```{r, fig.width = 9, fig.height = 5}
 
 plot_block_adjacency(fit = post,
                      w_ij = w_ij)

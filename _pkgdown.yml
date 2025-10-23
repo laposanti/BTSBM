@@ -6,6 +6,8 @@ template:
   math-rendering: mathjax   
 home:
   title: "Bradley–Terry SBM"
+  sidebar:
+    structure: [links, toc, license, authors, dev]
   description: >
     Gibbs sampler + post-processing utilities for Bradley–Terry Stochastic
     Block Models (DP, PY, DM, GN priors).
