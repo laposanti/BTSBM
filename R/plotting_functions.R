@@ -7,6 +7,7 @@
 #'
 #' @param fit Output list from \code{gibbs_BT_SBM()}.
 #' @param w_ij Integer matrix of wins (same players & order used in \code{fit}).
+#' @param x_hat partition point estimate. One n-length integer vector.
 #' @param clean_fun Optional function to prettify player names. Default: identity.
 #' @param palette Named colors for blocks (as character vector). Defaults to a
 #'   Wimbledon-ish palette.
@@ -21,6 +22,7 @@
 plot_block_adjacency <- function(
     fit,
     w_ij,
+    x_hat = NULL,
     clean_fun = clean_players_names,
     palette = c("0"="#FFFFFF","1"="#CDEB8B","2"="#78AB46","3"="#FFD700","4"="#FF8C00","5"="#00441B"),
     fill_low = "#FFFFCC",
@@ -28,7 +30,7 @@ plot_block_adjacency <- function(
 ){
   stopifnot(is.matrix(w_ij))
   N_ij = w_ij + t(w_ij)
-  x_hat <- fit$partition_binder
+  if(is.null(x_hat))  x_hat <- fit$partition_binder
   stopifnot(length(x_hat) == nrow(w_ij))
   # Input names
   pl_names <- rownames(w_ij)

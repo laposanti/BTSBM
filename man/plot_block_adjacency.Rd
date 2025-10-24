@@ -7,6 +7,7 @@
 plot_block_adjacency(
   fit,
   w_ij,
+  x_hat = NULL,
   clean_fun = clean_players_names,
   palette = c(`0` = "#FFFFFF", `1` = "#CDEB8B", `2` = "#78AB46", `3` = "#FFD700", `4` =
     "#FF8C00", `5` = "#00441B"),
@@ -18,6 +19,8 @@ plot_block_adjacency(
 \item{fit}{Output list from \code{gibbs_BT_SBM()}.}
 
 \item{w_ij}{Integer matrix of wins (same players & order used in \code{fit}).}
+
+\item{x_hat}{partition point estimate. One n-length integer vector.}
 
 \item{clean_fun}{Optional function to prettify player names. Default: identity.}
 
