@@ -17,6 +17,8 @@ expected_cl_py(n, sigma, theta, K_DM)
 }
 \value{
 Numeric(1) expected number of clusters.
+#' @references
+Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
 }
 \description{
 Expected number of clusters under finite/inf PY/DM-like priors (helper)

@@ -9,8 +9,7 @@ plot_block_adjacency(
   w_ij,
   x_hat = NULL,
   clean_fun = clean_players_names,
-  palette = c(`0` = "#FFFFFF", `1` = "#CDEB8B", `2` = "#78AB46", `3` = "#FFD700", `4` =
-    "#FF8C00", `5` = "#00441B"),
+  palette = NULL,
   fill_low = "#FFFFCC",
   fill_high = "#006400"
 )
@@ -27,7 +26,7 @@ plot_block_adjacency(
 \item{palette}{Named colors for blocks (as character vector). Defaults to a
 Wimbledon-ish palette.}
 
-\item{fill_low, fill_high}{Colors for the heatmap gradient low/high.}
+\item{fill_low, fill_high}{Colors for the heatmap pixels gradient low/high.}
 }
 \value{
 A \code{ggplot} object.

@@ -11,7 +11,7 @@
 #' @param clean_fun Optional function to prettify player names. Default: identity.
 #' @param palette Named colors for blocks (as character vector). Defaults to a
 #'   Wimbledon-ish palette.
-#' @param fill_low,fill_high Colors for the heatmap gradient low/high.
+#' @param fill_low,fill_high Colors for the heatmap pixels gradient low/high.
 #' @return A \code{ggplot} object.
 #' @examples
 #' \dontrun{
@@ -24,20 +24,36 @@ plot_block_adjacency <- function(
     w_ij,
     x_hat = NULL,
     clean_fun = clean_players_names,
-    palette = c("0"="#FFFFFF","1"="#CDEB8B","2"="#78AB46","3"="#FFD700","4"="#FF8C00","5"="#00441B"),
+    palette = NULL,
     fill_low = "#FFFFCC",
     fill_high = "#006400"
 ){
   stopifnot(is.matrix(w_ij))
   N_ij = w_ij + t(w_ij)
-  if(is.null(x_hat))  x_hat <- fit$partition_binder
+  if(is.null(x_hat))  x_hat <- fit$minVI_partition
   stopifnot(length(x_hat) == nrow(w_ij))
   # Input names
   pl_names <- rownames(w_ij)
 
+  make_palette <- function(
+    n,
+    low  = "#FFFFFF",
+    mids = c("#CDEB8B", "#78AB46", "#FFD700", "#FF8C00"),
+    high = "#00441B",
+    bias = 1
+  ) {
+    stopifnot(n >= 2)
+    pal <- grDevices::colorRampPalette(c(low, mids, high), space = "Lab", bias = bias)(n)
+    pal[1] <- low
+    pal[n] <- high
+    pal
+  }
+
+  if(is.null(palette)) palette <- make_palette(length(x_hat))
   if (is.null(pl_names)) pl_names <- paste0("Item_", seq_len(nrow(w_ij)))
   colnames(w_ij) <- pl_names
   rownames(w_ij) <- pl_names
+
 
   # Add cluster info to players
   df_cl <- data.frame(

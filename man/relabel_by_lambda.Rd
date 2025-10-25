@@ -2,55 +2,110 @@
 % Please edit documentation in R/utils.R
 \name{relabel_by_lambda}
 \alias{relabel_by_lambda}
-\title{Relabel cluster assignments by decreasing lambda}
+\title{Relabel partitions by decreasing \eqn{\lambda}, compute point estimates, and quantify uncertainty via credible balls}
 \usage{
 relabel_by_lambda(x_samples, lambda_samples)
 }
 \arguments{
-\item{x_samples}{Integer matrix S x N of sampled labels (arbitrary ids per iter).}
+\item{x_samples}{Integer matrix (S x N) of sampled partitions; rows index MCMC
+iterations and columns index items. Cluster labels are arbitrary across iterations.}
 
 \item{lambda_samples}{Either:
 \itemize{
-\item a \strong{list} of length S with numeric vectors indexed by raw label id
-(NAs allowed for non-occupied ids), or
-\item a \strong{matrix} S x L giving per-iteration \eqn{\lambda_\ell} for label \eqn{\ell}.
+\item a \strong{list} of length S; element \code{[[s]]} is a numeric vector
+of cluster intensities \eqn{\lambda_\ell} indexed by the \emph{raw}
+label id used at iteration \code{s} (NAs allowed for non-occupied ids), or
+\item a \strong{matrix} (S x L) whose row \code{s} gives \eqn{\lambda_\ell}
+for label \eqn{\ell} at iteration \code{s} (sparse columns with NAs permitted).
 }}
 }
 \value{
-A list with components:
+A named list with components:
 \describe{
-\item{x_samples_relabel}{S x N integer matrix of relabeled draws (1..K per iter, ordered by \eqn{\lambda}).}
-\item{lambda_samples_relabel}{S x N numeric matrix assigning each item its cluster's \eqn{\lambda} after relabeling.}
-\item{item_cluster_assignment_probs}{N x Kmax data frame of marginal assignment probabilities.}
-\item{block_count_distribution}{Data frame of the distribution of the number of blocks across iterations.}
-\item{avg_top_block_count}{Average size of the top-\eqn{\lambda} block.}
-\item{co_clustering}{Posterior similarity matrix (N x N).}
-\item{minVI_partition}{Hard partition via minVI.}
-\item{partition_binder}{Hard partition via Binder's loss.}
-\item{n_clusters_each_iter}{Integer vector length S with number of blocks per iteration.}
-\item{top_block_count_per_iter}{Integer vector length S with size of the top block per iteration.}
-\item{cluster_lambda_ordered}{List length S of ordered \eqn{\lambda} vectors (length K per iter).}
+\item{\code{x_samples_relabel}}{Integer matrix (S x N) of relabelled draws
+(labels \code{1..K_s} per iteration \code{s}, ordered by decreasing \eqn{\lambda}).}
+\item{\code{lambda_samples_relabel}}{Numeric matrix (S x N) assigning each item its
+cluster's \eqn{\lambda} after relabelling.}
+\item{\code{co_clustering}}{Posterior similarity matrix (N x N).}
+\item{\code{minVI_partition}}{Partition estimated by minimizing posterior expected VI
+(first solution returned by \code{mcclust.ext::minVI}).}
+\item{\code{partition_binder}}{Partition estimated by Binder's loss
+(\code{mcclust.ext::minbinder.ext}).}
+\item{\code{credible_ball_lower_partition}}{Partition on the \emph{surface} of the
+95\\% VI-credible ball that attains one extremum (relabelled by decreasing
+posterior-mean item strength).}
+\item{\code{credible_ball_upper_partition}}{Analogous extremal partition on the
+credible-ball surface (relabelled).}
+\item{\code{K_VI_lower}}{Number of clusters in \code{credible_ball_lower_partition}.}
+\item{\code{K_VI_upper}}{Number of clusters in \code{credible_ball_upper_partition}.}
+\item{\code{n_clusters_each_iter}}{Integer vector (length S) of occupied cluster counts per iteration.}
+\item{\code{block_count_distribution}}{Data frame with columns
+\code{num_blocks}, \code{count}, \code{prob} summarizing the posterior of the
+number of clusters.}
+\item{\code{item_cluster_assignment_probs}}{Data frame (N x Kmax) of per-item
+marginal assignment probabilities (columns \code{Cluster_1}, \code{Cluster_2}, ...).}
+\item{\code{avg_top_block_count}}{Average size of the top-\eqn{\lambda} cluster across iterations.}
+\item{\code{top_block_count_per_iter}}{Integer vector (length S) with the size
+of the top-\eqn{\lambda} cluster per iteration.}
+\item{\code{cluster_lambda_ordered}}{List of length S; each element is the vector of
+cluster \eqn{\lambda} values for that iteration, ordered decreasingly.}
 }
 }
 \description{
 Given posterior samples of labels \code{x_samples} (S x N) and corresponding
-cluster-level intensities \code{lambda_samples} per iteration, produce a
-canonical relabeling where cluster 1 has the largest \eqn{\lambda},
-cluster 2 the second largest, etc. Also computes co-clustering summaries
-and assignment probabilities.
+cluster-level intensities \code{lambda_samples} per iteration, this function:
+(i) relabels each draw so that cluster \code{1} has the largest \eqn{\lambda},
+cluster \code{2} the second largest, etc.; (ii) computes posterior similarity
+matrix (PSM) and partition point estimates (minVI and Binder); and
+(iii) constructs a VI-credible ball around the minVI partition and returns the
+\emph{extremal} partitions on its surface (lower/upper), relabelled by decreasing
+strength for interpretability. It also returns per-item assignment probabilities
+and the posterior distribution of the number of clusters.
 }
 \details{
-The function first compacts raw labels to 1..K within each iteration,
-then orders the occupied labels by decreasing \eqn{\lambda}, producing a
-canonical labeling. Co-clustering summaries use \pkg{mcclust} and \pkg{mcclust.ext}.
+\strong{Relabelling.} For each iteration, occupied labels are compacted to \code{1..K_s}
+and reordered by decreasing \eqn{\lambda}, producing a canonical “1 = strongest” labelling.
+
+\strong{Point estimation.} The posterior similarity matrix is computed from relabelled
+draws; minVI and Binder partitions are obtained via \pkg{mcclust.ext}.
+
+\strong{Credible ball and extremal partitions.} A 95\\% credible ball in partition space
+(under VI) is constructed around the minVI partition. We report the \emph{extreme}
+partitions on the ball's surface (in the sense of maximal VI distance from the centre),
+as returned by \code{mcclust.ext::credibleball}. These are then relabelled by decreasing
+posterior-mean item strength to ensure a consistent “strength ordering” across summaries.
+The associated cluster counts \code{K_VI_lower} and \code{K_VI_upper} characterize the
+local structural uncertainty around the point estimate; they are \emph{not} marginal
+posterior quantiles of \eqn{K}.
 }
+\section{Input requirements}{
+
+\itemize{
+\item \code{x_samples} must be integer-valued with no missing items per row.
+\item \code{lambda_samples} may be sparse (NAs for non-occupied labels).
+\item \pkg{mcclust} and \pkg{mcclust.ext} must be available; \code{credibleball}
+is expected to return lower/upper partitions in either \code{c.lower/c.upper}
+or \code{c.lowervert/c.uppervert}.
+}
+}
+
 \examples{
 \dontrun{
-S <- 100; N <- 20
 set.seed(42)
-x_samps <- matrix(sample(1:3, S*N, TRUE), S, N)
-lam_list <- replicate(S, { v <- rep(NA_real_, 5); v[1:3] <- runif(3, 0.5, 2); v }, simplify=FALSE)
+S <- 50; N <- 15
+x_samps <- matrix(sample(1:4, S*N, TRUE), S, N)
+# Sparse lambda per-iter: labels up to 6, only first 4 occupied typically
+lam_list <- replicate(S, { v <- rep(NA_real_, 6); v[1:4] <- rexp(4, 1); v }, simplify = FALSE)
 out <- relabel_by_lambda(x_samps, lam_list)
-table(out$block_count_distribution$num_blocks)
+out$minVI_partition[1:10]
+out$K_VI_lower; out$K_VI_upper
 }
+
+}
+\references{
+Wade, S., 2023. Bayesian cluster analysis. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences 381, 20220149. https://doi.org/10.1098/rsta.2022.0149
+}
+\seealso{
+\code{\link[mcclust.ext]{minVI}}, \code{\link[mcclust.ext]{minbinder.ext}},
+\code{\link[mcclust.ext]{credibleball}}, \code{\link[mcclust]{comp.psm}}
 }

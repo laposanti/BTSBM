@@ -95,6 +95,9 @@ clean_players_names <- function(name) {
 #' @param gamma numeric(1) parameter \eqn{\gamma > 0}.
 #' @return Numeric vector of weights \eqn{K(n,k)}.
 #' @keywords internal
+#' @references
+#' Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
+
 HGnedin <- function(n, k, gamma = 0.5) {
   exp(lchoose(n, k) + lgamma(k - gamma) - lgamma(1 - gamma) +
         log(gamma) + lgamma(n + gamma - k) - lgamma(n + gamma))
@@ -105,6 +108,9 @@ HGnedin <- function(n, k, gamma = 0.5) {
 #' @param beta_DM numeric concentration (>0).
 #' @param K_DM integer maximum number of clusters (>=1).
 #' @return Numeric vector length \eqn{K+1}: existing weights and new-cluster mass.
+#' #' @references
+#' Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
+
 #' @keywords internal
 urn_DM <- function(v_minus, beta_DM, K_DM) {
   K <- length(v_minus)
@@ -115,6 +121,9 @@ urn_DM <- function(v_minus, beta_DM, K_DM) {
 #' @param v_minus integer sizes of occupied clusters (excluding focal item).
 #' @param alpha_PY numeric concentration (>0).
 #' @return Numeric vector length \eqn{K+1}: existing weights and new-cluster mass.
+#' #' @references
+#' Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
+
 #' @keywords internal
 urn_DP <- function(v_minus, alpha_PY) {
   c(v_minus, alpha_PY)
@@ -124,6 +133,9 @@ urn_DP <- function(v_minus, alpha_PY) {
 #' @param v_minus integer sizes of occupied clusters (excluding focal item).
 #' @param gamma numeric parameter (>0).
 #' @return Numeric vector length \eqn{K+1}.
+#' #' @references
+#' Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
+
 #' @keywords internal
 urn_GN <- function(v_minus, gamma) {
   K  <- length(v_minus)
@@ -137,6 +149,9 @@ urn_GN <- function(v_minus, gamma) {
 #' @param alpha_PY numeric concentration (> -sigma_PY).
 #' @param sigma_PY numeric discount in [0,1).
 #' @return Numeric vector length \eqn{K+1}.
+#' #' @references
+#' Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
+
 #' @keywords internal
 urn_PY <- function(v_minus, alpha_PY, sigma_PY) {
   K <- length(v_minus)
@@ -150,6 +165,9 @@ urn_PY <- function(v_minus, alpha_PY, sigma_PY) {
 #' @param theta numeric(1) concentration parameter.
 #' @param K_DM integer(1) maximum number of clusters, or \code{Inf}.
 #' @return Numeric(1) expected number of clusters.
+#' #' @references
+#' Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
+
 #' @keywords internal
 expected_cl_py <- function(n, sigma, theta, K_DM) {
   n <- as.integer(n)
@@ -455,63 +473,114 @@ shannon_entropy <- function(p) {
   probs <- probs[probs > 0]  # remove zeros to avoid log(0)
   -sum(probs * log(probs))
 }
-
-# ---------- Relabeling ----------
-
-#' Relabel cluster assignments by decreasing lambda
+#' Relabel partitions by decreasing \eqn{\lambda}, compute point estimates, and quantify uncertainty via credible balls
 #'
-#' Given posterior samples of labels `x_samples` (S x N) and corresponding
-#' cluster-level intensities `lambda_samples` per iteration, produce a
-#' canonical relabeling where cluster 1 has the largest \eqn{\lambda},
-#' cluster 2 the second largest, etc. Also computes co-clustering summaries
-#' and assignment probabilities.
+#' Given posterior samples of labels \code{x_samples} (S x N) and corresponding
+#' cluster-level intensities \code{lambda_samples} per iteration, this function:
+#' (i) relabels each draw so that cluster \code{1} has the largest \eqn{\lambda},
+#' cluster \code{2} the second largest, etc.; (ii) computes posterior similarity
+#' matrix (PSM) and partition point estimates (minVI and Binder); and
+#' (iii) constructs a VI-credible ball around the minVI partition and returns the
+#' \emph{extremal} partitions on its surface (lower/upper), relabelled by decreasing
+#' strength for interpretability. It also returns per-item assignment probabilities
+#' and the posterior distribution of the number of clusters.
 #'
-#' @param x_samples Integer matrix S x N of sampled labels (arbitrary ids per iter).
+#' @param x_samples Integer matrix (S x N) of sampled partitions; rows index MCMC
+#'   iterations and columns index items. Cluster labels are arbitrary across iterations.
 #' @param lambda_samples Either:
-#' \itemize{
-#'   \item a **list** of length S with numeric vectors indexed by raw label id
-#'         (NAs allowed for non-occupied ids), or
-#'   \item a **matrix** S x L giving per-iteration \eqn{\lambda_\ell} for label \eqn{\ell}.
-#' }
+#'   \itemize{
+#'     \item a \strong{list} of length S; element \code{[[s]]} is a numeric vector
+#'           of cluster intensities \eqn{\lambda_\ell} indexed by the \emph{raw}
+#'           label id used at iteration \code{s} (NAs allowed for non-occupied ids), or
+#'     \item a \strong{matrix} (S x L) whose row \code{s} gives \eqn{\lambda_\ell}
+#'           for label \eqn{\ell} at iteration \code{s} (sparse columns with NAs permitted).
+#'   }
 #'
-#' @return A list with components:
+#' @return A named list with components:
 #' \describe{
-#'   \item{x_samples_relabel}{S x N integer matrix of relabeled draws (1..K per iter, ordered by \eqn{\lambda}).}
-#'   \item{lambda_samples_relabel}{S x N numeric matrix assigning each item its cluster's \eqn{\lambda} after relabeling.}
-#'   \item{item_cluster_assignment_probs}{N x Kmax data frame of marginal assignment probabilities.}
-#'   \item{block_count_distribution}{Data frame of the distribution of the number of blocks across iterations.}
-#'   \item{avg_top_block_count}{Average size of the top-\eqn{\lambda} block.}
-#'   \item{co_clustering}{Posterior similarity matrix (N x N).}
-#'   \item{minVI_partition}{Hard partition via minVI.}
-#'   \item{partition_binder}{Hard partition via Binder's loss.}
-#'   \item{n_clusters_each_iter}{Integer vector length S with number of blocks per iteration.}
-#'   \item{top_block_count_per_iter}{Integer vector length S with size of the top block per iteration.}
-#'   \item{cluster_lambda_ordered}{List length S of ordered \eqn{\lambda} vectors (length K per iter).}
+#'   \item{\code{x_samples_relabel}}{Integer matrix (S x N) of relabelled draws
+#'         (labels \code{1..K_s} per iteration \code{s}, ordered by decreasing \eqn{\lambda}).}
+#'   \item{\code{lambda_samples_relabel}}{Numeric matrix (S x N) assigning each item its
+#'         cluster's \eqn{\lambda} after relabelling.}
+#'   \item{\code{co_clustering}}{Posterior similarity matrix (N x N).}
+#'   \item{\code{minVI_partition}}{Partition estimated by minimizing posterior expected VI
+#'         (first solution returned by \code{mcclust.ext::minVI}).}
+#'   \item{\code{partition_binder}}{Partition estimated by Binder's loss
+#'         (\code{mcclust.ext::minbinder.ext}).}
+#'   \item{\code{credible_ball_lower_partition}}{Partition on the \emph{surface} of the
+#'         95\% VI-credible ball that attains one extremum (relabelled by decreasing
+#'         posterior-mean item strength).}
+#'   \item{\code{credible_ball_upper_partition}}{Analogous extremal partition on the
+#'         credible-ball surface (relabelled).}
+#'   \item{\code{K_VI_lower}}{Number of clusters in \code{credible_ball_lower_partition}.}
+#'   \item{\code{K_VI_upper}}{Number of clusters in \code{credible_ball_upper_partition}.}
+#'   \item{\code{n_clusters_each_iter}}{Integer vector (length S) of occupied cluster counts per iteration.}
+#'   \item{\code{block_count_distribution}}{Data frame with columns
+#'         \code{num_blocks}, \code{count}, \code{prob} summarizing the posterior of the
+#'         number of clusters.}
+#'   \item{\code{item_cluster_assignment_probs}}{Data frame (N x Kmax) of per-item
+#'         marginal assignment probabilities (columns \code{Cluster_1}, \code{Cluster_2}, ...).}
+#'   \item{\code{avg_top_block_count}}{Average size of the top-\eqn{\lambda} cluster across iterations.}
+#'   \item{\code{top_block_count_per_iter}}{Integer vector (length S) with the size
+#'         of the top-\eqn{\lambda} cluster per iteration.}
+#'   \item{\code{cluster_lambda_ordered}}{List of length S; each element is the vector of
+#'         cluster \eqn{\lambda} values for that iteration, ordered decreasingly.}
 #' }
 #'
 #' @details
-#' The function first compacts raw labels to 1..K within each iteration,
-#' then orders the occupied labels by decreasing \eqn{\lambda}, producing a
-#' canonical labeling. Co-clustering summaries use \pkg{mcclust} and \pkg{mcclust.ext}.
+#' \strong{Relabelling.} For each iteration, occupied labels are compacted to \code{1..K_s}
+#' and reordered by decreasing \eqn{\lambda}, producing a canonical “1 = strongest” labelling.
+#'
+#' \strong{Point estimation.} The posterior similarity matrix is computed from relabelled
+#' draws; minVI and Binder partitions are obtained via \pkg{mcclust.ext}.
+#'
+#' \strong{Credible ball and extremal partitions.} A 95\% credible ball in partition space
+#' (under VI) is constructed around the minVI partition. We report the \emph{extreme}
+#' partitions on the ball's surface (in the sense of maximal VI distance from the centre),
+#' as returned by \code{mcclust.ext::credibleball}. These are then relabelled by decreasing
+#' posterior-mean item strength to ensure a consistent “strength ordering” across summaries.
+#' The associated cluster counts \code{K_VI_lower} and \code{K_VI_upper} characterize the
+#' local structural uncertainty around the point estimate; they are \emph{not} marginal
+#' posterior quantiles of \eqn{K}.
+#'
+#' @section Input requirements:
+#' \itemize{
+#'   \item \code{x_samples} must be integer-valued with no missing items per row.
+#'   \item \code{lambda_samples} may be sparse (NAs for non-occupied labels).
+#'   \item \pkg{mcclust} and \pkg{mcclust.ext} must be available; \code{credibleball}
+#'         is expected to return lower/upper partitions in either \code{c.lower/c.upper}
+#'         or \code{c.lowervert/c.uppervert}.
+#' }
 #'
 #' @examples
 #' \dontrun{
-#' S <- 100; N <- 20
 #' set.seed(42)
-#' x_samps <- matrix(sample(1:3, S*N, TRUE), S, N)
-#' lam_list <- replicate(S, { v <- rep(NA_real_, 5); v[1:3] <- runif(3, 0.5, 2); v }, simplify=FALSE)
+#' S <- 50; N <- 15
+#' x_samps <- matrix(sample(1:4, S*N, TRUE), S, N)
+#' # Sparse lambda per-iter: labels up to 6, only first 4 occupied typically
+#' lam_list <- replicate(S, { v <- rep(NA_real_, 6); v[1:4] <- rexp(4, 1); v }, simplify = FALSE)
 #' out <- relabel_by_lambda(x_samps, lam_list)
-#' table(out$block_count_distribution$num_blocks)
+#' out$minVI_partition[1:10]
+#' out$K_VI_lower; out$K_VI_upper
 #' }
-#' @importFrom stats runif rexp
+#'
+#' @references
+#' Wade, S., 2023. Bayesian cluster analysis. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences 381, 20220149. https://doi.org/10.1098/rsta.2022.0149
+#'
+#'
+#' @seealso \code{\link[mcclust.ext]{minVI}}, \code{\link[mcclust.ext]{minbinder.ext}},
+#'   \code{\link[mcclust.ext]{credibleball}}, \code{\link[mcclust]{comp.psm}}
+#'
 #' @import mcclust
 #' @import mcclust.ext
+#' @importFrom stats rexp
 #' @export
+
 relabel_by_lambda <- function(x_samples, lambda_samples) {
   stopifnot(is.matrix(x_samples))
   S <- nrow(x_samples); N <- ncol(x_samples)
 
-  # Accept (i) list length S of numeric vectors indexed by label ID (sparse with NAs),
+  # Accept lambda as (i) list length S of numeric vectors indexed by raw label ID (sparse with NAs),
   # or (ii) matrix S x L (sparse columns with NAs).
   is_list_format <- is.list(lambda_samples)
   get_lambda_vec <- function(iter) {
@@ -526,56 +595,99 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
 
   # Outputs
   x_relabeled              <- matrix(NA_integer_, S, N)
-  lambda_per_item          <- matrix(NA_real_,    S, N)     # per-item lambda after relabel (S x N)
-  cluster_lambda_ordered   <- vector("list", S)             # per-iter numeric vector (length = K_iter)
+  lambda_per_item          <- matrix(NA_real_,    S, N)   # per-item lambda after relabel (S x N)
+  cluster_lambda_ordered   <- vector("list", S)
   n_clusters_each_iter     <- integer(S)
   top_block_count_per_iter <- integer(S)
 
+  # --- Per-iteration relabel by decreasing lambda ---
   for (iter in seq_len(S)) {
     xi <- as.integer(x_samples[iter, ])
-    # compact to 1..K
     occ_raw <- sort(unique(xi))
-    xi_seq <- match(xi, occ_raw)   # 1..K
-    K <- max(xi_seq)
+    xi_seq  <- match(xi, occ_raw)           # 1..K
+    K       <- max(xi_seq)
 
-    lam_vec_full <- get_lambda_vec(iter)   # sparse per-label lambda with NAs at non-occupied ids
-
-    # pull lambda for the occupied *raw* labels, keep order aligned with occ_raw
+    lam_vec_full <- get_lambda_vec(iter)     # sparse per-label lambda; NA at non-occupied ids
     lam_occ <- rep(NA_real_, length(occ_raw))
     ok_idx  <- occ_raw <= length(lam_vec_full)
     lam_occ[ok_idx] <- lam_vec_full[occ_raw[ok_idx]]
 
-    # order clusters by decreasing lambda (NAs last)
     ord <- order(lam_occ, decreasing = TRUE, na.last = TRUE)
     occ_ord <- occ_raw[ord]
     lam_ord <- lam_occ[ord]
     if (anyNA(lam_ord)) lam_ord[is.na(lam_ord)] <- .Machine$double.xmin
 
-    # map seq labels 1..K to new ids by lambda order: new ids = 1..K
-    seq_to_raw <- occ_raw
+    # map current labels -> rank by lambda (1 strongest)
     raw_to_ord_id <- integer(max(occ_ord))
     raw_to_ord_id[occ_ord] <- seq_len(K)
-    xi_new <- raw_to_ord_id[ seq_to_raw[ xi_seq ] ]
-    x_relabeled[iter, ] <- xi_new
+    xi_new <- raw_to_ord_id[ occ_raw[ xi_seq ] ]
 
-    # per-item lambda after relabel
+    x_relabeled[iter, ]    <- xi_new
     lambda_per_item[iter, ] <- lam_ord[ xi_new ]
-
-    # store per-iter ordered cluster lambda vector (length = K)
     cluster_lambda_ordered[[iter]] <- lam_ord
-
     n_clusters_each_iter[iter]     <- K
     top_block_count_per_iter[iter] <- sum(xi_new == 1L)
   }
 
-  unique_count <- apply(x_samples, 1, function(z) length(unique(z)))
-  modal_K = as.numeric(names(which.max(table(unique_count))))
-  # Posterior similarity & hard partitions (on relabeled x)
-  psm <- mcclust::comp.psm(x_relabeled)
-  partition_binder <- mcclust.ext::minbinder.ext(psm, cls.draw = x_relabeled,method = "avg",max.k = modal_K)$cl
-  partition_minVI  <- mcclust.ext::minVI(psm, cls.draw = x_relabeled, method = "all",max.k = modal_K)$cl[1, ]
+  # modal K from relabelled draws
+  modal_K <- as.integer(names(which.max(table(n_clusters_each_iter))))
 
-  # Per-item assignment probabilities P(item i -> k), with k up to Kmax = N
+  # --- Posterior similarity & point estimates (on relabelled x) ---
+  psm <- mcclust::comp.psm(x_relabeled)
+  partition_binder <- mcclust.ext::minbinder.ext(
+    psm, cls.draw = x_relabeled, method = "avg", max.k = modal_K
+  )$cl
+  partition_minVI  <- mcclust.ext::minVI(
+    psm, cls.draw = x_relabeled, method = "all", max.k = modal_K
+  )$cl[1, ]
+
+  # --- Credible ball (VI) around minVI ---
+  x_ball <- mcclust.ext::credibleball(
+    c.star = partition_minVI,
+    cls.draw = x_relabeled,
+    c.dist = "VI"
+  )
+
+  # Helper: relabel ANY partition by decreasing posterior-mean item strength
+  # (gives a consistent ordering for minVI and credible-ball extrema)
+  relabel_partition_by_item_mean_lambda <- function(z, lambda_item_mean) {
+    stopifnot(length(z) == length(lambda_item_mean))
+    z <- as.integer(z)
+    labs <- sort(unique(z))
+    # cluster mean strength from item-level posterior means
+    cl_means <- vapply(labs, function(k) mean(lambda_item_mean[z == k], na.rm = TRUE), numeric(1))
+    # order clusters by decreasing mean lambda, assign new ids 1..K
+    ord <- order(cl_means, decreasing = TRUE)
+    new_ids <- seq_along(labs)
+    names(new_ids) <- labs[ord]
+    z_new <- new_ids[as.character(z)]
+    as.integer(z_new)
+  }
+
+  # Posterior-mean item strengths (S-averaged, after per-iter relabel)
+  lambda_item_mean <- colMeans(lambda_per_item, na.rm = TRUE)
+
+  # Extract lower/upper partitions from the credible ball.
+  # Different mcclust.ext versions use c.lower/c.upper or c.lowervert/c.uppervert;
+  # be robust to either.
+  get_part <- function(obj, name1, name2) {
+    if (!is.null(obj[[name1]])) obj[[name1]] else obj[[name2]]
+  }
+  c_lower_raw <- get_part(x_ball, "c.lower", "c.lowervert")
+  c_upper_raw <- get_part(x_ball, "c.upper", "c.uppervert")
+
+  if (is.null(c_lower_raw) || is.null(c_upper_raw)) {
+    stop("credibleball() did not return lower/upper partitions in expected slots.")
+  }
+
+  # Relabel lower/upper by decreasing item-mean lambda
+  c_lower_rl <- relabel_partition_by_item_mean_lambda(c_lower_raw, lambda_item_mean)
+  c_upper_rl <- relabel_partition_by_item_mean_lambda(c_upper_raw, lambda_item_mean)
+
+  K_VI_lower <- length(unique(c_lower_rl))
+  K_VI_upper <- length(unique(c_upper_rl))
+
+  # --- Assignment probabilities (up to Kmax = N, sparse beyond occupied levels) ---
   Kmax <- N
   assignment_probs <- matrix(0, nrow = N, ncol = Kmax)
   for (k in seq_len(Kmax)) {
@@ -585,7 +697,7 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
   rownames(assignment_probs) <- paste0("Item_", seq_len(N))
   assignment_probs_df <- as.data.frame(assignment_probs)
 
-  # Block-count distribution across iterations
+  # --- Block-count distribution across iterations ---
   bc_tab <- table(n_clusters_each_iter)
   block_count_df <- data.frame(
     num_blocks = as.integer(names(bc_tab)),
@@ -594,17 +706,26 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
   )
 
   list(
+    # relabelled draws and lambdas
     x_samples_relabel             = x_relabeled,             # S x N
     lambda_samples_relabel        = lambda_per_item,         # S x N
-    item_cluster_assignment_probs = assignment_probs_df,     # N x Kmax
-    block_count_distribution      = block_count_df,
-    avg_top_block_count           = mean(top_block_count_per_iter),
+    cluster_lambda_ordered        = cluster_lambda_ordered,  # list length S
+
+    # summaries
     co_clustering                 = psm,
     minVI_partition               = partition_minVI,
     partition_binder              = partition_binder,
     n_clusters_each_iter          = n_clusters_each_iter,
+    block_count_distribution      = block_count_df,
+    item_cluster_assignment_probs = assignment_probs_df,
+    avg_top_block_count           = mean(top_block_count_per_iter),
     top_block_count_per_iter      = top_block_count_per_iter,
-    cluster_lambda_ordered        = cluster_lambda_ordered
+
+    # credible-ball extrema (RE-LABELLED by decreasing strength)
+    credible_ball_lower_partition = c_lower_rl,
+    credible_ball_upper_partition = c_upper_rl,
+    K_VI_lower                    = K_VI_lower,
+    K_VI_upper                    = K_VI_upper
   )
 }
 

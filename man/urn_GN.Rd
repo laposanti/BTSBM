@@ -13,6 +13,8 @@ urn_GN(v_minus, gamma)
 }
 \value{
 Numeric vector length \eqn{K+1}.
+#' @references
+Legramanti, S., Rigon, T., Durante, D., Dunson, D.B., 2022. Extended stochastic block models with application to criminal networks. The Annals of Applied Statistics 16. https://doi.org/10.1214/21-aoas1595
 }
 \description{
 Urn weight: Gnedin heuristic
