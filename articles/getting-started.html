@@ -73,7 +73,7 @@
       <h1>Getting started with BTSBM: the R package for the BT-SBM paper</h1>
                         <h4 data-toc-skip class="author">Lapo Santi</h4>
             
-            <h4 data-toc-skip class="date">2025-10-25</h4>
+            <h4 data-toc-skip class="date">2025-10-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/laposanti/BTSBM/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>getting-started.Rmd</code></div>
@@ -228,8 +228,8 @@ structure.</p>
 <code class="sourceCode R"><span><span class="va">x_binder</span> <span class="op">&lt;-</span> <span class="va">post</span><span class="op">$</span><span class="va">partition_binder</span> <span class="co">#partition with Binder loss</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">x_binder</span><span class="op">)</span> <span class="co">#Block sizes</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; x_binder</span></span>
-<span><span class="co">#&gt;  1  2  3  4 </span></span>
-<span><span class="co">#&gt;  2 17 12 74</span></span></code></pre>
+<span><span class="co">#&gt;  1  2  3  4  5  6  7  8  9 10 11 </span></span>
+<span><span class="co">#&gt;  2  1 16  5  1  1  1  1  3  1 73</span></span></code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_minVI</span> <span class="op">&lt;-</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span> <span class="co">#partition with MIN-VI loss</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">x_minVI</span><span class="op">)</span> <span class="co">#Block sizes</span></span></code></pre></div>
