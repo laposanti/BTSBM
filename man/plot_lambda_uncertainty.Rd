@@ -7,12 +7,12 @@
 plot_lambda_uncertainty(
   fit,
   w_ij,
-  log_base = 10,
+  log_base = 2.718,
   max_n_clust = NULL,
   prob = 0.9,
-  palette = c(`0` = "#FFFFFF", `1` = "#CDEB8B", `2` = "#78AB46", `3` = "#FFD700", `4` =
-    "#FF8C00", `5` = "#00441B"),
-  clean_fun = clean_players_names
+  palette = NULL,
+  clean_fun = clean_players_names,
+  x_hat = NULL
 )
 }
 \arguments{

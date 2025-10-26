@@ -154,87 +154,139 @@ plot_block_adjacency <- function(
 #' p <- plot_assignment_probabilities(fit, w_ij)
 #' }
 #' @export
+#'
 plot_assignment_probabilities <- function(
     fit,
     w_ij = NULL,
-    max_n_clust= NULL,
+    max_n_clust = NULL,
     clean_fun = clean_players_names,
-    k_show = NULL,
+    k_show = NULL,                # currently unused, kept for API compat
     fill_low = "#FFFFCC",
     fill_high = "#006400"
 ){
-
-
-  item_names <- rownames(w_ij)
-  if (is.null(item_names)) item_names <- paste0("Item_", seq_len(nrow(w_ij)))
-
-
-  count_cl = function(x){
-    length(unique(x))
+  # --- Item names ---
+  if (!is.null(w_ij)) {
+    item_names <- rownames(w_ij)
+    if (is.null(item_names)) item_names <- paste0("Item_", seq_len(nrow(w_ij)))
+  } else if (!is.null(rownames(fit$item_cluster_assignment_probs))) {
+    item_names <- rownames(fit$item_cluster_assignment_probs)
+  } else {
+    item_names <- paste0("Item_", seq_len(nrow(fit$item_cluster_assignment_probs)))
   }
 
-  x_samples       <- fit$x_samples
-  lambda_samples  <- fit$lambda_samples
+  # --- Determine modal K if not provided ---
+  x_samples <- fit$x_samples
+  lambda_samples <- fit$lambda_samples
 
   unique_count <- apply(x_samples, 1, function(z) length(unique(z)))
-  modal_K = as.numeric(names(which.max(table(unique_count))))
-  if(is.null(max_n_clust)){max_n_clust <- modal_K}
+  modal_K <- as.numeric(names(which.max(table(unique_count))))
+  if (is.null(max_n_clust)) max_n_clust <- modal_K
 
-  x_samples_sub <- x_samples[which(unique_count == max_n_clust), ]
+  # Optionally subset samples (kept for future use / consistency)
+  x_samples_sub <- x_samples[which(unique_count == max_n_clust), , drop = FALSE]
   lambda_samples_sub <- lambda_samples[which(unique_count == max_n_clust)]
 
-  block_prob <- fit$item_cluster_assignment_probs[, 1:max_n_clust]
-  block_prob <- as.data.frame(block_prob)
-  block_prob <- cbind(block_prob, pl_name = item_names)  # <-- boom if nrow(block_prob)==0
+  # --- Take first max_n_clust columns and renormalise per row ---
+  if (is.null(fit$item_cluster_assignment_probs)) {
+    stop("fit$item_cluster_assignment_probs is NULL.")
+  }
+  if (ncol(fit$item_cluster_assignment_probs) < max_n_clust) {
+    stop("Requested max_n_clust exceeds available columns in item_cluster_assignment_probs.")
+  }
 
+  block_prob_mat <- as.matrix(fit$item_cluster_assignment_probs[, seq_len(max_n_clust), drop = FALSE])
+  rownames(block_prob_mat) <- item_names
+
+  row_mass <- rowSums(block_prob_mat, na.rm = TRUE)
+  zero_mass_idx <- which(!is.finite(row_mass) | row_mass <= 0)
+
+  if (length(zero_mass_idx) > 0) {
+    msg <- sprintf(
+      "Dropping %d item(s) with zero probability mass within the shown %d clusters: %s",
+      length(zero_mass_idx), max_n_clust, paste(rownames(block_prob_mat)[zero_mass_idx], collapse = ", ")
+    )
+    message(msg)
+    block_prob_mat <- block_prob_mat[-zero_mass_idx, , drop = FALSE]
+    item_names <- item_names[-zero_mass_idx]
+    row_mass <- row_mass[-zero_mass_idx]
+    if (nrow(block_prob_mat) == 0) stop("All items had zero mass in the filtered clusters.")
+  }
+
+  # Renormalise to sum to 1 across the shown clusters
+  norm_block_prob_mat <- sweep(block_prob_mat, 1, row_mass, FUN = "/")
+  # Numerical cleanup
+  norm_block_prob_mat[!is.finite(norm_block_prob_mat)] <- 0
+
+  # Optional: sanity check (can be commented out)
+  # max(abs(rowSums(norm_block_prob_mat) - 1))
+
+  # --- Long format for plotting ---
+  block_prob <- as.data.frame(norm_block_prob_mat, check.names = FALSE)
+  block_prob <- cbind(block_prob, pl_name = rownames(norm_block_prob_mat))
+
+  cluster_cols <- names(block_prob)[seq_len(max_n_clust)]
 
   assignment_probs_long <- block_prob %>%
-    pivot_longer(cols = 1:max_n_clust, names_to = "Cluster", values_to = "prob") %>%
-    mutate(
+    tidyr::pivot_longer(
+      cols = tidyselect::all_of(cluster_cols),
+      names_to = "Cluster",
+      values_to = "prob"
+    ) %>%
+    dplyr::mutate(
       Cluster = gsub(x = Cluster, replacement = " ", pattern = "_"),
       pl_name = gsub(x = pl_name, replacement = " ", pattern = "_")
     )
 
-  # Cluster with highest assignment probability
+  # Cluster with highest assignment probability (post-renormalisation)
   max_prob_clusters <- assignment_probs_long %>%
-    group_by(pl_name) %>%
-    summarize(Cl_ass = Cluster[which.max(prob)], .groups = "drop")
+    dplyr::group_by(pl_name) %>%
+    dplyr::summarize(Cl_ass = Cluster[which.max(prob)], .groups = "drop")
 
-  # Marginal win percentages
-  marg_pro_win <- data.frame(
-    pl_name = item_names,
-    marg_pro_win  = rowSums(w_ij),
-    marg_pro_loss = colSums(w_ij)
-  ) %>%
-    mutate(
-      pct_win = marg_pro_win / (marg_pro_loss + marg_pro_win),
-      pl_name = gsub(x = pl_name, replacement = " ", pattern = "_")
-    )
+  # --- Marginal win percentages (if w_ij is provided) ---
+  if (!is.null(w_ij)) {
+    marg_pro_win <- data.frame(
+      pl_name = rownames(w_ij)[match(rownames(norm_block_prob_mat), rownames(w_ij))],
+      marg_pro_win  = rowSums(w_ij[rownames(norm_block_prob_mat), , drop = FALSE]),
+      marg_pro_loss = colSums(w_ij[, colnames(w_ij), drop = FALSE])[match(rownames(norm_block_prob_mat), rownames(w_ij))]
+    ) %>%
+      dplyr::mutate(
+        pct_win = marg_pro_win / (marg_pro_loss + marg_pro_win),
+        pl_name = gsub(x = pl_name, replacement = " ", pattern = "_")
+      )
+  } else {
+    marg_pro_win <- data.frame(pl_name = assignment_probs_long$pl_name |> unique(),
+                               marg_pro_win = NA_real_,
+                               marg_pro_loss = NA_real_,
+                               pct_win = NA_real_)
+  }
 
   assignment_probs_long_plot <- assignment_probs_long %>%
-    left_join(max_prob_clusters, by = "pl_name") %>%
-    left_join(marg_pro_win, by = "pl_name") %>%
-    ungroup()|>
-    mutate(
-      pl_name = sapply(stringr::str_to_title(gsub("_", " ", pl_name)), clean_fun),
-    )|>
-    mutate(pl_name = factor(pl_name,
-                            levels = unique(pl_name[order(Cl_ass, -marg_pro_win,decreasing = T)]),
-                            ordered = TRUE))
+    dplyr::left_join(max_prob_clusters, by = "pl_name") %>%
+    dplyr::left_join(marg_pro_win, by = "pl_name") %>%
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      pl_name = sapply(stringr::str_to_title(gsub("_", " ", pl_name)), clean_fun)
+    ) |>
+    dplyr::mutate(
+      pl_name = factor(
+        pl_name,
+        levels = unique(pl_name[order(Cl_ass, -marg_pro_win, decreasing = TRUE)]),
+        ordered = TRUE
+      )
+    )
 
-  ass_prob_plot <- ggplot(assignment_probs_long_plot) +
-    geom_tile(aes(x = Cluster, y = pl_name, fill = prob)) +
-    scale_fill_gradient(low = "#FFFFCC", high = "#006400", na.value = "#009680") +
-    labs(x = "", y = "", fill = "Assign. Prob.") +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 90),
-      axis.title.x = element_blank(),
-      axis.title.y = element_blank()
+  # --- Plot ---
+  ggplot2::ggplot(assignment_probs_long_plot) +
+    ggplot2::geom_tile(ggplot2::aes(x = Cluster, y = pl_name, fill = prob)) +
+    ggplot2::scale_fill_gradient(low = fill_low, high = fill_high, na.value = "#009680") +
+    ggplot2::labs(x = "", y = "", fill = "Assign. Prob.") +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 90),
+      axis.title.x = ggplot2::element_blank(),
+      axis.title.y = ggplot2::element_blank()
     ) +
-    scale_y_discrete(guide = guide_axis(n.dodge = 2))
-
-  ass_prob_plot
+    ggplot2::scale_y_discrete(guide = ggplot2::guide_axis(n.dodge = 2))
 }
 
 
