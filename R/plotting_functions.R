@@ -37,19 +37,17 @@ plot_block_adjacency <- function(
 
   make_palette <- function(
     n,
-    low  = "#FFFFFF",
-    mids = c("#CDEB8B", "#78AB46", "#FFD700", "#FF8C00"),
-    high = "#00441B",
+    low  = "#00441B",                       # was "#FFFFFF"
+    mids = c("#CDEB8B", "#78AB46", "#FFD700"),
+    high = "#FF8C00",
     bias = 1
   ) {
-    stopifnot(n >= 2)
-    pal <- grDevices::colorRampPalette(c(low, mids, high), space = "Lab", bias = bias)(n)
-    pal[1] <- low
-    pal[n] <- high
-    pal
+    grDevices::colorRampPalette(c(low, mids, high), bias = bias)(n)
   }
 
-  if(is.null(palette)) palette <- make_palette(length(x_hat))
+  K= length(unique(x_hat))
+  if(is.null(palette)) palette <- make_palette(K)
+  stopifnot(length(palette) == K)
   if (is.null(pl_names)) pl_names <- paste0("Item_", seq_len(nrow(w_ij)))
   colnames(w_ij) <- pl_names
   rownames(w_ij) <- pl_names
@@ -260,14 +258,16 @@ plot_assignment_probabilities <- function(
 #' p <- plot_lambda_uncertainty(fit, prob = 0.90)
 #' }
 #' @export
+#'
 plot_lambda_uncertainty <- function(
     fit,
     w_ij,
-    log_base = 10,
+    log_base = 2.718,
     max_n_clust = NULL,
     prob = 0.90,
-    palette = c("0"="#FFFFFF","1"="#CDEB8B","2"="#78AB46","3"="#FFD700","4"="#FF8C00","5"="#00441B"),
-    clean_fun = clean_players_names
+    palette = NULL,
+    clean_fun = clean_players_names,
+    x_hat = NULL
 ){
 
   # Expected shapes:
@@ -276,7 +276,20 @@ plot_lambda_uncertainty <- function(
   #   partition_binder       : N       (final hard clustering per item)
   lambda_item <- fit$lambda_samples_relabel
   x_samples   <- fit$x_samples_relabel
-  cluster_hat <- fit$partition_binder
+  if(is.null(x_hat)) x_hat = fit$minVI_partition
+  cluster_hat <- x_hat
+  make_palette <- function(
+    n,
+    low  = "#00441B",                       # was "#FFFFFF"
+    mids = c("#CDEB8B", "#78AB46", "#FFD700"),
+    high = "#FF8C00",
+    bias = 1
+  ) {
+    grDevices::colorRampPalette(c(low, mids, high), bias = bias)(n)
+  }
+
+  K= length(unique(x_hat))
+  if(is.null(palette)) palette <- make_palette(K)
 
   if (is.null(lambda_item) || is.null(x_samples))
     stop("Expected fit$lambda_samples_relabel and fit$x_samples_relabel to be present.")
@@ -333,11 +346,6 @@ plot_lambda_uncertainty <- function(
   # Plot ----------------------------------------------------------------------
   # colour mapping limited to present clusters to avoid unused palette entries
   present_clusters <- sort(unique(player_summ$cluster))
-  pal_use <- palette[as.character(present_clusters)]
-  if (any(is.na(pal_use))) {
-    # fall back if palette is too short
-    pal_use <- grDevices::hcl.colors(length(present_clusters), "Dark3")
-  }
 
   plot_lambda <- player_summ |>
     dplyr::arrange(cluster, dplyr::desc(mean)) |>
@@ -348,11 +356,15 @@ plot_lambda_uncertainty <- function(
     ) |>
     ggplot2::ggplot(ggplot2::aes(x = mean, y = player, colour = factor(cluster))) +
     ggplot2::geom_pointrange(ggplot2::aes(xmin = low, xmax = up), size = 0.4, fatten = 0.6) +
-    ggplot2::scale_x_continuous(trans = scales::log_trans(base = log_base)) +
-    ggplot2::scale_colour_manual(values = pal_use, breaks = as.character(present_clusters)) +
+    scale_x_continuous(
+      trans  = scales::log_trans(base = log_base),
+      labels = scales::label_number(accuracy = 0.01),  # 2 decimals
+      breaks = scales::breaks_log(base = log_base)     # optional: nice log breaks
+    )+
+    ggplot2::scale_colour_manual(values = palette) +
     ggplot2::scale_y_discrete(guide = ggplot2::guide_axis(n.dodge = 2)) +
     ggplot2::labs(
-      x = bquote(lambda~"(posterior mean, log["*.(log_base)*"] scale)"),
+      x = bquote(lambda~"(posterior mean)- x-axis in log scale"),
       y = NULL,
       colour = "Cluster"
     ) +

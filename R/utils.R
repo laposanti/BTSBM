@@ -633,18 +633,18 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
   modal_K <- as.integer(names(which.max(table(n_clusters_each_iter))))
 
   # --- Posterior similarity & point estimates (on relabelled x) ---
-  psm <- mcclust::comp.psm(x_relabeled)
+  psm <- mcclust::comp.psm(x_samples)
   partition_binder <- mcclust.ext::minbinder.ext(
-    psm, cls.draw = x_relabeled, method = "avg", max.k = modal_K
-  )$cl
+    psm, cls.draw = x_samples, method = "all"
+  )$cl[1, ]
   partition_minVI  <- mcclust.ext::minVI(
-    psm, cls.draw = x_relabeled, method = "all", max.k = modal_K
+    psm, cls.draw = x_samples, method = "all"
   )$cl[1, ]
 
   # --- Credible ball (VI) around minVI ---
   x_ball <- mcclust.ext::credibleball(
     c.star = partition_minVI,
-    cls.draw = x_relabeled,
+    cls.draw = x_samples,
     c.dist = "VI"
   )
 
@@ -663,29 +663,34 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
     z_new <- new_ids[as.character(z)]
     as.integer(z_new)
   }
+  lambda_item_mean <- colMeans(lambda_per_item, na.rm = TRUE)
+
+  partition_minVI  = relabel_partition_by_item_mean_lambda(partition_minVI, lambda_item_mean)
+  partition_binder = relabel_partition_by_item_mean_lambda(partition_binder, lambda_item_mean)
 
   # Posterior-mean item strengths (S-averaged, after per-iter relabel)
-  lambda_item_mean <- colMeans(lambda_per_item, na.rm = TRUE)
 
   # Extract lower/upper partitions from the credible ball.
   # Different mcclust.ext versions use c.lower/c.upper or c.lowervert/c.uppervert;
-  # be robust to either.
   get_part <- function(obj, name1, name2) {
     if (!is.null(obj[[name1]])) obj[[name1]] else obj[[name2]]
   }
   c_lower_raw <- get_part(x_ball, "c.lower", "c.lowervert")
-  c_upper_raw <- get_part(x_ball, "c.upper", "c.uppervert")
-
+  c_upper_raw <- get_part(x_ball, "c.upper", "c.uppervert")[1,]
+  c_horiz = x_ball$c.horiz
   if (is.null(c_lower_raw) || is.null(c_upper_raw)) {
     stop("credibleball() did not return lower/upper partitions in expected slots.")
   }
 
   # Relabel lower/upper by decreasing item-mean lambda
-  c_lower_rl <- relabel_partition_by_item_mean_lambda(c_lower_raw, lambda_item_mean)
-  c_upper_rl <- relabel_partition_by_item_mean_lambda(c_upper_raw, lambda_item_mean)
+  c_lower_rl <- relabel_partition_by_item_mean_lambda(as.numeric(c_lower_raw), lambda_item_mean)
+  c_upper_rl <- relabel_partition_by_item_mean_lambda(as.numeric(c_upper_raw), lambda_item_mean)
+  c_horiz_rl <- relabel_partition_by_item_mean_lambda(as.numeric(c_horiz), lambda_item_mean)
 
-  K_VI_lower <- length(unique(c_lower_rl))
+
   K_VI_upper <- length(unique(c_upper_rl))
+  K_VI_lower <- length(unique(c_lower_rl))
+  K_VI_horiz <- length(unique(c_lower_rl))
 
   # --- Assignment probabilities (up to Kmax = N, sparse beyond occupied levels) ---
   Kmax <- N
@@ -720,12 +725,12 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
     item_cluster_assignment_probs = assignment_probs_df,
     avg_top_block_count           = mean(top_block_count_per_iter),
     top_block_count_per_iter      = top_block_count_per_iter,
-
-    # credible-ball extrema (RE-LABELLED by decreasing strength)
     credible_ball_lower_partition = c_lower_rl,
     credible_ball_upper_partition = c_upper_rl,
+    credible_ball_horiz_partition = c_horiz_rl,
     K_VI_lower                    = K_VI_lower,
-    K_VI_upper                    = K_VI_upper
+    K_VI_upper                    = K_VI_upper,
+    K_VI_horiz                    = K_VI_horiz
   )
 }
 
