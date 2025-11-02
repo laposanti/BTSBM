@@ -25,7 +25,7 @@ The package provides:
 
 3. 🌐 Visualization tools for clusters and block interactions
 
-Applications include **sports analytics**, **psychometrics**, and **ranking problems** with hidden group structure.
+Applications include, among the others, **sports analytics**, **psychometrics**, and **ranking problems** with hidden group structure.
 
 ---
 
@@ -38,7 +38,8 @@ For a step-by-step example using tennis data, visit the 👉 [Getting Started Vi
 
 ## When to Use BTSBM
 
-Use this model whenever outcomes can be summarized as *pairwise preferences* (`i` beats `j`):
+Use this model whenever outcomes can be summarized as *pairwise preferences* (`i` beats `j`). 
+Below are a few illustrative examples:
 
 | Domain | Example |
 |:--|:--|
@@ -47,10 +48,9 @@ Use this model whenever outcomes can be summarized as *pairwise preferences* (`i
 | 🧠 Psychometrics | Stimulus `i` chosen over `j` |
 | 🧪 A/B testing | Variant `i` performs better than `j` |
 
-Only a binary outcome per pair (“`i` over `j`”) is required — possibly aggregated into counts.
+Only a binary outcome per pair (“i over j”) is required, which can optionally be aggregated into counts (positive integers).
 
-From now on, we will adopt a sport-related jargon for simplicity, but this framework well adapts to the aforementioned contexts as well.
-
+For the sake of exposition, we will use a sports-related terminology throughout, though the same framework naturally extends to all the settings listed above — and beyond.
 ---
 
 ## Required Inputs
@@ -154,7 +154,11 @@ post <- BTSBM::relabel_by_lambda(fit$x_samples, fit$lambda_samples)
 plot_block_adjacency(fit = post, w_ij = w_ij)
 ```
 
+The following probabilities of K are supported:
 
+![Posterior probability of K](man/figures/p_one_season_table.png)
+
+We can use a single point estimate to order the pairwise interaction heatmap as follows:
 
 ![Reordered Adjacency matrix](man/figures/geom_adjacency_fixed.png)
 
