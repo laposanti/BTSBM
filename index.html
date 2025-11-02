@@ -79,7 +79,7 @@ combining <strong>pairwise comparison data</strong> with <strong>latent block cl
 <li><p>🎯 Posterior relabeling, point estimates and uncertainty quantification</p></li>
 <li><p>🌐 Visualization tools for clusters and block interactions</p></li>
 </ol>
-<p>Applications include <strong>sports analytics</strong>, <strong>psychometrics</strong>, and <strong>ranking problems</strong> with hidden group structure.</p>
+<p>Applications include, among the others, <strong>sports analytics</strong>, <strong>psychometrics</strong>, and <strong>ranking problems</strong> with hidden group structure.</p>
 <hr>
 <div class="section level3">
 <h3 id="quick-links">Quick Links<a class="anchor" aria-label="anchor" href="#quick-links"></a>
@@ -92,7 +92,7 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <div class="section level2">
 <h2 id="when-to-use-btsbm">When to Use BTSBM<a class="anchor" aria-label="anchor" href="#when-to-use-btsbm"></a>
 </h2>
-<p>Use this model whenever outcomes can be summarized as <em>pairwise preferences</em> (<code>i</code> beats <code>j</code>):</p>
+<p>Use this model whenever outcomes can be summarized as <em>pairwise preferences</em> (<code>i</code> beats <code>j</code>). Below are a few illustrative examples:</p>
 <table class="table">
 <thead><tr class="header">
 <th align="left">Domain</th>
@@ -121,9 +121,11 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 </tr>
 </tbody>
 </table>
-<p>Only a binary outcome per pair (“<code>i</code> over <code>j</code>”) is required — possibly aggregated into counts.</p>
-<p>From now on, we will adopt a sport-related jargon for simplicity, but this framework well adapts to the aforementioned contexts as well.</p>
-<hr>
+<p>Only a binary outcome per pair (“i over j”) is required, which can optionally be aggregated into counts (positive integers).</p>
+</div>
+<div class="section level2">
+<h2 id="for-the-sake-of-exposition-we-will-use-a-sports-related-terminology-throughout-though-the-same-framework-naturally-extends-to-all-the-settings-listed-above--and-beyond">For the sake of exposition, we will use a sports-related terminology throughout, though the same framework naturally extends to all the settings listed above — and beyond.<a class="anchor" aria-label="anchor" href="#for-the-sake-of-exposition-we-will-use-a-sports-related-terminology-throughout-though-the-same-framework-naturally-extends-to-all-the-settings-listed-above--and-beyond"></a>
+</h2>
 </div>
 <div class="section level2">
 <h2 id="required-inputs">Required Inputs<a class="anchor" aria-label="anchor" href="#required-inputs"></a>
@@ -214,6 +216,11 @@ For a step-by-step example using tennis data, visit the 👉 <a href="https://la
 <span></span>
 <span><span class="co"># plot adjacency matrix</span></span>
 <span><span class="fu"><a href="reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
+<p>The following probabilities of K are supported:</p>
+<div class="float">
+<img src="reference/figures/p_one_season_table.png" alt="Posterior probability of K"><div class="figcaption">Posterior probability of K</div>
+</div>
+<p>We can use a single point estimate to order the pairwise interaction heatmap as follows:</p>
 <div class="float">
 <img src="reference/figures/geom_adjacency_fixed.png" alt="Reordered Adjacency matrix"><div class="figcaption">Reordered Adjacency matrix</div>
 </div>
