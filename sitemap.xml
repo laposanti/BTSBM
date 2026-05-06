@@ -9,13 +9,16 @@
 <url><loc>https://laposanti.github.io/BTSBM/index.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/ATP_2000_2022.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/HGnedin.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/block_winprob_table_from_lambdas.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/clean_players_names.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/compare_bt_models_loo.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/compute_expected_wins_rank_posterior.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/dot-new_cluster_integral_log.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/dot-new_cluster_integral_log_anchored.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/dot-sample_from_logweights.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/dot-slice_on_log.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/expected_cl_py.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/exploratory_adjacency.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/gibbs_bt_simple.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/gnedin_K_mean.html</loc></url>
@@ -28,6 +31,7 @@
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_assignment_probabilities.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_lambda_uncertainty.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/plot_rank_intervals.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/pretty_table_K_distribution.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/sample_from_BTSBM.html</loc></url>
