@@ -1,4 +1,4 @@
-#' ATP Paired-Comparison Panels, 2000–2022
+#' ATP Paired-Comparison Panels, 2000–2025
 #'
 #' A yearly panel of head-to-head counts for the top 105 ATP players, suitable
 #' for Bradley–Terry/Stochastic Block Model analyses. For each season, the data
@@ -6,7 +6,7 @@
 #' and (ii) the number of matches played between \eqn{i} and \eqn{j}, along
 #' with a per-season player metadata tibble.
 #'
-#' @format A named list of length 23, with elements `"2000"`, `"2001"`, …, `"2022"`.
+#' @format A named list of length 26, with elements `"2000"`, `"2001"`, …, `"2025"`.
 #'   Each yearly element is a list of length 3:
 #'   \describe{
 #'     \item{`Y_ij`}{A numeric matrix \eqn{105 \times 105}. Entry \code{Y_ij[i, j]}
@@ -15,7 +15,7 @@
 #'     \item{`N_ij`}{A numeric matrix \eqn{105 \times 105}. Entry \code{N_ij[i, j]}
 #'       is the total number of matches between players \eqn{i} and \eqn{j} that year
 #'       (nonnegative integer; symmetric by construction; diagonal is zero).}
-#'     \item{`players_df`}{A tibble/data frame with 105 rows and 7 columns
+#'     \item{`players_df`}{A tibble/data frame with 105 rows and 8 columns
 #'       describing the player index used in the matrices for that year:
 #'       \describe{
 #'         \item{`player`}{Integer player identifier (row/column index used in
@@ -31,6 +31,7 @@
 #'         \item{`ht_year`}{Player height in centimeters (season-level value).}
 #'         \item{`player_slug`}{Character identifier (URL-safe or underscored
 #'           name) for the player.}
+#'         \item{`player_label`}{Human-readable display name for the player.}
 #'       }}
 #'   }
 #'
@@ -51,20 +52,20 @@
 #' See the package vignette for provenance and cleaning steps.
 #'
 #' @examples  \dontrun{
-#' data(ATP_2000_2022)
-#' names(ATP_2000_2022)
+#' data(ATP_2000_2025)
+#' names(ATP_2000_2025)
 #' year <- "2000"
-#' str(ATP_2000_2022[[year]])
+#' str(ATP_2000_2025[[year]])
 #'
 #' # Player i's total wins that year:
 #' i <- 1
-#' sum(ATP_2000_2022[[year]]$Y_ij[i, ], na.rm = TRUE)
+#' sum(ATP_2000_2025[[year]]$Y_ij[i, ], na.rm = TRUE)
 #'
 #' # Total matches between i and j:
 #' j <- 2
-#' ATP_2000_2022[[year]]$N_ij[i, j]
+#' ATP_2000_2025[[year]]$N_ij[i, j]
 #'
 #' # Join player metadata to indices used in the matrices:
-#' head(ATP_2000_2022[[year]]$players_df)
+#' head(ATP_2000_2025[[year]]$players_df)
 #'}
-"ATP_2000_2022"
+"ATP_2000_2025"
