@@ -2,17 +2,28 @@
 % Please edit documentation in R/plotting_functions.R
 \name{plot_lambda_uncertainty}
 \alias{plot_lambda_uncertainty}
-\title{Lambda uncertainty plot (per player)}
+\title{Figure 5 plotting function
+Lambda uncertainty plot (per player)}
 \usage{
 plot_lambda_uncertainty(
   fit,
-  w_ij,
-  log_base = 2.718,
+  w_ij = NULL,
+  players_df = NULL,
+  players_id_col = NULL,
+  labels = NULL,
+  labels_key_col = NULL,
+  labels_value_col = NULL,
+  clean_display_labels = NULL,
+  order_ids = NULL,
+  log_base = exp(1),
   max_n_clust = NULL,
   prob = 0.9,
   palette = NULL,
-  clean_fun = clean_players_names,
-  x_hat = NULL
+  clean_fun = function(x) x,
+  x_hat = NULL,
+  filter_lambdas = TRUE,
+  conditional = TRUE,
+  ...
 )
 }
 \arguments{
@@ -35,7 +46,7 @@ plot_lambda_uncertainty(
 A \code{ggplot} object.
 }
 \description{
-Forest plot of per-player posterior \eqn{\lambda} with uncertainty intervals,
+Forest plot of eqn{\lambda} with uncertainty intervals,
 using relabeled draws. Points colored by the hard partition (\code{fit$estimates$x_hat}).
 }
 \examples{

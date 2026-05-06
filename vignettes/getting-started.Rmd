@@ -9,7 +9,7 @@ output:
     toc_float: true   # (optional) floating/scrolling TOC
 number_sections: true  # (optional) numbered headings
 vignette: >
-  %\VignetteIndexEntry{My Vignette}
+  %\VignetteIndexEntry{Getting started with BTSBM: the R package for the BT-SBM paper}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -135,7 +135,8 @@ The reordered adjacency matrix reveals the empirical interaction pattern between
 ```{r, fig.width = 9, fig.height = 5}
 
 plot_block_adjacency(fit = post,
-                     w_ij = w_ij)
+                     w_ij = w_ij,
+                     bw_preview = FALSE)
 ```
 
 
@@ -144,7 +145,7 @@ plot_block_adjacency(fit = post,
 Posterior probabilities of assignment $p(x_i = k | W)$ quantify the uncertainty of player-to-block allocations. High uncertainty for certain individuals typically signals boundary cases or transitional players whose performance profile lies between different clusters.
 
 ```{r, fig.width = 9, fig.height = 7}
-plot_assignment_probabilities(fit = post, w_ij = w_ij)
+plot_assignment_probabilities(fit = post, w_ij = w_ij, x_hat = post$minVI_partition)
 ```
 
 
@@ -155,6 +156,37 @@ Posterior uncertainty in $\lambda_{x_i}$, the strength of player i. Since all pl
 
 ```{r, fig.width = 10, fig.height = 9}
 
-plot_lambda_uncertainty(fit = post, w_ij = w_ij, clean_fun = clean_players_names)
+plot_lambda_uncertainty(
+  fit = post,
+  w_ij = w_ij,
+  clean_fun = clean_players_names,
+  x_hat = post$minVI_partition
+)
+```
+
+## Summarise block-level win probabilities
+
+The relabelled posterior draws can also be collapsed into a block-by-block table
+of Bradley-Terry win probabilities. Weighting by the observed match counts makes
+the summary emphasise the block pairs that were actually well observed in the data.
+
+```{r}
+block_tbl <- block_winprob_table_from_lambdas(
+  lambda_item = post$lambda_samples_relabel,
+  z = post$minVI_partition,
+  N_ij = w_ij + t(w_ij)
+)
+
+knitr::kable(round(block_tbl$P_block, 3), caption = "Estimated block win probabilities")
+```
+
+## Plot posterior rank intervals
+
+Ranking summaries are computed directly from the relabelled player-strength draws.
+These intervals complement the lambda plot by showing posterior uncertainty on the
+rank scale, where 1 is the strongest player.
+
+```{r, fig.width = 8, fig.height = 7}
+plot_rank_intervals(post, max_players = 12)
 ```
 

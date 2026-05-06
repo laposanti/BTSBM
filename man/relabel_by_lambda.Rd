@@ -47,6 +47,9 @@ marginal assignment probabilities (columns \code{Cluster_1}, \code{Cluster_2}, .
 \item{\code{avg_top_block_count}}{Average size of the top-\eqn{\lambda} cluster across iterations.}
 \item{\code{top_block_count_per_iter}}{Integer vector (length S) with the size
 of the top-\eqn{\lambda} cluster per iteration.}
+\item{\code{top_block_size_distribution}}{Data frame with columns
+\code{top_block_size}, \code{count}, \code{prob} summarizing the posterior
+distribution of the strongest block size.}
 \item{\code{cluster_lambda_ordered}}{List of length S; each element is the vector of
 cluster \eqn{\lambda} values for that iteration, ordered decreasingly.}
 }

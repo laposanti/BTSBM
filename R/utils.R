@@ -523,6 +523,9 @@ shannon_entropy <- function(p) {
 #'   \item{\code{avg_top_block_count}}{Average size of the top-\eqn{\lambda} cluster across iterations.}
 #'   \item{\code{top_block_count_per_iter}}{Integer vector (length S) with the size
 #'         of the top-\eqn{\lambda} cluster per iteration.}
+#'   \item{\code{top_block_size_distribution}}{Data frame with columns
+#'         \code{top_block_size}, \code{count}, \code{prob} summarizing the posterior
+#'         distribution of the strongest block size.}
 #'   \item{\code{cluster_lambda_ordered}}{List of length S; each element is the vector of
 #'         cluster \eqn{\lambda} values for that iteration, ordered decreasingly.}
 #' }
@@ -578,85 +581,71 @@ shannon_entropy <- function(p) {
 
 relabel_by_lambda <- function(x_samples, lambda_samples) {
   stopifnot(is.matrix(x_samples))
-  S <- nrow(x_samples); N <- ncol(x_samples)
-
-  # Accept lambda as (i) list length S of numeric vectors indexed by raw label ID (sparse with NAs),
-  # or (ii) matrix S x L (sparse columns with NAs).
+  S <- nrow(x_samples)
+  N <- ncol(x_samples)
   is_list_format <- is.list(lambda_samples)
   get_lambda_vec <- function(iter) {
     if (is_list_format) {
       v <- lambda_samples[[iter]]
-      if (!is.numeric(v)) stop("lambda_samples[[iter]] must be numeric.")
+      if (!is.numeric(v)) 
+        stop("lambda_samples[[iter]] must be numeric.")
       v
-    } else {
+    }
+    else {
       lambda_samples[iter, ]
     }
   }
 
-  # Outputs
-  x_relabeled              <- matrix(NA_integer_, S, N)
-  lambda_per_item          <- matrix(NA_real_,    S, N)   # per-item lambda after relabel (S x N)
-  cluster_lambda_ordered   <- vector("list", S)
-  n_clusters_each_iter     <- integer(S)
+  x_relabeled <- matrix(NA_integer_, S, N)
+  lambda_per_item <- matrix(NA_real_, S, N)
+  cluster_lambda_ordered <- vector("list", S)
+  n_clusters_each_iter <- integer(S)
   top_block_count_per_iter <- integer(S)
 
-  # --- Per-iteration relabel by decreasing lambda ---
   for (iter in seq_len(S)) {
     xi <- as.integer(x_samples[iter, ])
     occ_raw <- sort(unique(xi))
-    xi_seq  <- match(xi, occ_raw)           # 1..K
-    K       <- max(xi_seq)
-
-    lam_vec_full <- get_lambda_vec(iter)     # sparse per-label lambda; NA at non-occupied ids
+    xi_seq <- match(xi, occ_raw)
+    K <- max(xi_seq)
+    lam_vec_full <- get_lambda_vec(iter)
     lam_occ <- rep(NA_real_, length(occ_raw))
-    ok_idx  <- occ_raw <= length(lam_vec_full)
+    ok_idx <- occ_raw <= length(lam_vec_full)
     lam_occ[ok_idx] <- lam_vec_full[occ_raw[ok_idx]]
-
     ord <- order(lam_occ, decreasing = TRUE, na.last = TRUE)
     occ_ord <- occ_raw[ord]
     lam_ord <- lam_occ[ord]
-    if (anyNA(lam_ord)) lam_ord[is.na(lam_ord)] <- .Machine$double.xmin
-
-    # map current labels -> rank by lambda (1 strongest)
+    if (anyNA(lam_ord)) 
+      lam_ord[is.na(lam_ord)] <- .Machine$double.xmin
     raw_to_ord_id <- integer(max(occ_ord))
     raw_to_ord_id[occ_ord] <- seq_len(K)
-    xi_new <- raw_to_ord_id[ occ_raw[ xi_seq ] ]
-
-    x_relabeled[iter, ]    <- xi_new
-    lambda_per_item[iter, ] <- lam_ord[ xi_new ]
+    xi_new <- raw_to_ord_id[occ_raw[xi_seq]]
+    x_relabeled[iter, ] <- xi_new
+    lambda_per_item[iter, ] <- lam_ord[xi_new]
     cluster_lambda_ordered[[iter]] <- lam_ord
-    n_clusters_each_iter[iter]     <- K
+    n_clusters_each_iter[iter] <- K
     top_block_count_per_iter[iter] <- sum(xi_new == 1L)
   }
 
-  # modal K from relabelled draws
   modal_K <- as.integer(names(which.max(table(n_clusters_each_iter))))
-
-  # --- Posterior similarity & point estimates (on relabelled x) ---
   psm <- mcclust::comp.psm(x_samples)
   partition_binder <- mcclust.ext::minbinder.ext(
     psm, cls.draw = x_samples, method = "all"
   )$cl[1, ]
-  partition_minVI  <- mcclust.ext::minVI(
+  partition_minVI <- mcclust.ext::minVI(
     psm, cls.draw = x_samples, method = "all"
   )$cl[1, ]
-
-  # --- Credible ball (VI) around minVI ---
   x_ball <- mcclust.ext::credibleball(
     c.star = partition_minVI,
     cls.draw = x_samples,
     c.dist = "VI"
   )
 
-  # Helper: relabel ANY partition by decreasing posterior-mean item strength
-  # (gives a consistent ordering for minVI and credible-ball extrema)
   relabel_partition_by_item_mean_lambda <- function(z, lambda_item_mean) {
     stopifnot(length(z) == length(lambda_item_mean))
     z <- as.integer(z)
     labs <- sort(unique(z))
-    # cluster mean strength from item-level posterior means
-    cl_means <- vapply(labs, function(k) mean(lambda_item_mean[z == k], na.rm = TRUE), numeric(1))
-    # order clusters by decreasing mean lambda, assign new ids 1..K
+    cl_means <- vapply(labs, function(k) mean(lambda_item_mean[z == 
+                                                                 k], na.rm = TRUE), numeric(1))
     ord <- order(cl_means, decreasing = TRUE)
     new_ids <- seq_along(labs)
     names(new_ids) <- labs[ord]
@@ -665,34 +654,40 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
   }
   lambda_item_mean <- colMeans(lambda_per_item, na.rm = TRUE)
 
-  partition_minVI  = relabel_partition_by_item_mean_lambda(partition_minVI, lambda_item_mean)
+  partition_minVI = relabel_partition_by_item_mean_lambda(partition_minVI, 
+                                                          lambda_item_mean)
   partition_binder = relabel_partition_by_item_mean_lambda(partition_binder, lambda_item_mean)
 
-  # Posterior-mean item strengths (S-averaged, after per-iter relabel)
-
-  # Extract lower/upper partitions from the credible ball.
-  # Different mcclust.ext versions use c.lower/c.upper or c.lowervert/c.uppervert;
   get_part <- function(obj, name1, name2) {
-    if (!is.null(obj[[name1]])) obj[[name1]] else obj[[name2]]
+    if (!is.null(obj[[name1]])) 
+      obj[[name1]]
+    else obj[[name2]]
   }
   c_lower_raw <- get_part(x_ball, "c.lower", "c.lowervert")
-  c_upper_raw <- get_part(x_ball, "c.upper", "c.uppervert")[1,]
-  c_horiz = x_ball$c.horiz
-  if (is.null(c_lower_raw) || is.null(c_upper_raw)) {
-    stop("credibleball() did not return lower/upper partitions in expected slots.")
+  c_upper_raw <- get_part(x_ball, "c.upper", "c.uppervert")
+  c_horiz_raw <- x_ball$c.horiz
+
+  pick_row <- function(obj, centre) {
+    if (is.vector(obj) && length(obj) == N) return(as.integer(obj))
+    if (is.matrix(obj) && ncol(obj) == N) {
+      d <- apply(obj, 1, function(z) mcclust::vi.dist(cl1 = as.integer(z), cl2 = as.integer(centre)))
+      return(as.integer(obj[which.min(d), ]))
+    }
+    stop("Unexpected credibleball partition format.")
   }
 
-  # Relabel lower/upper by decreasing item-mean lambda
-  c_lower_rl <- relabel_partition_by_item_mean_lambda(as.numeric(c_lower_raw), lambda_item_mean)
-  c_upper_rl <- relabel_partition_by_item_mean_lambda(as.numeric(c_upper_raw), lambda_item_mean)
-  c_horiz_rl <- relabel_partition_by_item_mean_lambda(as.numeric(c_horiz), lambda_item_mean)
+  c_lower_vec <- pick_row(c_lower_raw, partition_minVI)
+  c_upper_vec <- pick_row(c_upper_raw, partition_minVI)
+  c_horiz_vec <- pick_row(c_horiz_raw, partition_minVI)
 
+  c_lower_rl <- relabel_partition_by_item_mean_lambda(c_lower_vec, lambda_item_mean)
+  c_upper_rl <- relabel_partition_by_item_mean_lambda(c_upper_vec, lambda_item_mean)
+  c_horiz_rl <- relabel_partition_by_item_mean_lambda(c_horiz_vec, lambda_item_mean)
 
   K_VI_upper <- length(unique(c_upper_rl))
   K_VI_lower <- length(unique(c_lower_rl))
   K_VI_horiz <- length(unique(c_lower_rl))
 
-  # --- Assignment probabilities (up to Kmax = N, sparse beyond occupied levels) ---
   Kmax <- N
   assignment_probs <- matrix(0, nrow = N, ncol = Kmax)
   for (k in seq_len(Kmax)) {
@@ -702,7 +697,6 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
   rownames(assignment_probs) <- paste0("Item_", seq_len(N))
   assignment_probs_df <- as.data.frame(assignment_probs)
 
-  # --- Block-count distribution across iterations ---
   bc_tab <- table(n_clusters_each_iter)
   block_count_df <- data.frame(
     num_blocks = as.integer(names(bc_tab)),
@@ -710,21 +704,28 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
     prob       = as.vector(bc_tab) / sum(bc_tab)
   )
 
-  list(
-    # relabelled draws and lambdas
-    x_samples_relabel             = x_relabeled,             # S x N
-    lambda_samples_relabel        = lambda_per_item,         # S x N
-    cluster_lambda_ordered        = cluster_lambda_ordered,  # list length S
+  tbc_tab <- table(top_block_count_per_iter)
+  top_block_size_df <- data.frame(
+    top_block_size = as.integer(names(tbc_tab)),
+    count = as.vector(tbc_tab),
+    prob = as.vector(tbc_tab) / sum(tbc_tab)
+  )
 
-    # summaries
+  list(
+    x_samples_relabel             = x_relabeled,
+    lambda_samples_relabel        = lambda_per_item,
+    cluster_lambda_ordered        = cluster_lambda_ordered,
     co_clustering                 = psm,
     minVI_partition               = partition_minVI,
     partition_binder              = partition_binder,
     n_clusters_each_iter          = n_clusters_each_iter,
     block_count_distribution      = block_count_df,
     item_cluster_assignment_probs = assignment_probs_df,
+
     avg_top_block_count           = mean(top_block_count_per_iter),
     top_block_count_per_iter      = top_block_count_per_iter,
+    top_block_size_distribution   = top_block_size_df,
+
     credible_ball_lower_partition = c_lower_rl,
     credible_ball_upper_partition = c_upper_rl,
     credible_ball_horiz_partition = c_horiz_rl,

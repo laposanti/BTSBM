@@ -6,7 +6,7 @@ output:
     toc: true
     number_sections: false
 vignette: >
- %\VignetteIndexEntry{Getting started with BTSBM}
+ %\VignetteIndexEntry{Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model}
    %\VignetteEngine{knitr::rmarkdown}
    %\VignetteEncoding{UTF-8}
 ---
@@ -167,6 +167,8 @@ compare_bt_models_loo(simple_llo, cluster_llo)
 * `plot_block_adjacency(fit, w_ij, ...)` – square heatmap ordered by block and marginal wins.
 * `plot_assignment_probabilities(fit, w_ij = NULL, ...)` – item-by-cluster assignment heatmap.
 * `plot_lambda_uncertainty(fit, w_ij, ...)` – forest plot of per-item (\lambda) intervals (on log scale).
+* `block_winprob_table_from_lambdas(lambda_item, z, ...)` – block-by-block Bradley-Terry win probabilities from player-level strengths.
+* `plot_rank_intervals(x, ...)` – posterior rank intervals derived from relabelled player-strength draws.
 
 These accept `w_ij` to recover names and marginal summaries. They do **not** require `n_ij`.
 

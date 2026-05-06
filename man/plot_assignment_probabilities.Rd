@@ -2,13 +2,22 @@
 % Please edit documentation in R/plotting_functions.R
 \name{plot_assignment_probabilities}
 \alias{plot_assignment_probabilities}
-\title{Assignment probability heatmap (BT-SBM)}
+\title{Figure 4 plotting function
+Assignment probability heatmap (BT-SBM)}
 \usage{
 plot_assignment_probabilities(
   fit,
   w_ij = NULL,
   max_n_clust = NULL,
+  players_df = NULL,
+  players_id_col = NULL,
+  labels = NULL,
+  labels_key_col = NULL,
+  labels_value_col = NULL,
+  clean_display_labels = NULL,
   clean_fun = clean_players_names,
+  x_hat = NULL,
+  order_ids = NULL,
   k_show = NULL,
   fill_low = "#FFFFCC",
   fill_high = "#006400"
@@ -21,6 +30,18 @@ plot_assignment_probabilities(
 If \code{NULL}, items are ordered by most-probable cluster only.}
 
 \item{max_n_clust}{Where to filter the mcmc x_t. If not specified we use the modal K}
+
+\item{players_df}{Optional data.frame for label lookup (e.g. season metadata).}
+
+\item{players_id_col}{Optional column name in \code{players_df} that matches item IDs.}
+
+\item{labels}{Optional character vector of display labels. Either named by item ID, or aligned with the items.}
+
+\item{labels_key_col}{Optional column name in \code{players_df} to match item IDs.}
+
+\item{labels_value_col}{Optional column name in \code{players_df} containing display labels.}
+
+\item{clean_display_labels}{If \code{TRUE}, applies \code{clean_fun} to display labels.}
 
 \item{clean_fun}{Optional function to prettify names. Default: identity.}
 
