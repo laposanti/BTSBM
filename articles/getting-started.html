@@ -92,14 +92,14 @@ convenience.</p>
 </h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#choosing the 2017 season</span></span>
-<span><span class="va">w_ij</span> <span class="op">=</span> <span class="va">ATP_2000_2022</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span></span>
+<span><span class="va">w_ij</span> <span class="op">=</span> <span class="va">ATP_2000_2025</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span></span>
 <span></span>
 <span><span class="co">#quick look at the matrix</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;                 Rafael_Nadal Roger_Federer Grigor_Dimitrov</span></span>
-<span><span class="co">#&gt; Rafael_Nadal               0             0               3</span></span>
-<span><span class="co">#&gt; Roger_Federer              4             0               1</span></span>
-<span><span class="co">#&gt; Grigor_Dimitrov            0             0               0</span></span></code></pre>
+<pre><code><span><span class="co">#&gt;             Nadal R. Federer R. Dimitrov G.</span></span>
+<span><span class="co">#&gt; Nadal R.           0          0           3</span></span>
+<span><span class="co">#&gt; Federer R.         4          0           1</span></span>
+<span><span class="co">#&gt; Dimitrov G.        0          0           0</span></span></code></pre>
 <p>Each entry (<code>w_{ij}</code>) counts how many matches player
 (<code>i</code>) won against (<code>j</code>) in the chosen season. The
 matrix is directed (wins aren’t symmetric), and the diagonal is zero by

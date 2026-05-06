@@ -196,8 +196,8 @@ Model.* Working paper, University College Dublin.
 
 ## All functions
 
-- [`ATP_2000_2022`](https://laposanti.github.io/BTSBM/reference/ATP_2000_2022.md)
-  : ATP Paired-Comparison Panels, 2000–2022
+- [`ATP_2000_2025`](https://laposanti.github.io/BTSBM/reference/ATP_2000_2025.md)
+  : ATP Paired-Comparison Panels, 2000–2025
 
 - [`block_winprob_table_from_lambdas()`](https://laposanti.github.io/BTSBM/reference/block_winprob_table_from_lambdas.md)
   : Block-level Bradley-Terry win probabilities from player strengths

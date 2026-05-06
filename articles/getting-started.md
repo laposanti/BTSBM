@@ -10,16 +10,16 @@ use as illustrative dataset the 2017 Men’s ATP season for convenience.
 ``` r
 
 #choosing the 2017 season
-w_ij = ATP_2000_2022$`2017`$Y_ij
+w_ij = ATP_2000_2025$`2017`$Y_ij
 
 #quick look at the matrix
 head(w_ij[1:3,1:3])
 ```
 
-    #>                 Rafael_Nadal Roger_Federer Grigor_Dimitrov
-    #> Rafael_Nadal               0             0               3
-    #> Roger_Federer              4             0               1
-    #> Grigor_Dimitrov            0             0               0
+    #>             Nadal R. Federer R. Dimitrov G.
+    #> Nadal R.           0          0           3
+    #> Federer R.         4          0           1
+    #> Dimitrov G.        0          0           0
 
 Each entry (`w_{ij}`) counts how many matches player (`i`) won against
 (`j`) in the chosen season. The matrix is directed (wins aren’t
