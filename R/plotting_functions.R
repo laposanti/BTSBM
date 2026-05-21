@@ -700,6 +700,7 @@ plot_block_adjacency <- function(
 
   df_cl <- df_cl |>
     dplyr::mutate(
+      players = as.character(players),
       marginal_win_prob = dplyr::if_else(
         is.finite(marginal_matches) & marginal_matches > 0,
         marginal_win / marginal_matches,
@@ -726,6 +727,8 @@ plot_block_adjacency <- function(
 
   Y_long_plot <- Y_long |>
     dplyr::mutate(
+      Winner_id = as.character(Winner_id),
+      Loser_id = as.character(Loser_id),
       Played = is.finite(Matches_Count) & Matches_Count > 0,
       perc_success = dplyr::if_else(Played, Win_Count / Matches_Count, NA_real_)
     ) |>

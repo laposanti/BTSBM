@@ -147,3 +147,26 @@ test_that("plot_block_adjacency returns ggplot when optional packages are availa
 
   expect_s3_class(p, "ggplot")
 })
+
+test_that("plot_block_adjacency handles numeric-like ids in joins", {
+  skip_if_not_installed("ggplot2")
+  skip_if_not_installed("reshape2")
+  skip_if_not_installed("ggside")
+
+  fit <- list(minVI_partition = c(1, 1, 2))
+  w_ij <- matrix(c(
+    0, 2, 3,
+    1, 0, 1,
+    0, 2, 0
+  ), nrow = 3, byrow = TRUE)
+
+  rownames(w_ij) <- colnames(w_ij) <- as.character(1:3)
+
+  p <- plot_block_adjacency(
+    fit = fit,
+    w_ij = w_ij,
+    bw_preview = FALSE
+  )
+
+  expect_s3_class(p, "ggplot")
+})
