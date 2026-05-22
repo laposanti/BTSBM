@@ -2,12 +2,16 @@
 
 ## Overview
 
-We consider a set of (n) items/players with observed directed wins
-(\\w\_{ij}\\). The total number of encounters is (\\n\_{ij} = w\_{ij} +
-w\_{ji}\\). In the clustered Bradley–Terry–SBM (BT–SBM), each item (i)
-belongs to a latent block (\\x_i \in {1,\dots,K}\\), and blocks have
-intensities (\\\lambda_k\>0\\). The simple BT model corresponds to
-(\\K=n\\) with item-specific intensities.
+We consider a set of \\n\\ items/players with observed directed wins
+\\w\_{ij}\\. We collect these counts in the outcome matrix
+\\\mathbf{W}=(w\_{ij})\in\mathbb{N}^{n\times n}\\, with \\w\_{ii}=0\\.
+The total number of encounters is \\n\_{ij}=w\_{ij}+w\_{ji}\\, collected
+in the symmetric matrix \\\mathbf{N}=\mathbf{W}+\mathbf{W}^\top\\, and
+we denote observed pairs by \\E=\\(i,j): n\_{ij}\>0\\\\. In the
+clustered Bradley–Terry–SBM (BT–SBM), each item \\i\\ belongs to a
+latent block \\x_i \in \\1,\dots,K\\\\, and blocks have intensities
+\\\lambda_k\>0\\. The simple BT model corresponds to \\K=n\\ with
+item-specific intensities.
 
 This vignette documents **symbols**, **R object names**, and
 **dimensions** used throughout the package.
@@ -18,6 +22,9 @@ This vignette documents **symbols**, **R object names**, and
 |----|----|----|----|----|
 | Number of items | \\n\\ | integer (\>0) | `n` (derived) | scalar |
 | Saved iterations | \\S = T\_{\text{iter}} - T\_{\text{burn}}\\ | integer (≥ 1) | `S` (implicit) | scalar |
+| Directed outcome matrix | \\\mathbf{W}=(w\_{ij})\\ | non-negative, diag = 0 | `w_ij` | `n × n` matrix |
+| Match-count matrix | \\\mathbf{N}=\mathbf{W}+\mathbf{W}^\top\\ | symmetric, diag = 0 | computed internally | `n × n` matrix |
+| Observed edge set | \\E=\\(i,j): n\_{ij}\>0\\\\ | directed observed pairs | `obs_idx` (in LOO outputs) | `D × 2` index matrix |
 | Wins (i over j) | \\w\_{ij}\\ | ≥ 0, diag = 0 | `w_ij` | `n × n` matrix |
 | Encounters | \\n\_{ij} = w\_{ij} + w\_{ji}\\ | symmetric, diag = 0 | computed internally | `n × n` matrix |
 | Total iterations | \\T\_{\text{iter}}\\ | integer (\>0) | `T_iter` | scalar |

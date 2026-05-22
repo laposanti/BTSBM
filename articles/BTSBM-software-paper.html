@@ -101,29 +101,72 @@ vignettes.</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Paired comparison data appear in sports, psychometrics, preference
-studies, and many ranking tasks. In these problems, we observe directed
-outcomes such as wins of item <span class="math inline">\(i\)</span>
-over item <span class="math inline">\(j\)</span>, stored as <span class="math inline">\(w_{ij}\)</span>. A standard Bradley-Terry
-formulation associates each item with a positive latent intensity and
-converts intensity contrasts into win probabilities.</p>
-<p>The strict item-level view can be too fine. Two players may be
-practically indistinguishable in ability, even if the model can force
-one above the other. The same pattern appears in many ranking contexts.
-A block model addresses this by grouping items into latent clusters and
-ordering these clusters by intensity. In BTSBM this is done in a
-Bayesian way, so uncertainty on allocations and on ranking is
-explicit.</p>
+<p>This model is for paired-comparison analyses where the data are
+directional outcomes between items, such as wins/losses in sport,
+preference judgements, or expert comparisons. The package expects these
+data in adjacency-matrix form: a directed count matrix <span class="math inline">\(\mathbf{W}=(w_{ij})\)</span>, where <span class="math inline">\(w_{ij}\)</span> is how many times <span class="math inline">\(i\)</span> is preferred to or beats <span class="math inline">\(j\)</span>.</p>
+<p>The standard Bradley-Terry model gives a strict item-level ranking.
+In many applications that resolution is too fine: nearby items are often
+not credibly separable. BT-SBM keeps the Bradley-Terry comparison
+structure but ranks latent blocks rather than individuals, so items in
+the same block are rank-indifferent while blocks remain ordered by
+strength.</p>
+<div class="section level3">
+<h3 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+</h3>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Directed win-count matrix (n x n), with zero diagonal</span></span>
+<span><span class="va">w_ij</span> <span class="op">&lt;-</span> <span class="va">ATP_2000_2025</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
+<span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>,</span>
+<span>  prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
+<span>  gamma_GN <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  T_iter <span class="op">=</span> <span class="fl">400</span>,</span>
+<span>  T_burn <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/relabel_by_lambda.html">relabel_by_lambda</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">fit</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="data-formatting-details-optional">Data formatting details (optional)<a class="anchor" aria-label="anchor" href="#data-formatting-details-optional"></a>
+</h3>
+<p>When raw data come with multiple contexts or judges, aggregate them
+before fitting to produce <span class="math inline">\(\mathbf{W}\)</span>. Let <span class="math inline">\(c\in\{1,\ldots,C\}\)</span> index context, <span class="math inline">\(j\in\{1,\ldots,J\}\)</span> index judge/rater, and
+<span class="math inline">\(r\)</span> index repeated pairwise
+observations. Define <span class="math display">\[
+y_{ij}^{(c,j,r)}=\mathbf{1}\{\text{in replicate }r,\text{ judge }j\text{
+in context }c\text{ prefers }i\text{ to }j\}.
+\]</span> Then <span class="math display">\[
+w_{ij}^{(c,j)} = \sum_r y_{ij}^{(c,j,r)},
+\]</span> and the package input is <span class="math display">\[
+w_{ij}=\sum_{c=1}^{C}\sum_{j=1}^{J} w_{ij}^{(c,j)}, \qquad
+n_{ij}=w_{ij}+w_{ji}.
+\]</span> This gives the directed adjacency matrix <span class="math inline">\(\mathbf{W}\)</span> used by
+<code><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm()</a></code>. If context effects are central, repeat this
+construction within each context <span class="math inline">\(c\)</span>
+and fit context-specific models.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="model-and-notation">Model and Notation<a class="anchor" aria-label="anchor" href="#model-and-notation"></a>
 </h2>
-<p>We follow the notation used in the package vignette on symbols and
-dimensions.</p>
+<p>We use the same notation as the main BT-SBM paper and keep a
+one-to-one map to package objects.</p>
 <p>Let <span class="math inline">\(w_{ij}\)</span> be directed wins,
 with <span class="math inline">\(w_{ii}=0\)</span>, and define <span class="math display">\[
 n_{ij}=w_{ij}+w_{ji}.
 \]</span></p>
+<p>Collecting all <span class="math inline">\(w_{ij}\)</span> gives the
+directed outcome matrix <span class="math inline">\(\mathbf{W}\in\mathbb{N}^{n\times n}\)</span>,
+while <span class="math inline">\(\mathbf{N}=\mathbf{W}+\mathbf{W}^\top\)</span> is
+symmetric with zero diagonal. We also use <span class="math inline">\(E=\{(i,j): n_{ij}&gt;0\}\)</span> for observed
+pairs.</p>
 <p>Each item <span class="math inline">\(i\)</span> has a latent block
 label <span class="math inline">\(x_i \in \{1,\dots,K\}\)</span>. Each
 occupied block <span class="math inline">\(k\)</span> has intensity
@@ -141,14 +184,64 @@ uses <span class="math display">\[
 \lambda_k]=0\)</span> a priori.</p>
 <p>For partitions, the package supports DP, PY, DM, and GN urn-style
 priors through prior weights in the single-site allocation updates.</p>
+<p>To make the translation to code explicit, the paper notation <span class="math inline">\((\mathbf{W},\mathbf{N},x,\lambda,K,E)\)</span>
+corresponds to
+<code>(w_ij, w_ij + t(w_ij), x_samples, lambda_samples, K_per_iter, obs_idx)</code>
+in package outputs.</p>
 <div class="section level3">
 <h3 id="priors-on-x-what-is-supported-and-how-to-set-it">Priors on <span class="math inline">\(x\)</span>: what is supported
 and how to set it<a class="anchor" aria-label="anchor" href="#priors-on-x-what-is-supported-and-how-to-set-it"></a>
 </h3>
 <p>The prior on allocations <span class="math inline">\(x=(x_1,\ldots,x_n)\)</span> is selected with the
-<code>prior</code> argument in <code><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm()</a></code>. The package
-currently supports four options, aligned with the exchangeable partition
-constructions used in Legramanti, Rigon, Durante, and Dunson (2022):</p>
+<code>prior</code> argument in <code><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm()</a></code>. The
+supported options are:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th><code>prior</code></th>
+<th>Hyperparameters</th>
+<th>Internal helper</th>
+<th>Typical use</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"DP"</code></td>
+<td><code>alpha_PY</code></td>
+<td><code>urn_DP</code></td>
+<td>Baseline CRP-like reinforcement</td>
+</tr>
+<tr class="even">
+<td><code>"PY"</code></td>
+<td>
+<code>alpha_PY</code>, <code>sigma_PY</code>
+</td>
+<td><code>urn_PY</code></td>
+<td>Heavier-tail clustering than DP</td>
+</tr>
+<tr class="odd">
+<td><code>"DM"</code></td>
+<td>
+<code>beta_DM</code>, <code>K_DM</code>
+</td>
+<td><code>urn_DM</code></td>
+<td>Finite-cap clustering with max <code>K_DM</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>"GN"</code></td>
+<td><code>gamma_GN</code></td>
+<td><code>urn_GN</code></td>
+<td>Finite-species Gibbs-type prior (default in examples)</td>
+</tr>
+</tbody>
+</table>
+<p>Below are the corresponding predictive weights (as in Legramanti,
+Rigon, Durante, and Dunson, 2022):</p>
 <ol style="list-style-type: decimal">
 <li><p><code>prior = "DP"</code> (Dirichlet process / CRP-type weights)
 Uses <code>alpha_PY</code> and ignores <code>sigma_PY</code>: <span class="math display">\[
@@ -178,7 +271,7 @@ During each single-site update of <span class="math inline">\(x_i\)</span>, this
 assigning item <span class="math inline">\(i\)</span> to each existing
 block and to one candidate new block.</p>
 <p>Minimal usage examples:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Dirichlet process prior on x</span></span>
 <span><span class="va">fit_dp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span><span class="va">w_ij</span>, prior <span class="op">=</span> <span class="st">"DP"</span>, alpha_PY <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
 <span></span>
@@ -259,7 +352,7 @@ helpers.</li>
 </h3>
 <p>To ensure clear multi-cluster structure in a short run, we begin with
 synthetic paired-comparison data generated from three latent blocks.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_from_BTSBM.html">sample_from_BTSBM</a></span><span class="op">(</span></span>
 <span>  n_players <span class="op">=</span> <span class="fl">18</span>,</span>
 <span>  K <span class="op">=</span> <span class="fl">3</span>,</span>
@@ -283,7 +376,7 @@ synthetic paired-comparison data generated from three latent blocks.</p>
 <span><span class="co">#&gt; Player_4        5        2        0        0        0        0</span></span>
 <span><span class="co">#&gt; Player_5        0        0        4       12        0        0</span></span>
 <span><span class="co">#&gt; Player_6        0        0        5        0        5        0</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span></span>
 <span><span class="va">S_demo</span> <span class="op">&lt;-</span> <span class="fl">300</span> <span class="op">-</span> <span class="fl">150</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">n</span>, S <span class="op">=</span> <span class="va">S_demo</span><span class="op">)</span></span>
@@ -293,7 +386,7 @@ synthetic paired-comparison data generated from three latent blocks.</p>
 <div class="section level3">
 <h3 id="fit-clustered-model">Fit clustered model<a class="anchor" aria-label="anchor" href="#fit-clustered-model"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
 <span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>,</span>
 <span>  a <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -313,7 +406,7 @@ synthetic paired-comparison data generated from three latent blocks.</p>
 <span><span class="co">#&gt;  $ x_samples     : int [1:2] 150 18</span></span>
 <span><span class="co">#&gt;  $ K_per_iter    : int 150</span></span>
 <span><span class="co">#&gt;  $ lambda_samples: int 150</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">K_per_iter</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  3  4  5  6  7 10 </span></span>
@@ -322,7 +415,7 @@ synthetic paired-comparison data generated from three latent blocks.</p>
 <div class="section level3">
 <h3 id="relabel-and-summarize">Relabel and summarize<a class="anchor" aria-label="anchor" href="#relabel-and-summarize"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/relabel_by_lambda.html">relabel_by_lambda</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">fit</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/output_type.html" class="external-link">is_latex_output</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
@@ -356,7 +449,7 @@ synthetic paired-comparison data generated from three latent blocks.</p>
 </td>
 </tr></tbody>
 </table>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">block_count_distribution</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   num_blocks count        prob</span></span>
 <span><span class="co">#&gt; 1          3    94 0.626666667</span></span>
@@ -365,14 +458,14 @@ synthetic paired-comparison data generated from three latent blocks.</p>
 <span><span class="co">#&gt; 4          6     7 0.046666667</span></span>
 <span><span class="co">#&gt; 5          7     1 0.006666667</span></span>
 <span><span class="co">#&gt; 6         10     1 0.006666667</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 3</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="visual-diagnostics">Visual diagnostics<a class="anchor" aria-label="anchor" href="#visual-diagnostics"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="BTSBM-software-paper_files/figure-html/plot-block-1.png" class="r-plt" alt="Block-ordered adjacency heatmap. Rows and columns are ordered by inferred blocks, with boundary lines indicating block transitions." width="88%"><p class="caption">
@@ -380,7 +473,7 @@ Block-ordered adjacency heatmap. Rows and columns are ordered by
 inferred blocks, with boundary lines indicating block transitions.
 </p>
 </div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_assignment_probabilities.html">plot_assignment_probabilities</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span>, x_hat <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="BTSBM-software-paper_files/figure-html/plot-assign-1.png" class="r-plt" alt="Posterior assignment probabilities by player and cluster, after relabelling for interpretability." width="88%"><p class="caption">
@@ -388,7 +481,7 @@ Posterior assignment probabilities by player and cluster, after
 relabelling for interpretability.
 </p>
 </div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_lambda_uncertainty.html">plot_lambda_uncertainty</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span>, x_hat <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="BTSBM-software-paper_files/figure-html/plot-lambda-1.png" class="r-plt" alt="Posterior uncertainty in block intensity parameters (lambda), summarising relative block strengths." width="88%"><p class="caption">
@@ -396,7 +489,7 @@ Posterior uncertainty in block intensity parameters (lambda),
 summarising relative block strengths.
 </p>
 </div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_rank_intervals.html">plot_rank_intervals</a></span><span class="op">(</span><span class="va">post</span>, max_players <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="BTSBM-software-paper_files/figure-html/plot-rank-1.png" class="r-plt" alt="Posterior rank intervals for the top players, highlighting uncertainty in the induced ranking." width="88%"><p class="caption">
@@ -411,7 +504,7 @@ in the induced ranking.
 <p>The simulation above is used for cluster-recovery diagnostics. For a
 lightweight real-data illustration, we run the same workflow on a small
 ATP subset.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">w_ij_atp</span> <span class="op">&lt;-</span> <span class="va">ATP_2000_2025</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">w_ij_atp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
 <span><span class="va">atp_ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">w_ij_atp</span><span class="op">)</span></span>
@@ -441,7 +534,7 @@ ATP subset.</p>
 <div class="section level3">
 <h3 id="predictive-comparison-with-simple-bt">Predictive comparison with simple BT<a class="anchor" aria-label="anchor" href="#predictive-comparison-with-simple-bt"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_simple</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_simple.html">gibbs_bt_simple</a></span><span class="op">(</span></span>
 <span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>,</span>
 <span>  a <span class="op">=</span> <span class="fl">0.01</span>,</span>

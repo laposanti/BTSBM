@@ -78,13 +78,18 @@
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p>We consider a set of (n) items/players with observed directed wins
-(<span class="math inline">\(w_{ij}\)</span>). The total number of
-encounters is (<span class="math inline">\(n_{ij} = w_{ij} +
-w_{ji}\)</span>). In the clustered Bradley–Terry–SBM (BT–SBM), each item
-(i) belongs to a latent block (<span class="math inline">\(x_i \in
-{1,\dots,K}\)</span>), and blocks have intensities (<span class="math inline">\(\lambda_k&gt;0\)</span>). The simple BT model
-corresponds to (<span class="math inline">\(K=n\)</span>) with
+<p>We consider a set of <span class="math inline">\(n\)</span>
+items/players with observed directed wins <span class="math inline">\(w_{ij}\)</span>. We collect these counts in the
+outcome matrix <span class="math inline">\(\mathbf{W}=(w_{ij})\in\mathbb{N}^{n\times
+n}\)</span>, with <span class="math inline">\(w_{ii}=0\)</span>. The
+total number of encounters is <span class="math inline">\(n_{ij}=w_{ij}+w_{ji}\)</span>, collected in the
+symmetric matrix <span class="math inline">\(\mathbf{N}=\mathbf{W}+\mathbf{W}^\top\)</span>,
+and we denote observed pairs by <span class="math inline">\(E=\{(i,j):
+n_{ij}&gt;0\}\)</span>. In the clustered Bradley–Terry–SBM (BT–SBM),
+each item <span class="math inline">\(i\)</span> belongs to a latent
+block <span class="math inline">\(x_i \in \{1,\dots,K\}\)</span>, and
+blocks have intensities <span class="math inline">\(\lambda_k&gt;0\)</span>. The simple BT model
+corresponds to <span class="math inline">\(K=n\)</span> with
 item-specific intensities.</p>
 <p>This vignette documents <strong>symbols</strong>, <strong>R object
 names</strong>, and <strong>dimensions</strong> used throughout the
@@ -127,6 +132,31 @@ T_{\text{burn}}\)</span></td>
 <td>scalar</td>
 </tr>
 <tr class="odd">
+<td>Directed outcome matrix</td>
+<td><span class="math inline">\(\mathbf{W}=(w_{ij})\)</span></td>
+<td>non-negative, diag = 0</td>
+<td><code>w_ij</code></td>
+<td>
+<code>n × n</code> matrix</td>
+</tr>
+<tr class="even">
+<td>Match-count matrix</td>
+<td><span class="math inline">\(\mathbf{N}=\mathbf{W}+\mathbf{W}^\top\)</span></td>
+<td>symmetric, diag = 0</td>
+<td>computed internally</td>
+<td>
+<code>n × n</code> matrix</td>
+</tr>
+<tr class="odd">
+<td>Observed edge set</td>
+<td><span class="math inline">\(E=\{(i,j): n_{ij}&gt;0\}\)</span></td>
+<td>directed observed pairs</td>
+<td>
+<code>obs_idx</code> (in LOO outputs)</td>
+<td>
+<code>D × 2</code> index matrix</td>
+</tr>
+<tr class="even">
 <td>Wins (i over j)</td>
 <td><span class="math inline">\(w_{ij}\)</span></td>
 <td>≥ 0, diag = 0</td>
@@ -134,7 +164,7 @@ T_{\text{burn}}\)</span></td>
 <td>
 <code>n × n</code> matrix</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Encounters</td>
 <td><span class="math inline">\(n_{ij} = w_{ij} + w_{ji}\)</span></td>
 <td>symmetric, diag = 0</td>
@@ -142,14 +172,14 @@ T_{\text{burn}}\)</span></td>
 <td>
 <code>n × n</code> matrix</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Total iterations</td>
 <td><span class="math inline">\(T_{\text{iter}}\)</span></td>
 <td>integer (&gt;0)</td>
 <td><code>T_iter</code></td>
 <td>scalar</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Burn-in</td>
 <td><span class="math inline">\(T_{\text{burn}}\)</span></td>
 <td><span class="math inline">\(0 \le T_{\text{burn}} &lt;
@@ -157,14 +187,14 @@ T_{\text{iter}}\)</span></td>
 <td><code>T_burn</code></td>
 <td>scalar</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Occupied clusters per draw</td>
 <td><span class="math inline">\(K\)</span></td>
 <td>1..n</td>
 <td><code>K_per_iter</code></td>
 <td>length <code>S</code> vector</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Label capacity (allocated ids)</td>
 <td><span class="math inline">\(L_{\text{cap}}\)</span></td>
 <td>
@@ -173,14 +203,14 @@ T_{\text{iter}}\)</span></td>
 <td><code>L_cap_per_iter</code></td>
 <td>length <code>S</code> vector</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Max allowed clusters (finite prior)</td>
 <td><span class="math inline">\(K_{DM}\)</span></td>
 <td>1..n or ∞</td>
 <td><code>K_DM</code></td>
 <td>scalar</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Observed pairs count</td>
 <td><span class="math inline">\(D\)</span></td>
 <td>
@@ -191,7 +221,7 @@ n_{ij}&gt;0\}\)</span>, <span class="math inline">\(0 \le D \le
 <td>implicit</td>
 <td>scalar</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Cluster label of item i</td>
 <td><span class="math inline">\(x_i\)</span></td>
 <td>in {1..K}</td>
@@ -199,7 +229,7 @@ n_{ij}&gt;0\}\)</span>, <span class="math inline">\(0 \le D \le
 <td>
 <code>S × n</code> integer matrix</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Cluster intensities</td>
 <td><span class="math inline">\(\lambda_k\)</span></td>
 <td>&gt; 0</td>
@@ -207,7 +237,7 @@ n_{ij}&gt;0\}\)</span>, <span class="math inline">\(0 \le D \le
 <td>ragged numeric, length <code>L_cap[s]</code>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Item intensity (post relabel)</td>
 <td><span class="math inline">\(\lambda_{x_i}\)</span></td>
 <td>&gt; 0</td>
@@ -215,7 +245,7 @@ n_{ij}&gt;0\}\)</span>, <span class="math inline">\(0 \le D \le
 <td>
 <code>S × n</code> numeric matrix</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Latent auxiliaries</td>
 <td><span class="math inline">\(Z_{ij}\)</span></td>
 <td>≥ 0</td>
@@ -224,35 +254,35 @@ n_{ij}&gt;0\}\)</span>, <span class="math inline">\(0 \le D \le
 <code>S × n × n</code> array or <code>NULL</code>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>DP concentration</td>
 <td><span class="math inline">\(\alpha\)</span></td>
 <td>&gt; 0</td>
 <td><code>alpha_PY</code></td>
 <td>scalar</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>PY discount</td>
 <td><span class="math inline">\(\sigma\)</span></td>
 <td>[0,1)</td>
 <td><code>sigma_PY</code></td>
 <td>scalar</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>DM concentration</td>
 <td><span class="math inline">\(\beta\)</span></td>
 <td>&gt; 0</td>
 <td><code>beta_DM</code></td>
 <td>scalar</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>GN parameter</td>
 <td><span class="math inline">\(\gamma\)</span></td>
 <td>&gt; 0</td>
 <td><code>gamma_GN</code></td>
 <td>scalar</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Gamma prior on λ</td>
 <td><span class="math inline">\(\lambda \sim
 \mathrm{Gamma}(a,b)\)</span></td>

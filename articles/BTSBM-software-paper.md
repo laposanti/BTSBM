@@ -25,27 +25,71 @@ library(BTSBM)
 
 ## Introduction
 
-Paired comparison data appear in sports, psychometrics, preference
-studies, and many ranking tasks. In these problems, we observe directed
-outcomes such as wins of item \\i\\ over item \\j\\, stored as
-\\w\_{ij}\\. A standard Bradley-Terry formulation associates each item
-with a positive latent intensity and converts intensity contrasts into
-win probabilities.
+This model is for paired-comparison analyses where the data are
+directional outcomes between items, such as wins/losses in sport,
+preference judgements, or expert comparisons. The package expects these
+data in adjacency-matrix form: a directed count matrix
+\\\mathbf{W}=(w\_{ij})\\, where \\w\_{ij}\\ is how many times \\i\\ is
+preferred to or beats \\j\\.
 
-The strict item-level view can be too fine. Two players may be
-practically indistinguishable in ability, even if the model can force
-one above the other. The same pattern appears in many ranking contexts.
-A block model addresses this by grouping items into latent clusters and
-ordering these clusters by intensity. In BTSBM this is done in a
-Bayesian way, so uncertainty on allocations and on ranking is explicit.
+The standard Bradley-Terry model gives a strict item-level ranking. In
+many applications that resolution is too fine: nearby items are often
+not credibly separable. BT-SBM keeps the Bradley-Terry comparison
+structure but ranks latent blocks rather than individuals, so items in
+the same block are rank-indifferent while blocks remain ordered by
+strength.
+
+### Quick start
+
+``` r
+
+library(BTSBM)
+
+# Directed win-count matrix (n x n), with zero diagonal
+w_ij <- ATP_2000_2025$`2017`$Y_ij
+diag(w_ij) <- 0L
+
+fit <- gibbs_bt_sbm(
+  w_ij = w_ij,
+  prior = "GN",
+  gamma_GN = 0.8,
+  T_iter = 400,
+  T_burn = 200,
+  verbose = FALSE
+)
+
+post <- relabel_by_lambda(fit$x_samples, fit$lambda_samples)
+plot_block_adjacency(fit = post, w_ij = w_ij)
+```
+
+### Data formatting details (optional)
+
+When raw data come with multiple contexts or judges, aggregate them
+before fitting to produce \\\mathbf{W}\\. Let \\c\in\\1,\ldots,C\\\\
+index context, \\j\in\\1,\ldots,J\\\\ index judge/rater, and \\r\\ index
+repeated pairwise observations. Define \\
+y\_{ij}^{(c,j,r)}=\mathbf{1}\\\text{in replicate }r,\text{ judge
+}j\text{ in context }c\text{ prefers }i\text{ to }j\\. \\ Then \\
+w\_{ij}^{(c,j)} = \sum_r y\_{ij}^{(c,j,r)}, \\ and the package input is
+\\ w\_{ij}=\sum\_{c=1}^{C}\sum\_{j=1}^{J} w\_{ij}^{(c,j)}, \qquad
+n\_{ij}=w\_{ij}+w\_{ji}. \\ This gives the directed adjacency matrix
+\\\mathbf{W}\\ used by
+[`gibbs_bt_sbm()`](https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.md).
+If context effects are central, repeat this construction within each
+context \\c\\ and fit context-specific models.
 
 ## Model and Notation
 
-We follow the notation used in the package vignette on symbols and
-dimensions.
+We use the same notation as the main BT-SBM paper and keep a one-to-one
+map to package objects.
 
 Let \\w\_{ij}\\ be directed wins, with \\w\_{ii}=0\\, and define \\
 n\_{ij}=w\_{ij}+w\_{ji}. \\
+
+Collecting all \\w\_{ij}\\ gives the directed outcome matrix
+\\\mathbf{W}\in\mathbb{N}^{n\times n}\\, while
+\\\mathbf{N}=\mathbf{W}+\mathbf{W}^\top\\ is symmetric with zero
+diagonal. We also use \\E=\\(i,j): n\_{ij}\>0\\\\ for observed pairs.
 
 Each item \\i\\ has a latent block label \\x_i \in \\1,\dots,K\\\\. Each
 occupied block \\k\\ has intensity \\\lambda_k\>0\\. The Bradley-Terry
@@ -61,14 +105,27 @@ For priors on \\\lambda_k\\, BTSBM uses \\ \lambda_k \sim
 For partitions, the package supports DP, PY, DM, and GN urn-style priors
 through prior weights in the single-site allocation updates.
 
+To make the translation to code explicit, the paper notation
+\\(\mathbf{W},\mathbf{N},x,\lambda,K,E)\\ corresponds to
+`(w_ij, w_ij + t(w_ij), x_samples, lambda_samples, K_per_iter, obs_idx)`
+in package outputs.
+
 ### Priors on \\x\\: what is supported and how to set it
 
 The prior on allocations \\x=(x_1,\ldots,x_n)\\ is selected with the
 `prior` argument in
 [`gibbs_bt_sbm()`](https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.md).
-The package currently supports four options, aligned with the
-exchangeable partition constructions used in Legramanti, Rigon, Durante,
-and Dunson (2022):
+The supported options are:
+
+| `prior` | Hyperparameters | Internal helper | Typical use |
+|----|----|----|----|
+| `"DP"` | `alpha_PY` | `urn_DP` | Baseline CRP-like reinforcement |
+| `"PY"` | `alpha_PY`, `sigma_PY` | `urn_PY` | Heavier-tail clustering than DP |
+| `"DM"` | `beta_DM`, `K_DM` | `urn_DM` | Finite-cap clustering with max `K_DM` |
+| `"GN"` | `gamma_GN` | `urn_GN` | Finite-species Gibbs-type prior (default in examples) |
+
+Below are the corresponding predictive weights (as in Legramanti, Rigon,
+Durante, and Dunson, 2022):
 
 1.  `prior = "DP"` (Dirichlet process / CRP-type weights) Uses
     `alpha_PY` and ignores `sigma_PY`: \\ (v_1,\ldots,v_K,\alpha\_{PY}),
