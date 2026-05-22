@@ -27,8 +27,7 @@ plot_block_adjacency(
   no_match_color = "white",
   mark_unplayed = TRUE,
   unplayed_mark = "×",
-  unplayed_mark_size = 2.2,
-  bw_preview = TRUE
+  unplayed_mark_size = 2.2
 )
 }
 \arguments{
@@ -38,12 +37,42 @@ plot_block_adjacency(
 
 \item{x_hat}{partition point estimate. One n-length integer vector.}
 
+\item{relabel_blocks}{Either \code{"none"} or \code{"avg_lambda"}; controls optional relabeling of \code{x_hat}.}
+
+\item{lambda_hat}{Optional lambda draws/vector used when \code{relabel_blocks = "avg_lambda"}.}
+
+\item{relabel_decreasing}{Logical; direction used in \code{avg_lambda} relabeling.}
+
 \item{clean_fun}{Optional function to prettify player names. Default: identity.}
+
+\item{players_df}{Optional data.frame used to infer display labels.}
+
+\item{players_id_col}{Optional id column name in \code{players_df}.}
+
+\item{labels}{Optional display labels; either named by item ids or aligned with items.}
+
+\item{labels_key_col}{Optional key column in \code{players_df} used to match item ids.}
+
+\item{labels_value_col}{Optional value column in \code{players_df} containing display labels.}
+
+\item{clean_display_labels}{Logical; if \code{TRUE}, applies \code{clean_fun} to resolved display labels.}
+
+\item{order_ids}{Optional explicit player ordering.}
 
 \item{palette}{Named colors for blocks (as character vector). Defaults to a
 Wimbledon-ish palette.}
 
 \item{fill_low, fill_high}{Colors for the heatmap pixels gradient low/high.}
+
+\item{no_match_label}{Label used for pairs with zero observed matches.}
+
+\item{no_match_color}{Fill colour for pairs with zero observed matches.}
+
+\item{mark_unplayed}{Logical; if \code{TRUE}, overlays \code{unplayed_mark} on unplayed pairs.}
+
+\item{unplayed_mark}{Character marker used for unplayed pairs.}
+
+\item{unplayed_mark_size}{Numeric marker size for unplayed pairs.}
 }
 \value{
 A \code{ggplot} object.

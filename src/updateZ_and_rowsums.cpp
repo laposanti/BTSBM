@@ -1,7 +1,15 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-//'  @keywords internal
+//' Update cluster assignments and row sums
+//'
+//' Internal helper used by the Gibbs sampler to update latent cluster
+//' assignments and the corresponding row-sum summaries.
+//'
+//' @param n_ij Integer matrix of pairwise match counts.
+//' @param x Integer vector of current cluster assignments.
+//' @param lambda Numeric vector of current item strengths.
+//' @keywords internal
  // [[Rcpp::export]]
  Rcpp::List updateZ_and_rowsums(const Rcpp::IntegerMatrix& n_ij,
                                 const Rcpp::IntegerVector& x,

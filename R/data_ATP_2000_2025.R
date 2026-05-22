@@ -48,7 +48,7 @@
 #'
 #' @source
 #' Aggregated by the package author from public ATP results (e.g., the
-#' \emph{tennis\_atp} datasets by Jeff Sackmann) and internal preprocessing.
+#' \emph{tennis_atp} datasets by Jeff Sackmann) and internal preprocessing.
 #' See the package vignette for provenance and cleaning steps.
 #'
 #' @examples  \dontrun{

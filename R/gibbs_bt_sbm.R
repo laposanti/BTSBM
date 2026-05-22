@@ -48,8 +48,6 @@
 #'   T_iter = 200, T_burn = 100, verbose = FALSE
 #' )
 #' }
-#' @importFrom mcclust comp.psm
-#' @importFrom mcclust.ext minVI
 #' @export
 gibbs_bt_sbm <- function(
     w_ij,

@@ -1,0 +1,33 @@
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c(
+    "Block",
+    "Cl_ass",
+    "Cluster",
+    "Count",
+    "Count_capped",
+    "Count_disp",
+    "Loser_id",
+    "Matches_Count",
+    "N_matches",
+    "Played",
+    "Total_matches",
+    "Win_Count",
+    "Winner_id",
+    "cl",
+    "cluster",
+    "col_cl",
+    "low",
+    "marg_pro_loss",
+    "marginal_matches",
+    "marginal_win",
+    "marginal_win_prob",
+    "num_blocks",
+    "perc_success",
+    "pl_id",
+    "player_id",
+    "players",
+    "prob",
+    "row_cl",
+    "up"
+  ))
+}

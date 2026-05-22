@@ -25,8 +25,7 @@ exploratory_adjacency(
   no_match_color = "white",
   mark_unplayed = TRUE,
   unplayed_mark = "×",
-  unplayed_mark_size = 2.2,
-  bw_preview = TRUE
+  unplayed_mark_size = 2.2
 )
 }
 \arguments{
@@ -49,6 +48,18 @@ being plotted.}
 \item{players_df}{Optional data.frame with columns \code{player_slug} and \code{last_rank}
 (e.g., season-level metadata). Used when \code{order_by = "last_rank"}.}
 
+\item{players_id_col}{Optional column in \code{players_df} used as player identifier.}
+
+\item{players_rank_col}{Optional column in \code{players_df} used as ranking variable.}
+
+\item{labels}{Optional display labels; either named by matrix ids or aligned with plotted items.}
+
+\item{labels_key_col}{Optional key column in \code{players_df} used to match labels to ids.}
+
+\item{labels_value_col}{Optional value column in \code{players_df} used as display labels.}
+
+\item{clean_display_labels}{Logical; if \code{TRUE}, apply \code{clean_fun} to resolved display labels.}
+
 \item{clean_fun}{Name-cleaning function applied to display labels.}
 
 \item{max_wins}{Maximum win count shown explicitly in the legend; larger
@@ -56,6 +67,18 @@ counts are bucketed into \code{paste0(max_wins, "+")}.}
 
 \item{show_margins}{If \code{TRUE} and package \code{ggside} is available, draws a
 side bar with total matches per player.}
+
+\item{legend_title}{Legend title for tile colours.}
+
+\item{no_match_label}{Label used for pairs with zero observed matches.}
+
+\item{no_match_color}{Fill colour for pairs with zero observed matches.}
+
+\item{mark_unplayed}{Logical; if \code{TRUE}, overlays \code{unplayed_mark} on unplayed pairs.}
+
+\item{unplayed_mark}{Character marker used for unplayed pairs.}
+
+\item{unplayed_mark_size}{Numeric marker size for unplayed pairs.}
 }
 \value{
 A \code{ggplot} object.

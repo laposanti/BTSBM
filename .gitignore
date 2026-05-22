@@ -11,3 +11,12 @@ inst/doc
 .quarto
 docs
 data/augmented_multiple_seasonsGN.rds
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib
+src/*.obj
+src/*.lib
+src/*.a
+*.tar.gz
+*.Rcheck/

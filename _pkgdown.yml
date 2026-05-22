@@ -24,3 +24,10 @@ home:
     Gibbs sampler + post-processing utilities for Bradley–Terry Stochastic
     Block Models (DP, PY, DM, GN priors).
   readme: index.md
+
+articles:
+  - title: Articles
+    contents:
+      - getting-started
+      - Notation
+      - BTSBM-software-paper

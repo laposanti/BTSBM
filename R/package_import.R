@@ -1,7 +1,6 @@
-#' @importFrom stats rexp median rgamma rbinom runif dbinom
+#' @importFrom stats rexp median rgamma rbinom runif dbinom setNames
 # roxygen on the function that uses them:
 #' @importFrom mcclust comp.psm
-#' @importFrom mcclust.ext minbinder.ext minVI
 
 #' @importFrom stats dbinom rgamma rbinom runif
 
@@ -10,6 +9,7 @@
 #' @importFrom ggplot2 element_blank scale_fill_gradient scale_y_discrete guide_axis
 #' @importFrom ggplot2 coord_fixed geom_vline geom_hline geom_pointrange
 #' @importFrom ggplot2 scale_x_log10 scale_colour_manual scale_color_manual
+#' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #'@importFrom tidyr pivot_longer
 #'@importFrom scales percent

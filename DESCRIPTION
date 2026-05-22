@@ -2,6 +2,7 @@ Package: BTSBM
 Type: Package
 Title: Bayesian Bradley–Terry Stochastic Block Models for Paired Comparison Data
 Version: 0.1.0
+Maintainer: Lapo Santi <lapo.santi@gmail.com>
 Authors@R: 
     c(
       person(
@@ -32,36 +33,34 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends: 
-    R (>= 4.2)
+  R (>= 4.3)
 LinkingTo: Rcpp
 Imports:
     stats,
     Rcpp,
-    mcclust.ext,
     mcclust,
     dplyr,
+    rlang,
+    salso,
     ggplot2,
     tidyr,
     magrittr,
     scales,
-    kableExtra, 
-    knitr, 
+    kableExtra,
+    knitr,
     tidyselect
-Remotes:
-    sarawade/mcclust.ext
 Suggests:
     testthat (>= 3.0.0),
-    knitr,
     rmarkdown,
     pkgdown,
     coda,
     loo,
     lattice,
-    kableExtra,
     reshape2,
     stringr,
     ggside,
-    fossil
+    fossil,
+    viridisLite
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://github.com/laposanti/BTSBM, https://laposanti.github.io/BTSBM/

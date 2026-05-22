@@ -395,7 +395,7 @@ make_bt_cluster_loo <- function(w_ij, lambda_samples, x_samples) {
 #' \itemize{
 #' \item \code{simple} — \code{loo} object for the simple BT.
 #' \item \code{cluster} — \code{loo} object for the clustered BT–SBM.
-#' \item \code{comparison} — result of \code{loo::compare_models()}.
+#' \item \code{comparison} — result of \code{loo::loo_compare()}.
 #' }
 #' @export
 compare_bt_models_loo <- function(simple_llo, cluster_llo) {
@@ -407,7 +407,7 @@ compare_bt_models_loo <- function(simple_llo, cluster_llo) {
 
   loo_simple  <- loo::loo(simple_llo$ll)
   loo_cluster <- loo::loo(cluster_llo$ll)
-  comp <- loo::compare_models(loo_simple, loo_cluster)
+  comp <- loo::loo_compare(loo_simple, loo_cluster)
   list(simple = loo_simple, cluster = loo_cluster, comparison = comp)
 }
 
@@ -504,16 +504,8 @@ shannon_entropy <- function(p) {
 #'         cluster's \eqn{\lambda} after relabelling.}
 #'   \item{\code{co_clustering}}{Posterior similarity matrix (N x N).}
 #'   \item{\code{minVI_partition}}{Partition estimated by minimizing posterior expected VI
-#'         (first solution returned by \code{mcclust.ext::minVI}).}
-#'   \item{\code{partition_binder}}{Partition estimated by Binder's loss
-#'         (\code{mcclust.ext::minbinder.ext}).}
-#'   \item{\code{credible_ball_lower_partition}}{Partition on the \emph{surface} of the
-#'         95\% VI-credible ball that attains one extremum (relabelled by decreasing
-#'         posterior-mean item strength).}
-#'   \item{\code{credible_ball_upper_partition}}{Analogous extremal partition on the
-#'         credible-ball surface (relabelled).}
-#'   \item{\code{K_VI_lower}}{Number of clusters in \code{credible_ball_lower_partition}.}
-#'   \item{\code{K_VI_upper}}{Number of clusters in \code{credible_ball_upper_partition}.}
+#'         using \pkg{salso}.}
+#'   \item{\code{partition_binder}}{Partition estimated by Binder's loss using \pkg{salso}.}
 #'   \item{\code{n_clusters_each_iter}}{Integer vector (length S) of occupied cluster counts per iteration.}
 #'   \item{\code{block_count_distribution}}{Data frame with columns
 #'         \code{num_blocks}, \code{count}, \code{prob} summarizing the posterior of the
@@ -535,24 +527,14 @@ shannon_entropy <- function(p) {
 #' and reordered by decreasing \eqn{\lambda}, producing a canonical “1 = strongest” labelling.
 #'
 #' \strong{Point estimation.} The posterior similarity matrix is computed from relabelled
-#' draws; minVI and Binder partitions are obtained via \pkg{mcclust.ext}.
-#'
-#' \strong{Credible ball and extremal partitions.} A 95\% credible ball in partition space
-#' (under VI) is constructed around the minVI partition. We report the \emph{extreme}
-#' partitions on the ball's surface (in the sense of maximal VI distance from the centre),
-#' as returned by \code{mcclust.ext::credibleball}. These are then relabelled by decreasing
-#' posterior-mean item strength to ensure a consistent “strength ordering” across summaries.
-#' The associated cluster counts \code{K_VI_lower} and \code{K_VI_upper} characterize the
-#' local structural uncertainty around the point estimate; they are \emph{not} marginal
-#' posterior quantiles of \eqn{K}.
+#' draws; the minVI and Binder partitions are estimated with \pkg{salso} using
+#' the generalized variation of information and Binder losses.
 #'
 #' @section Input requirements:
 #' \itemize{
 #'   \item \code{x_samples} must be integer-valued with no missing items per row.
 #'   \item \code{lambda_samples} may be sparse (NAs for non-occupied labels).
-#'   \item \pkg{mcclust} and \pkg{mcclust.ext} must be available; \code{credibleball}
-#'         is expected to return lower/upper partitions in either \code{c.lower/c.upper}
-#'         or \code{c.lowervert/c.uppervert}.
+#'   \item \pkg{salso} must be available for the point-estimate summaries.
 #' }
 #'
 #' @examples
@@ -571,11 +553,10 @@ shannon_entropy <- function(p) {
 #' Wade, S., 2023. Bayesian cluster analysis. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences 381, 20220149. https://doi.org/10.1098/rsta.2022.0149
 #'
 #'
-#' @seealso \code{\link[mcclust.ext]{minVI}}, \code{\link[mcclust.ext]{minbinder.ext}},
-#'   \code{\link[mcclust.ext]{credibleball}}, \code{\link[mcclust]{comp.psm}}
+#' @seealso \code{\link[salso]{salso}}, \code{\link[salso]{VI}},
+#'   \code{\link[salso]{binder}}, \code{\link[mcclust]{comp.psm}}
 #'
 #' @import mcclust
-#' @import mcclust.ext
 #' @importFrom stats rexp
 #' @export
 
@@ -626,18 +607,19 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
     top_block_count_per_iter[iter] <- sum(xi_new == 1L)
   }
 
-  modal_K <- as.integer(names(which.max(table(n_clusters_each_iter))))
   psm <- mcclust::comp.psm(x_samples)
-  partition_binder <- mcclust.ext::minbinder.ext(
-    psm, cls.draw = x_samples, method = "all"
-  )$cl[1, ]
-  partition_minVI <- mcclust.ext::minVI(
-    psm, cls.draw = x_samples, method = "all"
-  )$cl[1, ]
-  x_ball <- mcclust.ext::credibleball(
-    c.star = partition_minVI,
-    cls.draw = x_samples,
-    c.dist = "VI"
+
+  partition_minVI <- salso::salso(
+    x_relabeled,
+    loss = salso::VI(),
+    nRuns = 16L,
+    nCores = 1L
+  )
+  partition_binder <- salso::salso(
+    x_relabeled,
+    loss = salso::binder(),
+    nRuns = 16L,
+    nCores = 1L
   )
 
   relabel_partition_by_item_mean_lambda <- function(z, lambda_item_mean) {
@@ -653,40 +635,8 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
     as.integer(z_new)
   }
   lambda_item_mean <- colMeans(lambda_per_item, na.rm = TRUE)
-
-  partition_minVI = relabel_partition_by_item_mean_lambda(partition_minVI, 
-                                                          lambda_item_mean)
-  partition_binder = relabel_partition_by_item_mean_lambda(partition_binder, lambda_item_mean)
-
-  get_part <- function(obj, name1, name2) {
-    if (!is.null(obj[[name1]])) 
-      obj[[name1]]
-    else obj[[name2]]
-  }
-  c_lower_raw <- get_part(x_ball, "c.lower", "c.lowervert")
-  c_upper_raw <- get_part(x_ball, "c.upper", "c.uppervert")
-  c_horiz_raw <- x_ball$c.horiz
-
-  pick_row <- function(obj, centre) {
-    if (is.vector(obj) && length(obj) == N) return(as.integer(obj))
-    if (is.matrix(obj) && ncol(obj) == N) {
-      d <- apply(obj, 1, function(z) mcclust::vi.dist(cl1 = as.integer(z), cl2 = as.integer(centre)))
-      return(as.integer(obj[which.min(d), ]))
-    }
-    stop("Unexpected credibleball partition format.")
-  }
-
-  c_lower_vec <- pick_row(c_lower_raw, partition_minVI)
-  c_upper_vec <- pick_row(c_upper_raw, partition_minVI)
-  c_horiz_vec <- pick_row(c_horiz_raw, partition_minVI)
-
-  c_lower_rl <- relabel_partition_by_item_mean_lambda(c_lower_vec, lambda_item_mean)
-  c_upper_rl <- relabel_partition_by_item_mean_lambda(c_upper_vec, lambda_item_mean)
-  c_horiz_rl <- relabel_partition_by_item_mean_lambda(c_horiz_vec, lambda_item_mean)
-
-  K_VI_upper <- length(unique(c_upper_rl))
-  K_VI_lower <- length(unique(c_lower_rl))
-  K_VI_horiz <- length(unique(c_lower_rl))
+  partition_minVI <- relabel_partition_by_item_mean_lambda(partition_minVI, lambda_item_mean)
+  partition_binder <- relabel_partition_by_item_mean_lambda(partition_binder, lambda_item_mean)
 
   Kmax <- N
   assignment_probs <- matrix(0, nrow = N, ncol = Kmax)
@@ -724,14 +674,7 @@ relabel_by_lambda <- function(x_samples, lambda_samples) {
 
     avg_top_block_count           = mean(top_block_count_per_iter),
     top_block_count_per_iter      = top_block_count_per_iter,
-    top_block_size_distribution   = top_block_size_df,
-
-    credible_ball_lower_partition = c_lower_rl,
-    credible_ball_upper_partition = c_upper_rl,
-    credible_ball_horiz_partition = c_horiz_rl,
-    K_VI_lower                    = K_VI_lower,
-    K_VI_upper                    = K_VI_upper,
-    K_VI_horiz                    = K_VI_horiz
+    top_block_size_distribution   = top_block_size_df
   )
 }
 

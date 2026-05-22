@@ -55,8 +55,7 @@ test_that("exploratory_adjacency returns ggplot objects without preview", {
   p <- exploratory_adjacency(
     Y_ij = Y_ij,
     order_by = "none",
-    show_margins = FALSE,
-    bw_preview = FALSE
+    show_margins = FALSE
   )
 
   expect_s3_class(p, "ggplot")
@@ -141,8 +140,7 @@ test_that("plot_block_adjacency returns ggplot when optional packages are availa
 
   p <- plot_block_adjacency(
     fit = fit,
-    w_ij = w_ij,
-    bw_preview = FALSE
+    w_ij = w_ij
   )
 
   expect_s3_class(p, "ggplot")
@@ -164,8 +162,7 @@ test_that("plot_block_adjacency handles numeric-like ids in joins", {
 
   p <- plot_block_adjacency(
     fit = fit,
-    w_ij = w_ij,
-    bw_preview = FALSE
+    w_ij = w_ij
   )
 
   expect_s3_class(p, "ggplot")

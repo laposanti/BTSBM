@@ -124,11 +124,23 @@ block_winprob_table_from_lambdas = function(
 #'   `"last_rank"` if ranking info is provided, otherwise `"none"`.
 #' @param players_df Optional data.frame with columns `player_slug` and `last_rank`
 #'   (e.g., season-level metadata). Used when `order_by = "last_rank"`.
+#' @param players_id_col Optional column in `players_df` used as player identifier.
+#' @param players_rank_col Optional column in `players_df` used as ranking variable.
+#' @param labels Optional display labels; either named by matrix ids or aligned with plotted items.
+#' @param labels_key_col Optional key column in `players_df` used to match labels to ids.
+#' @param labels_value_col Optional value column in `players_df` used as display labels.
+#' @param clean_display_labels Logical; if `TRUE`, apply `clean_fun` to resolved display labels.
 #' @param clean_fun Name-cleaning function applied to display labels.
 #' @param max_wins Maximum win count shown explicitly in the legend; larger
 #'   counts are bucketed into `paste0(max_wins, "+")`.
 #' @param show_margins If `TRUE` and package `ggside` is available, draws a
 #'   side bar with total matches per player.
+#' @param legend_title Legend title for tile colours.
+#' @param no_match_label Label used for pairs with zero observed matches.
+#' @param no_match_color Fill colour for pairs with zero observed matches.
+#' @param mark_unplayed Logical; if `TRUE`, overlays `unplayed_mark` on unplayed pairs.
+#' @param unplayed_mark Character marker used for unplayed pairs.
+#' @param unplayed_mark_size Numeric marker size for unplayed pairs.
 #' @return A `ggplot` object.
 #' @export
 #'
@@ -154,8 +166,7 @@ exploratory_adjacency <- function(
     no_match_color = "white",
     mark_unplayed = TRUE,
     unplayed_mark = "\u00D7",
-    unplayed_mark_size = 2.2,
-    bw_preview = TRUE
+    unplayed_mark_size = 2.2
 ){
   order_by <- match.arg(order_by)
 
@@ -455,26 +466,6 @@ exploratory_adjacency <- function(
     }
   }
 
-  print(base_plot)
-
-  if (isTRUE(bw_preview)) {
-    hex_to_grey <- function(hex) {
-      rgb <- grDevices::col2rgb(hex) / 255
-      lin <- ifelse(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055)^2.4)
-      L <- 0.2126 * lin[1, ] + 0.7152 * lin[2, ] + 0.0722 * lin[3, ]
-      grDevices::rgb(L, L, L)
-    }
-    fill_bw <- vapply(fill_values, hex_to_grey, character(1))
-
-    bw_plot <- base_plot +
-      ggplot2::scale_fill_manual(values = fill_bw, drop = FALSE) +
-      ggplot2::labs(fill = paste0(legend_title, " (B/W preview)"))
-
-    print(bw_plot)
-
-    return(list(color_plot = base_plot, bw_plot = bw_plot))
-  }
-
   base_plot
 }
 
@@ -491,10 +482,25 @@ exploratory_adjacency <- function(
 #' @param fit Output list from \code{gibbs_BT_SBM()}.
 #' @param w_ij Integer matrix of wins (same players & order used in \code{fit}).
 #' @param x_hat partition point estimate. One n-length integer vector.
+#' @param relabel_blocks Either `"none"` or `"avg_lambda"`; controls optional relabeling of `x_hat`.
+#' @param lambda_hat Optional lambda draws/vector used when `relabel_blocks = "avg_lambda"`.
+#' @param relabel_decreasing Logical; direction used in `avg_lambda` relabeling.
 #' @param clean_fun Optional function to prettify player names. Default: identity.
+#' @param players_df Optional data.frame used to infer display labels.
+#' @param players_id_col Optional id column name in `players_df`.
+#' @param labels Optional display labels; either named by item ids or aligned with items.
+#' @param labels_key_col Optional key column in `players_df` used to match item ids.
+#' @param labels_value_col Optional value column in `players_df` containing display labels.
+#' @param clean_display_labels Logical; if `TRUE`, applies `clean_fun` to resolved display labels.
+#' @param order_ids Optional explicit player ordering.
 #' @param palette Named colors for blocks (as character vector). Defaults to a
 #'   Wimbledon-ish palette.
 #' @param fill_low,fill_high Colors for the heatmap pixels gradient low/high.
+#' @param no_match_label Label used for pairs with zero observed matches.
+#' @param no_match_color Fill colour for pairs with zero observed matches.
+#' @param mark_unplayed Logical; if `TRUE`, overlays `unplayed_mark` on unplayed pairs.
+#' @param unplayed_mark Character marker used for unplayed pairs.
+#' @param unplayed_mark_size Numeric marker size for unplayed pairs.
 #' @return A \code{ggplot} object.
 #' @examples
 #' \dontrun{
@@ -524,15 +530,13 @@ plot_block_adjacency <- function(
     no_match_color = "white",
     mark_unplayed = TRUE,
     unplayed_mark = "\u00D7",
-    unplayed_mark_size = 2.2,
-    bw_preview = TRUE
+    unplayed_mark_size = 2.2
 ){
   stopifnot(is.matrix(w_ij))
   relabel_blocks <- match.arg(relabel_blocks)
   if (!requireNamespace("ggplot2", quietly = TRUE)) stop("Package 'ggplot2' is required.")
   if (!requireNamespace("dplyr", quietly = TRUE)) stop("Package 'dplyr' is required.")
   if (!requireNamespace("scales", quietly = TRUE)) stop("Package 'scales' is required.")
-  if (!requireNamespace("ggside", quietly = TRUE)) stop("Package 'ggside' is required.")
   if (!requireNamespace("reshape2", quietly = TRUE)) stop("Package 'reshape2' is required.")
 
   N_ij <- w_ij + t(w_ij)
@@ -578,9 +582,7 @@ plot_block_adjacency <- function(
     if (is.null(lambda_item_mean)) {
       warning("relabel_blocks='avg_lambda' requested but no player lambda found in `lambda_hat`, fit$lambda_samples_relabel, fit$lambda_hat, or fit$lambda_samples. Using original x_hat labels.", call. = FALSE)
     } else {
-      if (!is.null(names(lambda_item_mean))) {
-        lambda_item_mean <- lambda_item_mean[pl_ids]
-      }
+      if (!is.null(names(lambda_item_mean))) lambda_item_mean <- lambda_item_mean[pl_ids]
       if (length(lambda_item_mean) != length(pl_ids)) {
         stop("`lambda_hat` (or lambda in `fit`) must be length n_items (or an iters x n_items matrix).")
       }
@@ -606,9 +608,7 @@ plot_block_adjacency <- function(
   if (is.null(palette)) palette <- make_palette(K)
   stopifnot(length(palette) == K)
   levs <- levels(factor(x_hat))
-  if (!is.null(names(palette)) && all(levs %in% names(palette))) {
-    palette <- palette[levs]
-  }
+  if (!is.null(names(palette)) && all(levs %in% names(palette))) palette <- palette[levs]
   if (is.null(names(palette)) || !all(levs %in% names(palette))) names(palette) <- levs
 
   to_title_safe <- function(x) {
@@ -696,9 +696,7 @@ plot_block_adjacency <- function(
     cl = x_hat,
     marginal_win = rowSums(w_ij),
     marginal_matches = rowSums(N_ij)
-  )
-
-  df_cl <- df_cl |>
+  ) |>
     dplyr::mutate(
       players = as.character(players),
       marginal_win_prob = dplyr::if_else(
@@ -709,17 +707,15 @@ plot_block_adjacency <- function(
     )
 
   if (is.null(order_ids)) {
-    df_ord <- df_cl |>
-      dplyr::arrange(cl, dplyr::desc(marginal_win_prob), dplyr::desc(marginal_win), players)
-    order_ids <- df_ord$players
+    order_ids <- df_cl |>
+      dplyr::arrange(cl, dplyr::desc(marginal_win_prob), dplyr::desc(marginal_win), players) |>
+      dplyr::pull(players)
   }
 
   order_ids <- as.character(order_ids)
   order_ids <- order_ids[order_ids %in% pl_ids]
   order_ids <- unique(order_ids)
-  if (length(order_ids) != length(pl_ids)) {
-    order_ids <- c(order_ids, setdiff(pl_ids, order_ids))
-  }
+  if (length(order_ids) != length(pl_ids)) order_ids <- c(order_ids, setdiff(pl_ids, order_ids))
 
   Y_long <- reshape2::melt(w_ij)
   colnames(Y_long) <- c("Winner_id", "Loser_id", "Win_Count")
@@ -738,13 +734,15 @@ plot_block_adjacency <- function(
     dplyr::rename(col_cl = cl, marginal_win_col = marginal_win) |>
     dplyr::mutate(
       Winner = unname(id_to_disp[Winner_id]),
-      Loser = unname(id_to_disp[Loser_id])
-    ) |>
-    dplyr::mutate(
+      Loser = unname(id_to_disp[Loser_id]),
       Winner_id = factor(Winner_id, levels = order_ids),
-      Loser_id = factor(Loser_id, levels = order_ids),
-      col_cl = factor(col_cl, ordered = TRUE),
-      row_cl = factor(row_cl, ordered = TRUE)
+      Loser_id = factor(Loser_id, levels = order_ids)
+    )
+
+  side_df <- df_cl |>
+    dplyr::transmute(
+      Winner_id = factor(players, levels = order_ids),
+      Block = factor(cl, levels = levs)
     )
 
   ord_cl <- x_hat[match(order_ids, pl_ids)]
@@ -777,15 +775,12 @@ plot_block_adjacency <- function(
   p <- ggplot2::ggplot(Y_long_plot, ggplot2::aes(x = Loser_id, y = Winner_id)) +
     ggplot2::geom_tile(ggplot2::aes(fill = perc_success), colour = "grey70", linewidth = 0.25) +
     fill_scale +
-    ggside::geom_ysidecol(ggplot2::aes(color = factor(col_cl))) +
-    ggplot2::scale_color_manual(values = palette) +
     ggplot2::geom_vline(xintercept = unlist(v_lines_list) + 0.5, color = "black", linewidth = 0.3) +
     ggplot2::geom_hline(yintercept = unlist(h_lines_list) + 0.5, color = "black", linewidth = 0.3) +
     ggplot2::labs(
       x = "Items (ordered by block)",
       y = "Items (ordered by block)",
-      fill = "% success",
-      color = "Block"
+      fill = "% success"
     ) +
     ggplot2::theme_minimal(base_size = 13) +
     ggplot2::theme(
@@ -794,23 +789,28 @@ plot_block_adjacency <- function(
       panel.grid = ggplot2::element_blank(),
       legend.position = "left"
     ) +
-    ggside::theme_ggside_void() +
-    ggplot2::guides(
-      color = ggplot2::guide_legend(
-        override.aes = list(
-          fill = unname(palette),
-          colour = unname(palette),
-          linewidth = 0.3
-        )
-      )
-    ) +
     ggplot2::scale_y_discrete(limits = rev(order_ids), labels = x_lab, guide = ggplot2::guide_axis(n.dodge = 2)) +
     ggplot2::scale_x_discrete(labels = x_lab, guide = ggplot2::guide_axis(n.dodge = 2)) +
     ggplot2::coord_fixed(ratio = 1)
 
+  if (requireNamespace("ggside", quietly = TRUE)) {
+    p <- p +
+      ggside::geom_ysidecol(
+        data = side_df,
+        mapping = ggplot2::aes(y = Winner_id, x = 1, yfill = Block),
+        inherit.aes = FALSE,
+        width = 0.95,
+        colour = NA
+      ) +
+      ggside::scale_yfill_manual(values = palette, name = "Block") +
+      ggside::theme_ggside_void() +
+      ggplot2::guides(yfill = ggplot2::guide_legend(order = 2))
+  } else {
+    warning("Package 'ggside' not installed: drawing heatmap without side block strip.", call. = FALSE)
+  }
+
   if (isTRUE(mark_unplayed)) {
-    unplayed_df <- Y_long_plot |>
-      dplyr::filter(!Played)
+    unplayed_df <- Y_long_plot |> dplyr::filter(!Played)
     p <- p +
       ggplot2::geom_text(
         data = unplayed_df,
@@ -819,33 +819,6 @@ plot_block_adjacency <- function(
         size = unplayed_mark_size / ggplot2::.pt,
         show.legend = FALSE
       )
-  }
-
-  print(p)
-
-  if (isTRUE(bw_preview)) {
-    hex_to_grey <- function(hex) {
-      rgb <- grDevices::col2rgb(hex) / 255
-      lin <- ifelse(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055)^2.4)
-      L <- 0.2126 * lin[1, ] + 0.7152 * lin[2, ] + 0.0722 * lin[3, ]
-      grDevices::rgb(L, L, L)
-    }
-
-    pal_bw <- vapply(unname(palette), hex_to_grey, character(1))
-    names(pal_bw) <- names(palette)
-
-    p_bw <- p +
-      ggplot2::scale_fill_gradient(
-        low = "grey85",
-        high = "grey10",
-        limits = c(0, 1),
-        oob = scales::squish,
-        na.value = no_match_color
-      ) +
-      ggplot2::scale_color_manual(values = pal_bw) +
-      ggplot2::labs(fill = "% success (B/W preview)", color = "Block (B/W preview)")
-
-    print(p_bw)
   }
 
   p
@@ -870,6 +843,8 @@ plot_block_adjacency <- function(
 #' @param clean_fun Optional function to prettify names. Default: identity.
 #' @param k_show Optional integer number of clusters to show (defaults to all columns in \code{assign_prob}).
 #' @param max_n_clust Where to filter the mcmc x_t. If not specified we use the modal K
+#' @param x_hat Optional hard partition used to order players by cluster.
+#' @param order_ids Optional character vector specifying explicit item order.
 #' @param fill_low,fill_high Colors for the heatmap gradient low/high.
 #' @return A \code{ggplot} object.
 #' @examples
@@ -1133,17 +1108,28 @@ plot_assignment_probabilities <- function(
 #' Figure 5 plotting function
 #' Lambda uncertainty plot (per player)
 #'
-#' Forest plot of eqn{\lambda} with uncertainty intervals,
+#' Forest plot of \eqn{\lambda} with uncertainty intervals,
 #' using relabeled draws. Points colored by the hard partition (\code{fit$estimates$x_hat}).
 #'
 #' @param fit Output from \code{gibbs_BT_SBM()} with \code{opt_lambda$lambda_item} computed
 #'   (set \code{keep_lambda=TRUE} when sampling).
 #' @param w_ij Optional wins matrix to compute marginal wins for ordering and annotation.
+#' @param players_df Optional data.frame used to infer display labels.
+#' @param players_id_col Optional id column name in `players_df`.
+#' @param labels Optional display labels; either named by item ids or aligned with items.
+#' @param labels_key_col Optional key column in `players_df` used to match item ids.
+#' @param labels_value_col Optional value column in `players_df` containing display labels.
+#' @param clean_display_labels Logical; if `TRUE`, applies `clean_fun` to resolved display labels.
+#' @param order_ids Optional explicit player ordering.
 #' @param log_base Base for the x-axis logarithm (10 or e). Defaults to 10.
 #' @param prob Interval probability for HPD (e.g., 0.90).
 #' @param max_n_clust Where to filter the mcmc x_t. If not specified we use the modal K
 #' @param palette Named colors for clusters.
 #' @param clean_fun Optional player-name cleaner. Default: identity.
+#' @param x_hat Optional hard partition; if `NULL`, inferred from `fit`.
+#' @param filter_lambdas Logical; when `conditional = TRUE`, keeps lambda draws aligned to filtered `x` draws.
+#' @param conditional Logical; if `TRUE`, intervals are computed conditional on each item's hard cluster.
+#' @param ... Reserved for future extensions.
 #' @return A \code{ggplot} object.
 #' @examples
 #' \dontrun{
@@ -1219,13 +1205,12 @@ plot_lambda_uncertainty <- function(fit,
 
   if (is.null(x_hat)) {
     if (!is.null(max_n_clust) && length(keep_idx) < S) {
-      psm_filt <- mcclust::comp.psm(x_samples_use)
-      cl_obj <- mcclust.ext::minbinder.ext(psm_filt, cls.draw = x_samples_use, method = "draws")$cl
-      if (is.matrix(cl_obj)) {
-        x_hat <- as.integer(cl_obj[1, ])
-      } else {
-        x_hat <- as.integer(cl_obj)
-      }
+      x_hat <- salso::salso(
+        x_samples_use,
+        loss = salso::binder(),
+        nRuns = 16L,
+        nCores = 1L
+      )
     } else if (!is.null(fit$minVI_partition)) {
       x_hat <- as.integer(fit$minVI_partition)
     } else if (!is.null(fit$partition_binder)) {
@@ -1414,8 +1399,9 @@ plot_lambda_uncertainty <- function(fit,
   player_summ$player_id <- factor(player_summ$player_id, levels = order_ids, ordered = TRUE)
   player_summ$cluster <- factor(player_summ$cluster, levels = seq_len(K_plot), ordered = TRUE)
 
-  if (exists("btsbm_block_palette", mode = "function")) {
-    pal <- btsbm_block_palette(K_plot, palette)
+  palette_fun <- get0("btsbm_block_palette", mode = "function", inherits = TRUE)
+  if (is.function(palette_fun)) {
+    pal <- palette_fun(K_plot, palette)
   } else {
     if (!is.null(palette) && length(palette) >= K_plot) {
       pal <- palette[seq_len(K_plot)]

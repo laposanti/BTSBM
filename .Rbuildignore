@@ -7,4 +7,8 @@
 ^docs$
 ^pkgdown$
 ^\.github$
-^https://laposanti\.github\.io/BTSBM$
+^index\.html$
+^index\.md$
+^README\.Rmd$
+^cran-comments\.md$
+^deep-research-report-5\.md$

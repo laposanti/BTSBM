@@ -45,6 +45,10 @@ If \code{NULL}, items are ordered by most-probable cluster only.}
 
 \item{clean_fun}{Optional function to prettify names. Default: identity.}
 
+\item{x_hat}{Optional hard partition used to order players by cluster.}
+
+\item{order_ids}{Optional character vector specifying explicit item order.}
+
 \item{k_show}{Optional integer number of clusters to show (defaults to all columns in \code{assign_prob}).}
 
 \item{fill_low, fill_high}{Colors for the heatmap gradient low/high.}

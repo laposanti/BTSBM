@@ -32,6 +32,20 @@ plot_lambda_uncertainty(
 
 \item{w_ij}{Optional wins matrix to compute marginal wins for ordering and annotation.}
 
+\item{players_df}{Optional data.frame used to infer display labels.}
+
+\item{players_id_col}{Optional id column name in \code{players_df}.}
+
+\item{labels}{Optional display labels; either named by item ids or aligned with items.}
+
+\item{labels_key_col}{Optional key column in \code{players_df} used to match item ids.}
+
+\item{labels_value_col}{Optional value column in \code{players_df} containing display labels.}
+
+\item{clean_display_labels}{Logical; if \code{TRUE}, applies \code{clean_fun} to resolved display labels.}
+
+\item{order_ids}{Optional explicit player ordering.}
+
 \item{log_base}{Base for the x-axis logarithm (10 or e). Defaults to 10.}
 
 \item{max_n_clust}{Where to filter the mcmc x_t. If not specified we use the modal K}
@@ -41,12 +55,20 @@ plot_lambda_uncertainty(
 \item{palette}{Named colors for clusters.}
 
 \item{clean_fun}{Optional player-name cleaner. Default: identity.}
+
+\item{x_hat}{Optional hard partition; if \code{NULL}, inferred from \code{fit}.}
+
+\item{filter_lambdas}{Logical; when \code{conditional = TRUE}, keeps lambda draws aligned to filtered \code{x} draws.}
+
+\item{conditional}{Logical; if \code{TRUE}, intervals are computed conditional on each item's hard cluster.}
+
+\item{...}{Reserved for future extensions.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Forest plot of eqn{\lambda} with uncertainty intervals,
+Forest plot of \eqn{\lambda} with uncertainty intervals,
 using relabeled draws. Points colored by the hard partition (\code{fit$estimates$x_hat}).
 }
 \examples{

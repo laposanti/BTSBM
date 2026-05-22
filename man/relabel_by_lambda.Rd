@@ -28,16 +28,8 @@ A named list with components:
 cluster's \eqn{\lambda} after relabelling.}
 \item{\code{co_clustering}}{Posterior similarity matrix (N x N).}
 \item{\code{minVI_partition}}{Partition estimated by minimizing posterior expected VI
-(first solution returned by \code{mcclust.ext::minVI}).}
-\item{\code{partition_binder}}{Partition estimated by Binder's loss
-(\code{mcclust.ext::minbinder.ext}).}
-\item{\code{credible_ball_lower_partition}}{Partition on the \emph{surface} of the
-95\\% VI-credible ball that attains one extremum (relabelled by decreasing
-posterior-mean item strength).}
-\item{\code{credible_ball_upper_partition}}{Analogous extremal partition on the
-credible-ball surface (relabelled).}
-\item{\code{K_VI_lower}}{Number of clusters in \code{credible_ball_lower_partition}.}
-\item{\code{K_VI_upper}}{Number of clusters in \code{credible_ball_upper_partition}.}
+using \pkg{salso}.}
+\item{\code{partition_binder}}{Partition estimated by Binder's loss using \pkg{salso}.}
 \item{\code{n_clusters_each_iter}}{Integer vector (length S) of occupied cluster counts per iteration.}
 \item{\code{block_count_distribution}}{Data frame with columns
 \code{num_blocks}, \code{count}, \code{prob} summarizing the posterior of the
@@ -70,25 +62,15 @@ and the posterior distribution of the number of clusters.
 and reordered by decreasing \eqn{\lambda}, producing a canonical “1 = strongest” labelling.
 
 \strong{Point estimation.} The posterior similarity matrix is computed from relabelled
-draws; minVI and Binder partitions are obtained via \pkg{mcclust.ext}.
-
-\strong{Credible ball and extremal partitions.} A 95\\% credible ball in partition space
-(under VI) is constructed around the minVI partition. We report the \emph{extreme}
-partitions on the ball's surface (in the sense of maximal VI distance from the centre),
-as returned by \code{mcclust.ext::credibleball}. These are then relabelled by decreasing
-posterior-mean item strength to ensure a consistent “strength ordering” across summaries.
-The associated cluster counts \code{K_VI_lower} and \code{K_VI_upper} characterize the
-local structural uncertainty around the point estimate; they are \emph{not} marginal
-posterior quantiles of \eqn{K}.
+draws; the minVI and Binder partitions are estimated with \pkg{salso} using
+the generalized variation of information and Binder losses.
 }
 \section{Input requirements}{
 
 \itemize{
 \item \code{x_samples} must be integer-valued with no missing items per row.
 \item \code{lambda_samples} may be sparse (NAs for non-occupied labels).
-\item \pkg{mcclust} and \pkg{mcclust.ext} must be available; \code{credibleball}
-is expected to return lower/upper partitions in either \code{c.lower/c.upper}
-or \code{c.lowervert/c.uppervert}.
+\item \pkg{salso} must be available for the point-estimate summaries.
 }
 }
 
@@ -109,6 +91,6 @@ out$K_VI_lower; out$K_VI_upper
 Wade, S., 2023. Bayesian cluster analysis. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences 381, 20220149. https://doi.org/10.1098/rsta.2022.0149
 }
 \seealso{
-\code{\link[mcclust.ext]{minVI}}, \code{\link[mcclust.ext]{minbinder.ext}},
-\code{\link[mcclust.ext]{credibleball}}, \code{\link[mcclust]{comp.psm}}
+\code{\link[salso]{salso}}, \code{\link[salso]{VI}},
+\code{\link[salso]{binder}}, \code{\link[mcclust]{comp.psm}}
 }
