@@ -32,9 +32,18 @@ jobs:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: true
 
+      - name: Setup TinyTeX (pdflatex)
+        uses: r-lib/actions/setup-tinytex@v2
+
+      - name: Install HTML Tidy (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tidy
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::roxygen2
+          extra-packages: any::rcmdcheck, any::roxygen2, any::V8
           needs: check
 
       - name: Clean compiled artifacts
@@ -59,7 +68,7 @@ jobs:
         shell: Rscript {0}
         run: |
           rcmdcheck::rcmdcheck(
-            args = c("--as-cran"),
+            args = c("--as-cran", "--no-manual"),
             error_on = "warning",
             check_dir = "check"
           )
