@@ -8,9 +8,6 @@ output:
   rmarkdown::pdf_document:
     toc: true
     number_sections: true
-header-includes:
-  - \usepackage{tikz}
-  - \usetikzlibrary{arrows.meta,positioning}
 vignette: >
   %\VignetteIndexEntry{BTSBM: A Software Paper}
   %\VignetteEngine{knitr::rmarkdown}
@@ -71,7 +68,9 @@ plot_block_adjacency(fit = post, w_ij = w_ij)
 
 ## Data formatting details (optional)
 
-When raw data come with multiple contexts or judges, aggregate them before fitting to produce \(\mathbf{W}\). Let \(c\in\{1,\ldots,C\}\) index context, \(j\in\{1,\ldots,J\}\) index judge/rater, and \(r\) index repeated pairwise observations. Define
+The required input is a directed \(n\times n\) matrix \(\mathbf{W}=(w_{ij})\): rows are source items, columns are target items, and each cell \(w_{ij}\) records how many times item \(i\) beats, is chosen over, or is preferred to item \(j\).
+
+When raw data come with multiple contexts or judges, first aggregate those records to recover \(\mathbf{W}\). Let \(c\in\{1,\ldots,C\}\) index context, \(j\in\{1,\ldots,J\}\) index judge/rater, and \(r\) index repeated pairwise observations. Define
 \[
 y_{ij}^{(c,j,r)}=\mathbf{1}\{\text{in replicate }r,\text{ judge }j\text{ in context }c\text{ prefers }i\text{ to }j\}.
 \]
@@ -79,40 +78,11 @@ Then
 \[
 w_{ij}^{(c,j)} = \sum_r y_{ij}^{(c,j,r)},
 \]
-and the package input is
+and aggregate to
 \[
-w_{ij}=\sum_{c=1}^{C}\sum_{j=1}^{J} w_{ij}^{(c,j)}, \qquad
-n_{ij}=w_{ij}+w_{ji}.
+w_{ij}=\sum_{c=1}^{C}\sum_{j=1}^{J} w_{ij}^{(c,j)}.
 \]
-This gives the directed adjacency matrix \(\mathbf{W}\) used by `gibbs_bt_sbm()`. If context effects are central, repeat this construction within each context \(c\) and fit context-specific models.
-
-```{r tikz-cj-graph, results='asis', echo=FALSE}
-if (knitr::is_latex_output()) {
-  cat('\\begin{figure}[htbp]\n')
-  cat('\\centering\n')
-  cat('\\resizebox{\\linewidth}{!}{%\n')
-  cat('\\begin{tikzpicture}[\n')
-  cat('  node distance=1.6cm and 1.2cm,\n')
-  cat('  >=Latex,\n')
-  cat('  box/.style={draw, rounded corners, align=center, inner sep=4pt, text width=4.0cm}\n')
-  cat(']\n')
-  cat('\\node[box] (raw) {Raw pairwise records\\\\$y_{ij}^{(c,j,r)}$\\\\contexts $c=1,\\ldots,C$, judges $j=1,\\ldots,J$};\n')
-  cat('\\node[box, below=of raw] (partial) {Context/judge count matrices\\\\$\\mathbf{W}^{(c,j)}=(w_{ij}^{(c,j)})$\\\\with $w_{ij}^{(c,j)}=\\sum_r y_{ij}^{(c,j,r)}$};\n')
-  cat('\\node[box, below left=of partial, xshift=-0.6cm] (W) {Aggregated directed matrix\\\\$\\mathbf{W}=\\sum_c\\sum_j \\mathbf{W}^{(c,j)}$};\n')
-  cat('\\node[box, below right=of partial, xshift=0.6cm] (N) {Match-count matrix\\\\$\\mathbf{N}=\\mathbf{W}+\\mathbf{W}^\\top$\\\\and edge set $E=\\{(i,j): n_{ij}>0\\}$};\n')
-  cat('\\node[box, below=2.0cm of partial] (fit) {BT-SBM input to \\texttt{gibbs\\_bt\\_sbm()}\\\\uses $\\mathbf{W}$ (with $\\mathbf{N}$ computed internally)};\n')
-  cat('\\draw[->, thick] (raw) -- (partial);\n')
-  cat('\\draw[->, thick] (partial) -- (W);\n')
-  cat('\\draw[->, thick] (partial) -- (N);\n')
-  cat('\\draw[->, thick] (W) -- (fit);\n')
-  cat('\\draw[->, thick] (N) -- (fit);\n')
-  cat('\\end{tikzpicture}\n')
-  cat('}%\n')
-  cat('\\caption{Data-construction map for context/judge pairwise data. Raw comparisons are first summarized into context- and judge-specific count matrices, then aggregated into the adjacency matrix $\\mathbf{W}$ used by BT-SBM.}\n')
-  cat('\\label{fig:cj_to_adj}\n')
-  cat('\\end{figure}\n')
-}
-```
+This gives the directed adjacency matrix \(\mathbf{W}\) used by `gibbs_bt_sbm()`. The match totals \(n_{ij}=w_{ij}+w_{ji}\) are computed internally. If context effects are central, you can repeat the same construction within each context \(c\) and fit context-specific models.
 
 # Model and Notation
 
