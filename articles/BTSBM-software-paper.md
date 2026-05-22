@@ -64,19 +64,24 @@ plot_block_adjacency(fit = post, w_ij = w_ij)
 
 ### Data formatting details (optional)
 
-When raw data come with multiple contexts or judges, aggregate them
-before fitting to produce \\\mathbf{W}\\. Let \\c\in\\1,\ldots,C\\\\
+The required input is a directed \\n\times n\\ matrix
+\\\mathbf{W}=(w\_{ij})\\: rows are source items, columns are target
+items, and each cell \\w\_{ij}\\ records how many times item \\i\\
+beats, is chosen over, or is preferred to item \\j\\.
+
+When raw data come with multiple contexts or judges, first aggregate
+those records to recover \\\mathbf{W}\\. Let \\c\in\\1,\ldots,C\\\\
 index context, \\j\in\\1,\ldots,J\\\\ index judge/rater, and \\r\\ index
 repeated pairwise observations. Define \\
 y\_{ij}^{(c,j,r)}=\mathbf{1}\\\text{in replicate }r,\text{ judge
 }j\text{ in context }c\text{ prefers }i\text{ to }j\\. \\ Then \\
-w\_{ij}^{(c,j)} = \sum_r y\_{ij}^{(c,j,r)}, \\ and the package input is
-\\ w\_{ij}=\sum\_{c=1}^{C}\sum\_{j=1}^{J} w\_{ij}^{(c,j)}, \qquad
-n\_{ij}=w\_{ij}+w\_{ji}. \\ This gives the directed adjacency matrix
-\\\mathbf{W}\\ used by
+w\_{ij}^{(c,j)} = \sum_r y\_{ij}^{(c,j,r)}, \\ and aggregate to \\
+w\_{ij}=\sum\_{c=1}^{C}\sum\_{j=1}^{J} w\_{ij}^{(c,j)}. \\ This gives
+the directed adjacency matrix \\\mathbf{W}\\ used by
 [`gibbs_bt_sbm()`](https://laposanti.github.io/BTSBM/reference/gibbs_bt_sbm.md).
-If context effects are central, repeat this construction within each
-context \\c\\ and fit context-specific models.
+The match totals \\n\_{ij}=w\_{ij}+w\_{ji}\\ are computed internally. If
+context effects are central, you can repeat the same construction within
+each context \\c\\ and fit context-specific models.
 
 ## Model and Notation
 

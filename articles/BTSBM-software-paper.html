@@ -136,19 +136,23 @@ strength.</p>
 <div class="section level3">
 <h3 id="data-formatting-details-optional">Data formatting details (optional)<a class="anchor" aria-label="anchor" href="#data-formatting-details-optional"></a>
 </h3>
-<p>When raw data come with multiple contexts or judges, aggregate them
-before fitting to produce <span class="math inline">\(\mathbf{W}\)</span>. Let <span class="math inline">\(c\in\{1,\ldots,C\}\)</span> index context, <span class="math inline">\(j\in\{1,\ldots,J\}\)</span> index judge/rater, and
+<p>The required input is a directed <span class="math inline">\(n\times
+n\)</span> matrix <span class="math inline">\(\mathbf{W}=(w_{ij})\)</span>: rows are source
+items, columns are target items, and each cell <span class="math inline">\(w_{ij}\)</span> records how many times item <span class="math inline">\(i\)</span> beats, is chosen over, or is preferred
+to item <span class="math inline">\(j\)</span>.</p>
+<p>When raw data come with multiple contexts or judges, first aggregate
+those records to recover <span class="math inline">\(\mathbf{W}\)</span>. Let <span class="math inline">\(c\in\{1,\ldots,C\}\)</span> index context, <span class="math inline">\(j\in\{1,\ldots,J\}\)</span> index judge/rater, and
 <span class="math inline">\(r\)</span> index repeated pairwise
 observations. Define <span class="math display">\[
 y_{ij}^{(c,j,r)}=\mathbf{1}\{\text{in replicate }r,\text{ judge }j\text{
 in context }c\text{ prefers }i\text{ to }j\}.
 \]</span> Then <span class="math display">\[
 w_{ij}^{(c,j)} = \sum_r y_{ij}^{(c,j,r)},
-\]</span> and the package input is <span class="math display">\[
-w_{ij}=\sum_{c=1}^{C}\sum_{j=1}^{J} w_{ij}^{(c,j)}, \qquad
-n_{ij}=w_{ij}+w_{ji}.
+\]</span> and aggregate to <span class="math display">\[
+w_{ij}=\sum_{c=1}^{C}\sum_{j=1}^{J} w_{ij}^{(c,j)}.
 \]</span> This gives the directed adjacency matrix <span class="math inline">\(\mathbf{W}\)</span> used by
-<code><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm()</a></code>. If context effects are central, repeat this
+<code><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm()</a></code>. The match totals <span class="math inline">\(n_{ij}=w_{ij}+w_{ji}\)</span> are computed
+internally. If context effects are central, you can repeat the same
 construction within each context <span class="math inline">\(c\)</span>
 and fit context-specific models.</p>
 </div>

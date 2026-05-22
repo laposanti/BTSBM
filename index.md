@@ -42,9 +42,10 @@ preferences* (`i` beats `j`). Below are a few illustrative examples:
 | 🧪 A/B testing           | Variant `i` performs better than `j` |
 
 Only a binary outcome per pair (“i over j”) is required, which can
-optionally be aggregated into counts (positive integers).
-
-## For the sake of exposition, we will use a sports-related terminology throughout, though the same framework naturally extends to all the settings listed above — and beyond.
+optionally be aggregated into counts (positive integers). For the sake
+of exposition, we will use a sports-related terminology throughout,
+though the same framework naturally extends to all the settings listed
+above and beyond.
 
 ## Required Inputs
 
