@@ -1,7 +1,7 @@
 # Figure 5 plotting function Lambda uncertainty plot (per player)
 
-Forest plot of eqn with uncertainty intervals, using relabeled draws.
-Points colored by the hard partition (`fit$estimates$x_hat`).
+Forest plot of \\\lambda\\ with uncertainty intervals, using relabeled
+draws. Points colored by the hard partition (`fit$estimates$x_hat`).
 
 ## Usage
 
@@ -40,6 +40,35 @@ plot_lambda_uncertainty(
   Optional wins matrix to compute marginal wins for ordering and
   annotation.
 
+- players_df:
+
+  Optional data.frame used to infer display labels.
+
+- players_id_col:
+
+  Optional id column name in `players_df`.
+
+- labels:
+
+  Optional display labels; either named by item ids or aligned with
+  items.
+
+- labels_key_col:
+
+  Optional key column in `players_df` used to match item ids.
+
+- labels_value_col:
+
+  Optional value column in `players_df` containing display labels.
+
+- clean_display_labels:
+
+  Logical; if `TRUE`, applies `clean_fun` to resolved display labels.
+
+- order_ids:
+
+  Optional explicit player ordering.
+
 - log_base:
 
   Base for the x-axis logarithm (10 or e). Defaults to 10.
@@ -59,6 +88,24 @@ plot_lambda_uncertainty(
 - clean_fun:
 
   Optional player-name cleaner. Default: identity.
+
+- x_hat:
+
+  Optional hard partition; if `NULL`, inferred from `fit`.
+
+- filter_lambdas:
+
+  Logical; when `conditional = TRUE`, keeps lambda draws aligned to
+  filtered `x` draws.
+
+- conditional:
+
+  Logical; if `TRUE`, intervals are computed conditional on each item's
+  hard cluster.
+
+- ...:
+
+  Reserved for future extensions.
 
 ## Value
 

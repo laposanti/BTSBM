@@ -73,6 +73,14 @@ plot_assignment_probabilities(
 
   Optional function to prettify names. Default: identity.
 
+- x_hat:
+
+  Optional hard partition used to order players by cluster.
+
+- order_ids:
+
+  Optional character vector specifying explicit item order.
+
 - k_show:
 
   Optional integer number of clusters to show (defaults to all columns

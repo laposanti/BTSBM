@@ -38,11 +38,8 @@ and the posterior distribution of the number of clusters."></head><body>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with BTSBM: the R package for the BT-SBM paper</a></li>
-    <li><a class="dropdown-item" href="../articles/Notation.html">Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/laposanti/BTSBM/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -115,26 +112,10 @@ cluster's \(\lambda\) after relabelling.</p></dd>
 
 <dt><code>minVI_partition</code></dt>
 <dd><p>Partition estimated by minimizing posterior expected VI
-(first solution returned by <code><a href="https://rdrr.io/pkg/mcclust.ext/man/minVI.html" class="external-link">mcclust.ext::minVI</a></code>).</p></dd>
+using <span class="pkg">salso</span>.</p></dd>
 
 <dt><code>partition_binder</code></dt>
-<dd><p>Partition estimated by Binder's loss
-(<code><a href="https://rdrr.io/pkg/mcclust.ext/man/minbinder.ext.html" class="external-link">mcclust.ext::minbinder.ext</a></code>).</p></dd>
-
-<dt><code>credible_ball_lower_partition</code></dt>
-<dd><p>Partition on the <em>surface</em> of the
-95\<!-- % VI-credible ball that attains one extremum (relabelled by decreasing -->
-posterior-mean item strength).</p></dd>
-
-<dt><code>credible_ball_upper_partition</code></dt>
-<dd><p>Analogous extremal partition on the
-credible-ball surface (relabelled).</p></dd>
-
-<dt><code>K_VI_lower</code></dt>
-<dd><p>Number of clusters in <code>credible_ball_lower_partition</code>.</p></dd>
-
-<dt><code>K_VI_upper</code></dt>
-<dd><p>Number of clusters in <code>credible_ball_upper_partition</code>.</p></dd>
+<dd><p>Partition estimated by Binder's loss using <span class="pkg">salso</span>.</p></dd>
 
 <dt><code>n_clusters_each_iter</code></dt>
 <dd><p>Integer vector (length S) of occupied cluster counts per iteration.</p></dd>
@@ -171,15 +152,8 @@ cluster \(\lambda\) values for that iteration, ordered decreasingly.</p></dd>
     <p><strong>Relabelling.</strong> For each iteration, occupied labels are compacted to <code>1..K_s</code>
 and reordered by decreasing \(\lambda\), producing a canonical “1 = strongest” labelling.</p>
 <p><strong>Point estimation.</strong> The posterior similarity matrix is computed from relabelled
-draws; minVI and Binder partitions are obtained via <span class="pkg">mcclust.ext</span>.</p>
-<p><strong>Credible ball and extremal partitions.</strong> A 95\<!-- % credible ball in partition space -->
-(under VI) is constructed around the minVI partition. We report the <em>extreme</em>
-partitions on the ball's surface (in the sense of maximal VI distance from the centre),
-as returned by <code><a href="https://rdrr.io/pkg/mcclust.ext/man/credibleball.html" class="external-link">mcclust.ext::credibleball</a></code>. These are then relabelled by decreasing
-posterior-mean item strength to ensure a consistent “strength ordering” across summaries.
-The associated cluster counts <code>K_VI_lower</code> and <code>K_VI_upper</code> characterize the
-local structural uncertainty around the point estimate; they are <em>not</em> marginal
-posterior quantiles of \(K\).</p>
+draws; the minVI and Binder partitions are estimated with <span class="pkg">salso</span> using
+the generalized variation of information and Binder losses.</p>
     </div>
     <div class="section level2">
     <h2 id="input-requirements">Input requirements<a class="anchor" aria-label="anchor" href="#input-requirements"></a></h2>
@@ -187,9 +161,7 @@ posterior quantiles of \(K\).</p>
 
 <ul><li><p><code>x_samples</code> must be integer-valued with no missing items per row.</p></li>
 <li><p><code>lambda_samples</code> may be sparse (NAs for non-occupied labels).</p></li>
-<li><p><span class="pkg">mcclust</span> and <span class="pkg">mcclust.ext</span> must be available; <code>credibleball</code>
-is expected to return lower/upper partitions in either <code>c.lower/c.upper</code>
-or <code>c.lowervert/c.uppervert</code>.</p></li>
+<li><p><span class="pkg">salso</span> must be available for the point-estimate summaries.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -197,8 +169,8 @@ or <code>c.lowervert/c.uppervert</code>.</p></li>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="https://rdrr.io/pkg/mcclust.ext/man/minVI.html" class="external-link">minVI</a></code>, <code><a href="https://rdrr.io/pkg/mcclust.ext/man/minbinder.ext.html" class="external-link">minbinder.ext</a></code>,
-<code><a href="https://rdrr.io/pkg/mcclust.ext/man/credibleball.html" class="external-link">credibleball</a></code>, <code><a href="https://rdrr.io/pkg/mcclust/man/comp.psm.html" class="external-link">comp.psm</a></code></p></div>
+    <div class="dont-index"><p><code><a href="https://rdrr.io/pkg/salso/man/salso.html" class="external-link">salso</a></code>, <code><a href="https://rdrr.io/pkg/salso/man/partition.loss.html" class="external-link">VI</a></code>,
+<code><a href="https://rdrr.io/pkg/salso/man/partition.loss.html" class="external-link">binder</a></code>, <code><a href="https://rdrr.io/pkg/mcclust/man/comp.psm.html" class="external-link">comp.psm</a></code></p></div>
     </div>
 
     <div class="section level2">

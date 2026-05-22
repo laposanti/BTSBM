@@ -32,11 +32,8 @@ strength \(\lambda\) (mean computed across players in the block)."></head><body>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with BTSBM: the R package for the BT-SBM paper</a></li>
-    <li><a class="dropdown-item" href="../articles/Notation.html">Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/laposanti/BTSBM/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -92,8 +89,7 @@ strength \(\lambda\) (mean computed across players in the block).</p>
 <span>  no_match_color <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  mark_unplayed <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  unplayed_mark <span class="op">=</span> <span class="st">"×"</span>,</span>
-<span>  unplayed_mark_size <span class="op">=</span> <span class="fl">2.2</span>,</span>
-<span>  bw_preview <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  unplayed_mark_size <span class="op">=</span> <span class="fl">2.2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -113,8 +109,48 @@ strength \(\lambda\) (mean computed across players in the block).</p>
 <dd><p>partition point estimate. One n-length integer vector.</p></dd>
 
 
+<dt id="arg-relabel-blocks">relabel_blocks<a class="anchor" aria-label="anchor" href="#arg-relabel-blocks"></a></dt>
+<dd><p>Either <code>"none"</code> or <code>"avg_lambda"</code>; controls optional relabeling of <code>x_hat</code>.</p></dd>
+
+
+<dt id="arg-lambda-hat">lambda_hat<a class="anchor" aria-label="anchor" href="#arg-lambda-hat"></a></dt>
+<dd><p>Optional lambda draws/vector used when <code>relabel_blocks = "avg_lambda"</code>.</p></dd>
+
+
+<dt id="arg-relabel-decreasing">relabel_decreasing<a class="anchor" aria-label="anchor" href="#arg-relabel-decreasing"></a></dt>
+<dd><p>Logical; direction used in <code>avg_lambda</code> relabeling.</p></dd>
+
+
 <dt id="arg-clean-fun">clean_fun<a class="anchor" aria-label="anchor" href="#arg-clean-fun"></a></dt>
 <dd><p>Optional function to prettify player names. Default: identity.</p></dd>
+
+
+<dt id="arg-players-df">players_df<a class="anchor" aria-label="anchor" href="#arg-players-df"></a></dt>
+<dd><p>Optional data.frame used to infer display labels.</p></dd>
+
+
+<dt id="arg-players-id-col">players_id_col<a class="anchor" aria-label="anchor" href="#arg-players-id-col"></a></dt>
+<dd><p>Optional id column name in <code>players_df</code>.</p></dd>
+
+
+<dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
+<dd><p>Optional display labels; either named by item ids or aligned with items.</p></dd>
+
+
+<dt id="arg-labels-key-col">labels_key_col<a class="anchor" aria-label="anchor" href="#arg-labels-key-col"></a></dt>
+<dd><p>Optional key column in <code>players_df</code> used to match item ids.</p></dd>
+
+
+<dt id="arg-labels-value-col">labels_value_col<a class="anchor" aria-label="anchor" href="#arg-labels-value-col"></a></dt>
+<dd><p>Optional value column in <code>players_df</code> containing display labels.</p></dd>
+
+
+<dt id="arg-clean-display-labels">clean_display_labels<a class="anchor" aria-label="anchor" href="#arg-clean-display-labels"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, applies <code>clean_fun</code> to resolved display labels.</p></dd>
+
+
+<dt id="arg-order-ids">order_ids<a class="anchor" aria-label="anchor" href="#arg-order-ids"></a></dt>
+<dd><p>Optional explicit player ordering.</p></dd>
 
 
 <dt id="arg-palette">palette<a class="anchor" aria-label="anchor" href="#arg-palette"></a></dt>
@@ -124,6 +160,26 @@ Wimbledon-ish palette.</p></dd>
 
 <dt id="arg-fill-low-fill-high">fill_low, fill_high<a class="anchor" aria-label="anchor" href="#arg-fill-low-fill-high"></a></dt>
 <dd><p>Colors for the heatmap pixels gradient low/high.</p></dd>
+
+
+<dt id="arg-no-match-label">no_match_label<a class="anchor" aria-label="anchor" href="#arg-no-match-label"></a></dt>
+<dd><p>Label used for pairs with zero observed matches.</p></dd>
+
+
+<dt id="arg-no-match-color">no_match_color<a class="anchor" aria-label="anchor" href="#arg-no-match-color"></a></dt>
+<dd><p>Fill colour for pairs with zero observed matches.</p></dd>
+
+
+<dt id="arg-mark-unplayed">mark_unplayed<a class="anchor" aria-label="anchor" href="#arg-mark-unplayed"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, overlays <code>unplayed_mark</code> on unplayed pairs.</p></dd>
+
+
+<dt id="arg-unplayed-mark">unplayed_mark<a class="anchor" aria-label="anchor" href="#arg-unplayed-mark"></a></dt>
+<dd><p>Character marker used for unplayed pairs.</p></dd>
+
+
+<dt id="arg-unplayed-mark-size">unplayed_mark_size<a class="anchor" aria-label="anchor" href="#arg-unplayed-mark-size"></a></dt>
+<dd><p>Numeric marker size for unplayed pairs.</p></dd>
 
 </dl></div>
     <div class="section level2">

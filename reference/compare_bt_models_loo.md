@@ -39,4 +39,5 @@ A list with:
 
 - `cluster` — `loo` object for the clustered BT–SBM.
 
-- `comparison` — result of `loo::compare_models()`.
+- `comparison` — result of
+  [`loo::loo_compare()`](https://mc-stan.org/loo/reference/loo_compare.html).

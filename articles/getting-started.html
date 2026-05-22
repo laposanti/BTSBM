@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Getting started with BTSBM: the R package for the BT-SBM paper • BTSBM: Bradley–Terry Stochastic Block Model</title>
+<title>Getting Started with BTSBM • BTSBM: Bradley–Terry Stochastic Block Model</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started with BTSBM: the R package for the BT-SBM paper">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started with BTSBM">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -36,13 +36,8 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with BTSBM: the R package for the BT-SBM paper</a></li>
-    <li><a class="dropdown-item" href="../articles/Notation.html">Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model</a></li>
-  </ul>
-</li>
+<li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -70,10 +65,8 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Getting started with BTSBM: the R package for the BT-SBM paper</h1>
-                        <h4 data-toc-skip class="author">Lapo Santi</h4>
+      <h1>Getting Started with BTSBM</h1>
             
-            <h4 data-toc-skip class="date">2026-05-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/laposanti/BTSBM/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>getting-started.Rmd</code></div>
@@ -81,261 +74,76 @@
 
     
     
-<div class="section level2">
-<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
-</h2>
-<p>This vignette shows a minimal workflow with the <code>BTSBM</code>
-functions. We use as illustrative dataset the 2017 Men’s ATP season for
-convenience.</p>
-<div class="section level3">
-<h3 id="set-up-the-data">Set up the data<a class="anchor" aria-label="anchor" href="#set-up-the-data"></a>
-</h3>
+<p>This vignette shows a lightweight workflow for fitting a
+Bradley-Terry stochastic block model and producing core summaries.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#choosing the 2017 season</span></span>
-<span><span class="va">w_ij</span> <span class="op">=</span> <span class="va">ATP_2000_2025</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span></span>
-<span></span>
-<span><span class="co">#quick look at the matrix</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;             Nadal R. Federer R. Dimitrov G.</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">w_ij</span> <span class="op">&lt;-</span> <span class="va">ATP_2000_2025</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
+<span><span class="va">w_ij</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
+<span><span class="co">#&gt;             Nadal R. Federer R. Dimitrov G.</span></span>
 <span><span class="co">#&gt; Nadal R.           0          0           3</span></span>
 <span><span class="co">#&gt; Federer R.         4          0           1</span></span>
-<span><span class="co">#&gt; Dimitrov G.        0          0           0</span></span></code></pre>
-<p>Each entry (<code>w_{ij}</code>) counts how many matches player
-(<code>i</code>) won against (<code>j</code>) in the chosen season. The
-matrix is directed (wins aren’t symmetric), and the diagonal is zero by
-design. In practice, sparse rows/columns correspond to players with few
-matches.</p>
+<span><span class="co">#&gt; Dimitrov G.        0          0           0</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="prior-elicitation">Prior elicitation<a class="anchor" aria-label="anchor" href="#prior-elicitation"></a>
-</h3>
+<div class="section level2">
+<h2 id="fit">Fit<a class="anchor" aria-label="anchor" href="#fit"></a>
+</h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Gamma hyper.</span></span>
-<span><span class="va">a_strength</span> <span class="op">=</span> <span class="fl">2</span> <span class="co"># robust choice</span></span></code></pre></div>
-<p>Choosing a prior on (<span class="math inline">\(K\)</span>). The
-number of clusters is unknown. on (K) to let the data negotiate between
-parsimony (few blocks) and expressiveness (many blocks). This also curbs
-the classic tendency of mixture-like models to over-split when data are
-noisy.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#Gnedin model chosen (Other possible choices "DM", "PY", "DP")</span></span>
-<span><span class="va">prior</span> <span class="op">=</span> <span class="st">'GN'</span></span>
-<span><span class="va">gamma_GN</span> <span class="op">=</span> <span class="fl">0.8</span></span>
-<span><span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span></span>
-<span><span class="co">#check E[K | gamma, n]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/gnedin_K_mean.html">gnedin_K_mean</a></span><span class="op">(</span><span class="va">n</span>,<span class="va">gamma_GN</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; [1] 2</span></span></code></pre>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#check Var[K | gamma, n]</span></span>
-<span><span class="fu"><a href="../reference/gnedin_K_var.html">gnedin_K_var</a></span><span class="op">(</span><span class="va">n</span>,<span class="va">gamma_GN</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; [1] 45.95132</span></span></code></pre>
-</div>
-<div class="section level3">
-<h3 id="run-the-mcmc">Run the MCMC<a class="anchor" aria-label="anchor" href="#run-the-mcmc"></a>
-</h3>
-<p>We now draw samples from the joint posterior distribution using a
-collapsed Gibbs sampler. In this simplified demonstration the chain
-length is intentionally short; in empirical applications, longer runs or
-parallel chains are recommended.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span><span class="va">T_iter</span> <span class="op">=</span> <span class="fl">10000</span> <span class="co">#for real use set it to 30,000</span></span>
-<span><span class="va">T_burn</span> <span class="op">=</span> <span class="fl">2000</span></span>
-<span></span>
-<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">BTSBM</span><span class="fu">::</span><span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
-<span>  w_ij   <span class="op">=</span> <span class="va">w_ij</span>,</span>
-<span>  a <span class="op">=</span> <span class="va">a_strength</span>,</span>
-<span>  prior  <span class="op">=</span> <span class="va">prior</span>,       <span class="co"># "DP", "PY", "DM", or "GN"</span></span>
-<span>  gamma_GN <span class="op">=</span>  <span class="va">gamma_GN</span>,</span>
-<span>  T_iter <span class="op">=</span> <span class="va">T_iter</span>, </span>
-<span>  T_burn <span class="op">=</span> <span class="va">T_burn</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">T</span></span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
+<span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>,</span>
+<span>  a <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
+<span>  gamma_GN <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  T_iter <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>  T_burn <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; iter 1000 occupied = 4 </span></span>
-<span><span class="co">#&gt; iter 2000 occupied = 7 </span></span>
-<span><span class="co">#&gt; iter 3000 occupied = 7 </span></span>
-<span><span class="co">#&gt; iter 4000 occupied = 5 </span></span>
-<span><span class="co">#&gt; iter 5000 occupied = 4 </span></span>
-<span><span class="co">#&gt; iter 6000 occupied = 5 </span></span>
-<span><span class="co">#&gt; iter 7000 occupied = 4 </span></span>
-<span><span class="co">#&gt; iter 8000 occupied = 7 </span></span>
-<span><span class="co">#&gt; iter 9000 occupied = 7 </span></span>
-<span><span class="co">#&gt; iter 10000 occupied = 3</span></span></code></pre>
 </div>
-<div class="section level3">
-<h3 id="relabel-and-summarize">Relabel and summarize<a class="anchor" aria-label="anchor" href="#relabel-and-summarize"></a>
-</h3>
-<p>The posterior distribution of latent block-assignments is invariant
-under permutations of cluster labels. Consequently, averaging or
-summarizing raw samples is meaningless without post-processing.
-Relabeling methods align label permutations across iterations, enabling
-consistent summaries of cluster-specific parameters.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span>
-<span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu">BTSBM</span><span class="fu">::</span><span class="fu"><a href="../reference/relabel_by_lambda.html">relabel_by_lambda</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">out</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Pretty table of the K posterior distribution</span></span>
+<div class="section level2">
+<h2 id="relabel-and-summarise">Relabel and Summarise<a class="anchor" aria-label="anchor" href="#relabel-and-summarise"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/relabel_by_lambda.html">relabel_by_lambda</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">fit</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/pretty_table_K_distribution.html">pretty_table_K_distribution</a></span><span class="op">(</span><span class="va">post</span><span class="op">)</span></span></code></pre></div>
 <table class="table table" style="margin-left: auto; margin-right: auto;">
 <thead><tr>
 <th style="text-align:right;">
+2
+</th>
+<th style="text-align:right;">
 3
-</th>
-<th style="text-align:right;">
-4
-</th>
-<th style="text-align:right;">
-5
-</th>
-<th style="text-align:right;">
-6
-</th>
-<th style="text-align:right;">
-7
 </th>
 </tr></thead>
 <tbody><tr>
 <td style="text-align:right;">
-0.152
+0.62
 </td>
 <td style="text-align:right;">
-0.302
-</td>
-<td style="text-align:right;">
-0.25
-</td>
-<td style="text-align:right;">
-0.164
-</td>
-<td style="text-align:right;">
-0.076
+0.32
 </td>
 </tr></tbody>
 </table>
 </div>
-<div class="section level3">
-<h3 id="obtain-point-estimates">Obtain point estimates<a class="anchor" aria-label="anchor" href="#obtain-point-estimates"></a>
-</h3>
-<p>Partition estimates such as the Binder or Minimum Variation of
-Information (MinVI) losses are the state-of-the-art point estimate
-methods for partition samples. Binder’s loss tends to favor slightly
-finer partitions, while MinVI is more conservative. Comparing these
-estimates provides insight into the stability of the inferred grouping
-structure.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x_binder</span> <span class="op">&lt;-</span> <span class="va">post</span><span class="op">$</span><span class="va">partition_binder</span> <span class="co">#partition with Binder loss</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">x_binder</span><span class="op">)</span> <span class="co">#Block sizes</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; x_binder</span></span>
-<span><span class="co">#&gt;  1  2  3  4  5  6  7  8  9 10 11 </span></span>
-<span><span class="co">#&gt;  2  1 16  5  1  1  1  1  3  1 73</span></span></code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x_minVI</span> <span class="op">&lt;-</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span> <span class="co">#partition with MIN-VI loss</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">x_minVI</span><span class="op">)</span> <span class="co">#Block sizes</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; x_minVI</span></span>
-<span><span class="co">#&gt;  1  2  3 </span></span>
-<span><span class="co">#&gt;  2 21 82</span></span></code></pre>
-</div>
-<div class="section level3">
-<h3 id="plot-reordered-adjacency-matrix">Plot reordered adjacency matrix<a class="anchor" aria-label="anchor" href="#plot-reordered-adjacency-matrix"></a>
-</h3>
-<p>The reordered adjacency matrix reveals the empirical interaction
-pattern between inferred blocks. Dark-green colour in the right
-off-diagonal region correspond to high winning proportions, while
-uniform colours along the main diagonal indicate balanced
-competitiveness within clusters. This visualization serves as a
-qualitative validation of the inferred block structure.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>,</span>
-<span>                     w_ij <span class="op">=</span> <span class="va">w_ij</span>,</span>
-<span>                     bw_preview <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="864" style="display: block; margin: auto;"><img src="getting-started_files/figure-html/unnamed-chunk-7-2.png" class="r-plt" alt="" width="864" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level3">
-<h3 id="plot-assignment-uncertainty">Plot assignment uncertainty<a class="anchor" aria-label="anchor" href="#plot-assignment-uncertainty"></a>
-</h3>
-<p>Posterior probabilities of assignment <span class="math inline">\(p(x_i = k | W)\)</span> quantify the uncertainty
-of player-to-block allocations. High uncertainty for certain individuals
-typically signals boundary cases or transitional players whose
-performance profile lies between different clusters.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="core-plots">Core Plots<a class="anchor" aria-label="anchor" href="#core-plots"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_assignment_probabilities.html">plot_assignment_probabilities</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span>, x_hat <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="864" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level3">
-<h3 id="plot-lambda-uncertainty">Plot lambda uncertainty<a class="anchor" aria-label="anchor" href="#plot-lambda-uncertainty"></a>
-</h3>
-<p>Posterior uncertainty in <span class="math inline">\(\lambda_{x_i}\)</span>, the strength of player i.
-Since all players assigned to the same block share the same <span class="math inline">\(\lambda\)</span>, the uncertainty here is driven
-by the assignment uncertainty. Reporting credible intervals gives a
-precise idea of the relative strength differences between clusters, and
-between players as well.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_lambda_uncertainty.html">plot_lambda_uncertainty</a></span><span class="op">(</span></span>
-<span>  fit <span class="op">=</span> <span class="va">post</span>,</span>
-<span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>,</span>
-<span>  clean_fun <span class="op">=</span> <span class="va">clean_players_names</span>,</span>
-<span>  x_hat <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="960" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level3">
-<h3 id="summarise-block-level-win-probabilities">Summarise block-level win probabilities<a class="anchor" aria-label="anchor" href="#summarise-block-level-win-probabilities"></a>
-</h3>
-<p>The relabelled posterior draws can also be collapsed into a
-block-by-block table of Bradley-Terry win probabilities. Weighting by
-the observed match counts makes the summary emphasise the block pairs
-that were actually well observed in the data.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">block_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/block_winprob_table_from_lambdas.html">block_winprob_table_from_lambdas</a></span><span class="op">(</span></span>
-<span>  lambda_item <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">lambda_samples_relabel</span>,</span>
-<span>  z <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span>,</span>
-<span>  N_ij <span class="op">=</span> <span class="va">w_ij</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">block_tbl</span><span class="op">$</span><span class="va">P_block</span>, <span class="fl">3</span><span class="op">)</span>, caption <span class="op">=</span> <span class="st">"Estimated block win probabilities"</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<caption>Estimated block win probabilities</caption>
-<thead><tr class="header">
-<th align="left"></th>
-<th align="right">Block_1</th>
-<th align="right">Block_2</th>
-<th align="right">Block_3</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Block_1</td>
-<td align="right">NA</td>
-<td align="right">0.780</td>
-<td align="right">0.896</td>
-</tr>
-<tr class="even">
-<td align="left">Block_2</td>
-<td align="right">0.220</td>
-<td align="right">NA</td>
-<td align="right">0.709</td>
-</tr>
-<tr class="odd">
-<td align="left">Block_3</td>
-<td align="right">0.104</td>
-<td align="right">0.291</td>
-<td align="right">NA</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="plot-posterior-rank-intervals">Plot posterior rank intervals<a class="anchor" aria-label="anchor" href="#plot-posterior-rank-intervals"></a>
-</h3>
-<p>Ranking summaries are computed directly from the relabelled
-player-strength draws. These intervals complement the lambda plot by
-showing posterior uncertainty on the rank scale, where 1 is the
-strongest player.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_lambda_uncertainty.html">plot_lambda_uncertainty</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span>, x_hat <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_rank_intervals.html">plot_rank_intervals</a></span><span class="op">(</span><span class="va">post</span>, max_players <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
-</div>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

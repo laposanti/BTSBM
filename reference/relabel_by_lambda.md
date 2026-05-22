@@ -56,31 +56,11 @@ A named list with components:
 
 - `minVI_partition`:
 
-  Partition estimated by minimizing posterior expected VI (first
-  solution returned by
-  [`mcclust.ext::minVI`](https://rdrr.io/pkg/mcclust.ext/man/minVI.html)).
+  Partition estimated by minimizing posterior expected VI using salso.
 
 - `partition_binder`:
 
-  Partition estimated by Binder's loss
-  ([`mcclust.ext::minbinder.ext`](https://rdrr.io/pkg/mcclust.ext/man/minbinder.ext.html)).
-
-- `credible_ball_lower_partition`:
-
-  Partition on the *surface* of the 95\\ posterior-mean item strength).
-
-- `credible_ball_upper_partition`:
-
-  Analogous extremal partition on the credible-ball surface
-  (relabelled).
-
-- `K_VI_lower`:
-
-  Number of clusters in `credible_ball_lower_partition`.
-
-- `K_VI_upper`:
-
-  Number of clusters in `credible_ball_upper_partition`.
+  Partition estimated by Binder's loss using salso.
 
 - `n_clusters_each_iter`:
 
@@ -122,19 +102,8 @@ A named list with components:
 “1 = strongest” labelling.
 
 **Point estimation.** The posterior similarity matrix is computed from
-relabelled draws; minVI and Binder partitions are obtained via
-mcclust.ext.
-
-**Credible ball and extremal partitions.** A 95\\ (under VI) is
-constructed around the minVI partition. We report the *extreme*
-partitions on the ball's surface (in the sense of maximal VI distance
-from the centre), as returned by
-[`mcclust.ext::credibleball`](https://rdrr.io/pkg/mcclust.ext/man/credibleball.html).
-These are then relabelled by decreasing posterior-mean item strength to
-ensure a consistent “strength ordering” across summaries. The associated
-cluster counts `K_VI_lower` and `K_VI_upper` characterize the local
-structural uncertainty around the point estimate; they are *not*
-marginal posterior quantiles of \\K\\.
+relabelled draws; the minVI and Binder partitions are estimated with
+salso using the generalized variation of information and Binder losses.
 
 ## Input requirements
 
@@ -142,9 +111,7 @@ marginal posterior quantiles of \\K\\.
 
 - `lambda_samples` may be sparse (NAs for non-occupied labels).
 
-- mcclust and mcclust.ext must be available; `credibleball` is expected
-  to return lower/upper partitions in either `c.lower/c.upper` or
-  `c.lowervert/c.uppervert`.
+- salso must be available for the point-estimate summaries.
 
 ## References
 
@@ -154,9 +121,9 @@ the Royal Society A: Mathematical, Physical and Engineering Sciences
 
 ## See also
 
-[`minVI`](https://rdrr.io/pkg/mcclust.ext/man/minVI.html),
-[`minbinder.ext`](https://rdrr.io/pkg/mcclust.ext/man/minbinder.ext.html),
-[`credibleball`](https://rdrr.io/pkg/mcclust.ext/man/credibleball.html),
+[`salso`](https://rdrr.io/pkg/salso/man/salso.html),
+[`VI`](https://rdrr.io/pkg/salso/man/partition.loss.html),
+[`binder`](https://rdrr.io/pkg/salso/man/partition.loss.html),
 [`comp.psm`](https://rdrr.io/pkg/mcclust/man/comp.psm.html)
 
 ## Examples

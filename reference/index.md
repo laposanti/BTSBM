@@ -65,6 +65,3 @@
 
 - [`sample_from_BTSBM()`](https://laposanti.github.io/BTSBM/reference/sample_from_BTSBM.md)
   : Sample a Bradley–Terry Stochastic Block Model (BT-SBM) tournament
-
-- [`updateZ_and_rowsums()`](https://laposanti.github.io/BTSBM/reference/updateZ_and_rowsums.md)
-  : @keywords internal
