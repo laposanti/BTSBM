@@ -37,6 +37,18 @@ jobs:
           extra-packages: any::rcmdcheck, any::roxygen2
           needs: check
 
+      - name: Clean compiled artifacts
+        shell: Rscript {0}
+        run: |
+          patterns <- c("src/*.o", "src/*.obj", "src/*.so", "src/*.dll", "src/*.dylib", "src/*.a", "src/*.lib")
+          files <- unlist(lapply(patterns, Sys.glob), use.names = FALSE)
+          if (length(files) > 0) {
+            unlink(files, force = TRUE)
+            message("Removed stale compiled artifacts: ", paste(files, collapse = ", "))
+          } else {
+            message("No compiled artifacts found in src/.")
+          }
+
       - name: Regenerate docs
         shell: Rscript {0}
         run: |

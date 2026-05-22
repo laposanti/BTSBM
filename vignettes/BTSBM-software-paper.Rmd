@@ -3,6 +3,8 @@ title: "BTSBM: Bayesian Bradley-Terry Stochastic Block Models in R"
 author: "Lapo Santi and Nial Friel"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
+  rmarkdown::html_vignette:
+    toc: true
   rmarkdown::pdf_document:
     toc: true
     number_sections: true
