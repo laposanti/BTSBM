@@ -14,12 +14,12 @@
 Source:
 [`DESCRIPTION`](https://github.com/laposanti/BTSBM/blob/main/DESCRIPTION)
 
-Santi L, Friel N (2026). *BTSBM: Bayesian Bradley–Terry Stochastic Block
-Models for Paired Comparison Data*. R package version 0.1.0,
+Santi L, Friel N (2026). *BTSBM: Bayesian Bradley–Terry and
+Plackett–Luce Models with Latent Blocks*. R package version 0.1.0,
 <https://github.com/laposanti/BTSBM>.
 
     @Manual{,
-      title = {BTSBM: Bayesian Bradley–Terry Stochastic Block Models for Paired Comparison Data},
+      title = {BTSBM: Bayesian Bradley–Terry and Plackett–Luce Models with Latent Blocks},
       author = {Lapo Santi and Nial Friel},
       year = {2026},
       note = {R package version 0.1.0},

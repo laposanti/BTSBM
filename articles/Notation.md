@@ -41,7 +41,7 @@ This vignette documents **symbols**, **R object names**, and
 | PY discount | \\\sigma\\ | \[0,1) | `sigma_PY` | scalar |
 | DM concentration | \\\beta\\ | \> 0 | `beta_DM` | scalar |
 | GN parameter | \\\gamma\\ | \> 0 | `gamma_GN` | scalar |
-| Gamma prior on λ | \\\lambda \sim \mathrm{Gamma}(a,b)\\ | a\>0, b\>0 | `a`, `b_eff = exp(ψ(a))` | scalars |
+| Gamma prior on λ | \\\lambda \sim \mathrm{Gamma}(a,b)\\ | a\>0, b\>0 | `a`, `b` (default `exp(ψ(a))`) | scalars |
 
 Notes:
 
@@ -74,6 +74,7 @@ gibbs_bt_sbm(
   w_ij,
   prior   = c("DP","PY","DM","GN"),
   a       = 4,
+  b       = exp(digamma(a)),
   alpha_PY = NA_real_,
   sigma_PY = NA_real_,
   beta_DM  = NA_real_,

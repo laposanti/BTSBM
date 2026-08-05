@@ -10,6 +10,7 @@ computed internally as `w_ij + t(w_ij)`.
 gibbs_bt_sbm(
   w_ij,
   a = 4,
+  b = exp(digamma(a)),
   prior = c("DP", "PY", "DM", "GN"),
   alpha_PY = NA_real_,
   sigma_PY = NA_real_,
@@ -32,11 +33,11 @@ gibbs_bt_sbm(
   over j). Must be nonnegative with zero diagonal. The function builds
   \\n\_{ij} = w\_{ij} + w\_{ji}\\ internally.
 
-- a:
+- a, b:
 
-  Positive shape parameter for the Gamma prior \\\lambda_k \sim
-  \mathrm{Gamma}(a,b)\\. The algorithm uses \\b = \exp(\psi(a))\\ so
-  that \\\mathbb{E}\[\log \lambda_k\] = 0\\ a priori.
+  Positive shape and rate parameters for the Gamma prior \\\lambda_k
+  \sim \mathrm{Gamma}(a,b)\\. By default, \\b = \exp(\psi(a))\\, so that
+  \\\mathbb{E}\[\log \lambda_k\] = 0\\ a priori.
 
 - prior:
 

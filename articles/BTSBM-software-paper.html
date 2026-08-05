@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>BTSBM: Bayesian Bradley-Terry Stochastic Block Models in R • BTSBM: Bradley–Terry Stochastic Block Model</title>
+<title>BTSBM: Bayesian Bradley-Terry Stochastic Block Models in R • BTSBM: Bayesian paired-comparison and ranking models</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -24,7 +24,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">BTSBM: Bradley–Terry Stochastic Block Model</a>
+    <a class="navbar-brand me-2" href="../index.html">BTSBM: Bayesian paired-comparison and ranking models</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
@@ -69,7 +69,7 @@
                         <h4 data-toc-skip class="author">Lapo Santi and
 Nial Friel</h4>
             
-            <h4 data-toc-skip class="date">2026-05-22</h4>
+            <h4 data-toc-skip class="date">2026-08-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/laposanti/BTSBM/blob/main/vignettes/BTSBM-software-paper.Rmd" class="external-link"><code>vignettes/BTSBM-software-paper.Rmd</code></a></small>
       <div class="d-none name"><code>BTSBM-software-paper.Rmd</code></div>
@@ -573,9 +573,9 @@ ATP subset.</p>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="st">"Install 'loo' to run compare_bt_models_loo()."</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt;        elpd_diff se_diff</span></span>
-<span><span class="co">#&gt; model2     0.0       0.0</span></span>
-<span><span class="co">#&gt; model1 -1359.9     382.6</span></span></code></pre></div>
+<span><span class="co">#&gt;   model elpd_diff se_diff p_worse diag_diff        diag_elpd</span></span>
+<span><span class="co">#&gt;  model2       0.0     0.0      NA           82 k_psis &gt; 0.54</span></span>
+<span><span class="co">#&gt;  model1   -1359.9   382.6    1.00           60 k_psis &gt; 0.54</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -644,7 +644,7 @@ Statistics and Computing, 27, 1413-1432.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

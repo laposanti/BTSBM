@@ -468,9 +468,9 @@ if (requireNamespace("loo", quietly = TRUE)) {
 } else {
   "Install 'loo' to run compare_bt_models_loo()."
 }
-#>        elpd_diff se_diff
-#> model2     0.0       0.0
-#> model1 -1359.9     382.6
+#>   model elpd_diff se_diff p_worse diag_diff        diag_elpd
+#>  model2       0.0     0.0      NA           82 k_psis > 0.54
+#>  model1   -1359.9   382.6    1.00           60 k_psis > 0.54
 ```
 
 ## Practical Notes for Package Use

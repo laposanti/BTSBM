@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model • BTSBM: Bradley–Terry Stochastic Block Model</title>
+<title>Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model • BTSBM: Bayesian paired-comparison and ranking models</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -24,7 +24,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">BTSBM: Bradley–Terry Stochastic Block Model</a>
+    <a class="navbar-brand me-2" href="../index.html">BTSBM: Bayesian paired-comparison and ranking models</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
@@ -67,7 +67,7 @@
 
       <h1>Notation and Object Dimensions for the Bradley–Terry Stochastic Block Model</h1>
             
-            <h4 data-toc-skip class="date">2026-05-22</h4>
+            <h4 data-toc-skip class="date">2026-08-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/laposanti/BTSBM/blob/main/vignettes/Notation.Rmd" class="external-link"><code>vignettes/Notation.Rmd</code></a></small>
       <div class="d-none name"><code>Notation.Rmd</code></div>
@@ -288,8 +288,7 @@ n_{ij}&gt;0\}\)</span>, <span class="math inline">\(0 \le D \le
 \mathrm{Gamma}(a,b)\)</span></td>
 <td>a&gt;0, b&gt;0</td>
 <td>
-<code>a</code>, <code>b_eff = exp(ψ(a))</code>
-</td>
+<code>a</code>, <code>b</code> (default <code>exp(ψ(a))</code>)</td>
 <td>scalars</td>
 </tr>
 </tbody>
@@ -345,6 +344,7 @@ where <code>D = # {(i,j): i&lt;j, n_ij[i,j]&gt;0}</code> and
 <span>  <span class="va">w_ij</span>,</span>
 <span>  prior   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DP"</span>,<span class="st">"PY"</span>,<span class="st">"DM"</span>,<span class="st">"GN"</span><span class="op">)</span>,</span>
 <span>  a       <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  b       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Special.html" class="external-link">digamma</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  alpha_PY <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
 <span>  sigma_PY <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
 <span>  beta_DM  <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
@@ -582,7 +582,7 @@ shims may emit deprecation warnings.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
