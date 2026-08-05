@@ -10,6 +10,19 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// pl_grouped_augmentation_cpp
+List pl_grouped_augmentation_cpp(const IntegerMatrix& rankings, const IntegerVector& ranking_cluster, const NumericMatrix& latent_strength);
+RcppExport SEXP _BTSBM_pl_grouped_augmentation_cpp(SEXP rankingsSEXP, SEXP ranking_clusterSEXP, SEXP latent_strengthSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type rankings(rankingsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type ranking_cluster(ranking_clusterSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type latent_strength(latent_strengthSEXP);
+    rcpp_result_gen = Rcpp::wrap(pl_grouped_augmentation_cpp(rankings, ranking_cluster, latent_strength));
+    return rcpp_result_gen;
+END_RCPP
+}
 // updateZ_and_rowsums
 Rcpp::List updateZ_and_rowsums(const Rcpp::IntegerMatrix& n_ij, const Rcpp::IntegerVector& x, const Rcpp::NumericVector& lambda);
 RcppExport SEXP _BTSBM_updateZ_and_rowsums(SEXP n_ijSEXP, SEXP xSEXP, SEXP lambdaSEXP) {
@@ -25,6 +38,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_BTSBM_pl_grouped_augmentation_cpp", (DL_FUNC) &_BTSBM_pl_grouped_augmentation_cpp, 3},
     {"_BTSBM_updateZ_and_rowsums", (DL_FUNC) &_BTSBM_updateZ_and_rowsums, 3},
     {NULL, NULL, 0}
 };

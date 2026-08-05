@@ -1,0 +1,156 @@
+---
+title: "Plackett--Luce ranking models"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Plackett--Luce ranking models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Ranking data
+
+The Plackett--Luce (PL) likelihood models a strict ranking as a sequence of
+choices from a shrinking set of items.  `BTSBM` accepts the compact `rho`
+format used by the PLuce reference implementation: each row is one ranking and
+columns run from most to least preferred item.  A row may be a full ranking or
+a top-`m` prefix, provided every ranking uses the same item universe.
+
+The initial sampler uses the exponential-race augmentation of Caron and Doucet
+(2012).  It yields Gamma conditional updates for positive abilities while
+preserving the PL likelihood.  This is also the computational basis for the
+item-block PL--SBM implementation.
+
+## A Sushi-inspired demonstration
+
+The original Sushi Preference Dataset is a well-known ranking benchmark: it
+contains surveys of preferences over sushi and is described by Kamishima (2003).
+The original licence does not allow redistribution, so this package does not
+bundle any of its respondents' rankings.  `sushi_toy()` is instead a small,
+reproducible synthetic teaching dataset with the same application setting and
+two known preference profiles.  Obtain the original dataset directly from
+[Kamishima's data page](https://www.kamishima.net/soft/) if its licence suits
+your use.
+
+```{r sushi-data}
+library(BTSBM)
+
+sushi <- sushi_toy(n_rankings = 40, rank_length = 5, seed = 2026)
+sushi
+sushi$rankings[1:4, ]
+```
+
+Fit a simple PL model with a Gamma prior on item latent strengths.
+`posterior_strength()` returns reporting-scale strengths, normalised to have
+geometric mean one by default.
+
+```{r pl-fit}
+fit_pl <- fit_btsbm(
+  sushi,
+  pl_model(latent_strength = latent_strength(shape = 1, rate = 1)),
+  mcmc_control(iter = 600, warmup = 300, seed = 1)
+)
+
+posterior_strength(fit_pl, summary = "mean")
+```
+
+`log_lik()` has one column per ranking row, the conditionally independent unit
+needed for ranking-level posterior predictive checks and PSIS-LOO.
+
+```{r pl-loglik}
+dim(log_lik(fit_pl))
+```
+
+## PL--SBM: item blocks with tied abilities
+
+The PL--SBM shares a strength among items assigned to the same latent block.
+The current implementation supports the Gnedin, Dirichlet process,
+Pitman--Yor, and finite Dirichlet--multinomial item-partition priors through
+named helpers. The names make the model intent explicit: `item_clustering`
+describes which items share a strength, and `gnedin_hyperparameter` controls
+the Gnedin prior.
+
+```{r pl-sbm-fit}
+fit_sbm <- fit_btsbm(
+  sushi,
+  pl_sbm_model(
+    item_clustering = gnedin_prior(gnedin_hyperparameter = 0.5)
+  ),
+  mcmc_control(iter = 600, warmup = 300, seed = 2)
+)
+
+fit_sbm
+fit_sbm$draws$n_item_clusters
+posterior_similarity(fit_sbm, target = "item")
+```
+
+The block labels are exchangeable.  Use the posterior similarity matrix rather
+than raw label frequencies when summarising the partition until a
+model-specific canonicalisation method is chosen.
+
+To choose another prior, substitute one of the following objects for
+`item_clustering`:
+
+```{r priors, eval=FALSE}
+dirichlet_process_prior(concentration = 1)
+pitman_yor_prior(concentration = 1, discount = 0.2)
+finite_partition(max_clusters = 4, concentration = 1)
+```
+
+## Next PL models
+
+`pl_mixture_model()` clusters ranking rows, while `pl_lbm_model()` jointly
+clusters ranking rows and items with a `C x K` latent-strength matrix. Both
+now have readable R Gibbs samplers based on the PLuce exponential-race
+architecture. They are suitable for small and moderate teaching/data-analysis
+problems; the PLuce C++ aggregation kernels are the next performance step.
+
+```{r pl-mixture-fit}
+mixture_fit <- fit_btsbm(
+  sushi,
+  pl_mixture_model(
+    ranking_clustering = dirichlet_process_prior(concentration = 1)
+  ),
+  mcmc_control(iter = 300, warmup = 150, seed = 3)
+)
+
+posterior_similarity(mixture_fit, target = "ranking")
+mcmc_diagnostics(mixture_fit)
+```
+
+The LBM is exercised with a known-structure synthetic fixture:
+
+```{r pl-lbm-fit}
+lbm_fit <- fit_btsbm(
+  pl_lbm_toy(n_rankings = 20, rank_length = 4),
+  pl_lbm_model(
+    ranking_clustering = finite_partition(max_clusters = 3),
+    item_clustering = finite_partition(max_clusters = 3)
+  ),
+  mcmc_control(iter = 300, warmup = 150, seed = 4)
+)
+
+mcmc_diagnostics(lbm_fit)
+```
+
+`mcmc_diagnostics()` reports effective sample-size estimates, Monte Carlo
+standard errors, and lag-one autocorrelation for the total ranking likelihood
+and available occupied-cluster traces. Use these alongside multiple chains and
+posterior predictive checks for a substantive analysis.
+
+`pl_lbm_toy()` provides a structural fixture with known ranking and item
+partitions for diagnostics and forthcoming PLuce parity tests.
+
+## References
+
+* Caron, F. and Doucet, A. (2012). Efficient Bayesian inference for
+  generalized Bradley--Terry models. *Journal of Computational and Graphical
+  Statistics*, 21(1), 174--196. <https://doi.org/10.1080/10618600.2012.638220>
+* Kamishima, T. (2003). Nantonac collaborative filtering: Recommendation based
+  on order responses. *Proceedings of the Ninth ACM SIGKDD International
+  Conference on Knowledge Discovery and Data Mining*.

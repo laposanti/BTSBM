@@ -76,7 +76,7 @@ sample_from_BTSBM <- function(n_players,
     stopifnot(lambda_base > 0, lambda_ratio > 0)
   }
   if (!is.null(seed)) {
-    seed=123
+    set.seed(seed)
   }
 
   n <- as.integer(n_players)

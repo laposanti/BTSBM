@@ -10,9 +10,10 @@
 #' @param w_ij Integer or numeric square matrix \eqn{n \times n} of directed wins
 #'   (i over j). Must be nonnegative with zero diagonal. The function builds
 #'   \eqn{n_{ij} = w_{ij} + w_{ji}} internally.
-#' @param a Positive shape parameter for the Gamma prior
-#'   \eqn{\lambda_k \sim \mathrm{Gamma}(a,b)}. The algorithm uses
-#'   \eqn{b = \exp(\psi(a))} so that \eqn{\mathbb{E}[\log \lambda_k] = 0} a priori.
+#' @param a,b Positive shape and rate parameters for the Gamma prior
+#'   \eqn{\lambda_k \sim \mathrm{Gamma}(a,b)}. By default,
+#'   \eqn{b = \exp(\psi(a))}, so that
+#'   \eqn{\mathbb{E}[\log \lambda_k] = 0} a priori.
 #' @param prior Character scalar, one of \code{"DP"}, \code{"PY"}, \code{"DM"}, \code{"GN"}.
 #' @param alpha_PY,sigma_PY Hyperparameters for Pitman–Yor / Dirichlet Process.
 #'   For \code{prior="DP"} use \code{alpha_PY} (with \code{sigma_PY} ignored).
@@ -52,6 +53,7 @@
 gibbs_bt_sbm <- function(
     w_ij,
     a = 4,
+    b = exp(digamma(a)),
     prior = c("DP", "PY", "DM", "GN"),
     alpha_PY = NA_real_,
     sigma_PY = NA_real_,
@@ -72,7 +74,9 @@ gibbs_bt_sbm <- function(
   n_ij <- w_ij + t(w_ij)
   if (!isTRUE(all.equal(n_ij, t(n_ij)))) stop("n_ij must be symmetric.")
   if (T_burn >= T_iter) stop("Require T_burn < T_iter.")
-  if (a <= 0) stop("Gamma(a,b): need a > 0.")
+  if (a <= 0 || !is.finite(a) || b <= 0 || !is.finite(b)) {
+    stop("Gamma(a,b): require finite a > 0 and b > 0.")
+  }
 
   prior <- match.arg(prior)
   if (prior == "DP") {
@@ -108,7 +112,7 @@ gibbs_bt_sbm <- function(
     L_cap <- max(L_cap, max(x_curr))
   }
   a_curr <- a
-  b_eff  <- as.numeric(exp(digamma(a_curr)))  # b := exp(psi(a))
+  b_eff  <- as.numeric(b)
 
   lambda_curr <- rep(NA_real_, L_cap)
   csize0 <- tabulate(x_curr, nbins = L_cap)
@@ -226,6 +230,7 @@ gibbs_bt_sbm <- function(
       x_samples[save_i, ]      <- x_curr
       lambda_list[[save_i]]    <- lambda_curr
       K_trace[save_i]          <- length(occ)
+      L_cap_trace[save_i]      <- L_cap
       if (store_z) z_store[save_i, , ] <- Z_curr
     }
 
@@ -238,6 +243,7 @@ gibbs_bt_sbm <- function(
     x_samples        = x_samples,
     lambda_samples   = lambda_list,      # ragged storage
     K_per_iter       = K_trace,
+    L_cap_per_iter   = L_cap_trace,
     z_samples        = if (store_z) z_store else NULL
   )
 }

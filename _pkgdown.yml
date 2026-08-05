@@ -1,6 +1,6 @@
 # _pkgdown.yml
 package: BTSBM
-title: "BTSBM: Bradley–Terry Stochastic Block Model"
+title: "BTSBM: Bayesian paired-comparison and ranking models"
 authors:
   Lapo Santi:
     href: https://github.com/laposanti
@@ -17,17 +17,19 @@ template:
     btn-border-radius: 0.25rem
     danger: "#A6081A"
 home:
-  title: "Bradley–Terry SBM"
+  title: "Bayesian BT and PL models"
   sidebar:
     structure: [links, toc, license, authors, dev]
   description: >
-    Gibbs sampler + post-processing utilities for Bradley–Terry Stochastic
-    Block Models (DP, PY, DM, GN priors).
+    Bayesian Bradley–Terry and Plackett–Luce models with latent item blocks
+    and partition priors.
   readme: index.md
 
 articles:
   - title: Articles
     contents:
       - getting-started
+      - pl-ranking-models
+      - toy-data-gallery
       - Notation
       - BTSBM-software-paper

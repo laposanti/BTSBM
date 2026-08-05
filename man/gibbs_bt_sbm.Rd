@@ -7,6 +7,7 @@
 gibbs_bt_sbm(
   w_ij,
   a = 4,
+  b = exp(digamma(a)),
   prior = c("DP", "PY", "DM", "GN"),
   alpha_PY = NA_real_,
   sigma_PY = NA_real_,
@@ -25,9 +26,10 @@ gibbs_bt_sbm(
 (i over j). Must be nonnegative with zero diagonal. The function builds
 \eqn{n_{ij} = w_{ij} + w_{ji}} internally.}
 
-\item{a}{Positive shape parameter for the Gamma prior
-\eqn{\lambda_k \sim \mathrm{Gamma}(a,b)}. The algorithm uses
-\eqn{b = \exp(\psi(a))} so that \eqn{\mathbb{E}[\log \lambda_k] = 0} a priori.}
+\item{a, b}{Positive shape and rate parameters for the Gamma prior
+\eqn{\lambda_k \sim \mathrm{Gamma}(a,b)}. By default,
+\eqn{b = \exp(\psi(a))}, so that
+\eqn{\mathbb{E}[\log \lambda_k] = 0} a priori.}
 
 \item{prior}{Character scalar, one of \code{"DP"}, \code{"PY"}, \code{"DM"}, \code{"GN"}.}
 

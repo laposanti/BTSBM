@@ -9,7 +9,7 @@ output:
     toc: true
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{BTSBM: A Software Paper}
+  %\VignetteIndexEntry{BTSBM: Bayesian Bradley-Terry Stochastic Block Models in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
