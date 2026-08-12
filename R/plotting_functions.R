@@ -1479,7 +1479,7 @@ plot_lambda_uncertainty <- function(fit,
 #' strongest player.
 #'
 #' @param lambda_item Numeric matrix or list of posterior draws for player
-#'   strengths.
+#'   strengths, or a simple BT/PL or item-SBM btsbm_fit object.
 #' @param w_ij Optional wins matrix kept for API compatibility and ignored.
 #' @param player_names Optional names for the players.
 #' @param burn_in Burn-in as an integer iteration count or a fraction in `[0, 1)`.
@@ -1498,6 +1498,12 @@ compute_expected_wins_rank_posterior <- function(lambda_item,
                                                  ci = 0.95,
                                                  ties.method = "average",
                                                  rank_grid_by = 0.5) {
+
+  if (inherits(lambda_item, "btsbm_fit")) {
+    fit <- lambda_item
+    if (is.null(player_names)) player_names <- fit$data$item_labels
+    lambda_item <- posterior_strength(fit, summary = "draws")
+  }
 
   if (!is.null(w_ij)) {
     warning("w_ij is ignored: ranking is computed by sorting lambda draws only (no schedule weighting).")
@@ -1568,8 +1574,8 @@ compute_expected_wins_rank_posterior <- function(lambda_item,
 #' Draw a rank-interval plot from posterior rank summaries, posterior lambda draws,
 #' or the relabelled output returned by [relabel_by_lambda()].
 #'
-#' @param x Either a posterior-rank summary, posterior lambda draws, or the output
-#'   of [relabel_by_lambda()].
+#' @param x Either a posterior-rank summary, posterior lambda draws, a btsbm_fit
+#'   object, or the output of [relabel_by_lambda()].
 #' @param max_players Optional maximum number of players to display.
 #' @param w_ij Optional wins matrix passed through when rank summaries must be
 #'   computed from lambda draws.
@@ -1675,7 +1681,6 @@ plot_rank_intervals <- function(x,
     ) +
     ggplot2::scale_y_discrete(guide = ggplot2::guide_axis(n.dodge = 2))
 }
-
 
 
 

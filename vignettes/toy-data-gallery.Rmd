@@ -1,96 +1,127 @@
 ---
-title: "Toy datasets and model workflows"
+title: "Toy datasets: choose a model and read its output"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Toy datasets and model workflows}
+  %\VignetteIndexEntry{Toy datasets: choose a model and read its output}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-~~~{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-~~~
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
 
-BTSBM includes small, reproducible synthetic datasets for learning the
-interfaces and writing regression tests. They are deliberately not copies of
-respondent-level or match-level data from real applications.
+This gallery is a map of the package. Each dataset is synthetic, small enough
+to run quickly, and designed around one practical question. They are for
+learning and testing; they are not real contest, survey, or match data.
 
-## Pairwise tennis league
-
-tennis_toy() creates a round-robin paired-comparison matrix with three
-generating player tiers. It is useful for the existing BT and BT--SBM models.
-
-~~~{r tennis}
+```{r library}
 library(BTSBM)
+```
 
+## If you have win/loss counts: tennis
+
+Use a Bradley--Terry model when every observation is a head-to-head outcome.
+The first question is simply: which player beat which opponent most often?
+
+```{r tennis-data}
 tennis <- tennis_toy(matches_per_pair = 8, seed = 1)
-tennis
+plot_pairwise_outcomes(tennis)
+```
 
+Fit a BT--SBM if players may belong to broad tiers.
+
+```{r tennis-fit}
 tennis_fit <- fit_btsbm(
   tennis,
   bt_sbm_model(
-    item_clustering = gnedin_prior(gnedin_hyperparameter = 0.5)
+    item_clustering = finite_partition(max_clusters = 3)
   ),
-  mcmc_control(iter = 100, warmup = 50, seed = 2)
+  mcmc_control(iter = 300, warmup = 150, seed = 2)
 )
+```
 
-posterior_strength(tennis_fit, summary = "mean")
-posterior_similarity(tennis_fit, target = "item")
-~~~
+```{r tennis-output, fig.height=4.5}
+plot_strength_summary(tennis_fit)
+plot_posterior_similarity(tennis_fit, target = "item")
+```
 
-## Eurovision-inspired ranking mixture
+Read the first plot as relative player strength and uncertainty. Read the
+second as evidence that pairs of players belong to the same tier.
 
-eurovision_toy() represents juror/viewer ranking profiles over fictional acts.
-The useful inferential target is the partition of ranking rows, so a PL mixture
-is natural.
+## If you have rankings: Sushi-inspired preferences
 
-~~~{r eurovision}
-votes <- eurovision_toy(n_rankings = 30, rank_length = 5, seed = 3)
-votes
+Use a PL model when each row is an ordered list. First inspect which items
+occur near the top of the reported rankings.
 
+```{r sushi-data}
+sushi <- sushi_toy(n_rankings = 30, rank_length = 5, seed = 3)
+plot_ranking_positions(sushi)
+```
+
+Then estimate item strengths and their uncertainty.
+
+```{r sushi-fit}
+sushi_fit <- fit_btsbm(
+  sushi,
+  pl_model(),
+  mcmc_control(iter = 300, warmup = 150, seed = 4)
+)
+```
+
+```{r sushi-output, fig.height=5}
+plot_strength_summary(sushi_fit)
+plot_rank_intervals(sushi_fit)
+```
+
+The rank plot is particularly useful when strengths are close: it shows how
+much the possible ordering changes across posterior draws.
+
+## If respondents may have different tastes: Eurovision-inspired rankings
+
+Here the items are fictional acts, and the ranking rows are simulated from two
+different voting profiles. Use a PL mixture when the question is about groups
+of ranking rows rather than groups of items.
+
+```{r eurovision-data}
+votes <- eurovision_toy(n_rankings = 30, rank_length = 5, seed = 5)
+plot_ranking_positions(votes)
+```
+
+```{r eurovision-fit}
 mixture_fit <- fit_btsbm(
   votes,
   pl_mixture_model(
     ranking_clustering = dirichlet_process_prior(concentration = 1)
   ),
-  mcmc_control(iter = 120, warmup = 60, seed = 4)
+  mcmc_control(iter = 300, warmup = 150, seed = 6)
 )
+```
 
-posterior_similarity(mixture_fit, target = "ranking")
-mcmc_diagnostics(mixture_fit)
-~~~
+```{r eurovision-output, fig.width=7, fig.height=7}
+plot_posterior_similarity(mixture_fit, target = "ranking")
+```
 
-The matrix returned by posterior_similarity() is preferable to raw cluster
-labels because the labels themselves are exchangeable across MCMC draws.
+Rows and columns are individual rankings. Darker blocks are evidence of
+rankings that repeatedly occur in the same latent preference profile.
 
-## Sushi-inspired Plackett--Luce model
+## If both rows and items may have structure: PL--LBM
 
-sushi_toy() is a synthetic dataset using Sushi Preference Dataset-style items.
-It supports a simple PL model, PL--SBM, or a ranking mixture. The original
-Sushi data are not bundled; see the PL ranking-model vignette for its source
-and licence.
+The PL latent block model simultaneously groups ranking rows and items. This is
+the most structured option in the package. The synthetic fixture below has
+known generating groups, so it is a safe place to learn the workflow.
 
-~~~{r sushi}
-sushi <- sushi_toy(n_rankings = 30, rank_length = 5, seed = 5)
-
-pl_fit <- fit_btsbm(
-  sushi,
-  pl_model(latent_strength = latent_strength(shape = 1, rate = 1)),
-  mcmc_control(iter = 100, warmup = 50, seed = 6)
-)
-
-posterior_strength(pl_fit, summary = "mean")
-mcmc_diagnostics(pl_fit)
-~~~
-
-## Joint ranking/item structure
-
-pl_lbm_toy() contains known ranking and item groups. It is a compact fixture
-for a PL--LBM workflow and for testing both posterior-similarity matrices.
-
-~~~{r lbm}
+```{r lbm-fit}
 structured_rankings <- pl_lbm_toy(n_rankings = 20, rank_length = 4, seed = 7)
 lbm_fit <- fit_btsbm(
   structured_rankings,
@@ -98,13 +129,19 @@ lbm_fit <- fit_btsbm(
     ranking_clustering = finite_partition(max_clusters = 3),
     item_clustering = finite_partition(max_clusters = 3)
   ),
-  mcmc_control(iter = 120, warmup = 60, seed = 8)
+  mcmc_control(iter = 300, warmup = 150, seed = 8)
 )
+```
 
+```{r lbm-output, fig.height=5}
+plot_posterior_similarity(lbm_fit, target = "item")
+```
+
+```{r lbm-traces, fig.height=5}
+plot_mcmc_traces(lbm_fit)
 mcmc_diagnostics(lbm_fit)
-posterior_similarity(lbm_fit, target = "ranking")
-posterior_similarity(lbm_fit, target = "item")
-~~~
+```
 
-For real analyses, run multiple chains, inspect mcmc_diagnostics(), and
-perform posterior predictive checks before interpreting a latent partition.
+For every model, the final step is the same: inspect diagnostics, rerun with
+longer and multiple chains for real data, and avoid treating a dark similarity
+cell or a narrow interval as a guarantee.

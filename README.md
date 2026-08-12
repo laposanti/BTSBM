@@ -63,6 +63,30 @@ posterior_strength(fit_pl, summary = "mean")
 posterior_similarity(fit_pl, target = "item")
 ```
 
+## Read a fitted model with plots
+
+The same plotting vocabulary works across the modern BT and PL interfaces.
+It separates three practical questions: which items are strong, which items
+behave alike, and whether the sampler has settled down.
+
+```r
+# For ranking data, first inspect which items tend to occur near the top.
+plot_ranking_positions(rankings)
+
+# Summarise item strength with an uncertainty interval.
+plot_strength_summary(fit_pl)
+
+# Reveal item groups suggested by the posterior (PL--SBM and BT--SBM).
+plot_posterior_similarity(fit_pl, target = "item")
+
+# Inspect saved Markov-chain quantities before drawing conclusions.
+plot_mcmc_traces(fit_pl)
+```
+
+For an introduction that explains each picture in context, start with
+`vignette("getting-started", package = "BTSBM")` for paired comparisons or
+`vignette("pl-ranking-models", package = "BTSBM")` for rankings.
+
 `item_clustering` can also use `dirichlet_process_prior()`,
 `pitman_yor_prior()`, or `finite_partition(max_clusters = ...)`. See
 `?clustering_prior` for the common parameterisation.

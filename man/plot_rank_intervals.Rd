@@ -17,8 +17,8 @@ plot_rank_intervals(
 )
 }
 \arguments{
-\item{x}{Either a posterior-rank summary, posterior lambda draws, or the output
-of \code{\link[=relabel_by_lambda]{relabel_by_lambda()}}.}
+\item{x}{Either a posterior-rank summary, posterior lambda draws, a btsbm_fit
+object, or the output of \code{\link[=relabel_by_lambda]{relabel_by_lambda()}}.}
 
 \item{max_players}{Optional maximum number of players to display.}
 

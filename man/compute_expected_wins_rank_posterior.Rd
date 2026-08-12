@@ -17,7 +17,7 @@ compute_expected_wins_rank_posterior(
 }
 \arguments{
 \item{lambda_item}{Numeric matrix or list of posterior draws for player
-strengths.}
+strengths, or a simple BT/PL or item-SBM btsbm_fit object.}
 
 \item{w_ij}{Optional wins matrix kept for API compatibility and ignored.}
 

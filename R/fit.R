@@ -261,6 +261,40 @@ posterior_strength <- function(fit, summary = c("draws", "mean")) {
   stats::setNames(colMeans(draws), fit$data$item_labels)
 }
 
+#' Summarise posterior item strengths with credible intervals
+#'
+#' This is a compact numerical companion to plot_strength_summary(). The
+#' reported strengths are relative: for Plackett--Luce fits, the default
+#' reporting scale has geometric mean one; for Bradley--Terry fits, a larger
+#' value means a higher chance of beating an item with a smaller value.
+#'
+#' @param fit A simple BT/PL or item-SBM btsbm_fit object.
+#' @param credible_mass Width of the central posterior interval, in (0, 1).
+#'
+#' @return A data frame with one row per item, ordered from larger to smaller
+#'   posterior mean strength.
+#' @export
+strength_summary <- function(fit, credible_mass = 0.9) {
+  if (!inherits(fit, "btsbm_fit")) {
+    stop("'fit' must be a btsbm_fit object.", call. = FALSE)
+  }
+  if (length(credible_mass) != 1L || !is.finite(credible_mass) ||
+      credible_mass <= 0 || credible_mass >= 1) {
+    stop("'credible_mass' must lie strictly between zero and one.", call. = FALSE)
+  }
+  draws <- posterior_strength(fit, summary = "draws")
+  tail_probability <- (1 - credible_mass) / 2
+  result <- data.frame(
+    item = fit$data$item_labels,
+    mean = colMeans(draws),
+    median = apply(draws, 2L, stats::median),
+    lower = apply(draws, 2L, stats::quantile, probs = tail_probability),
+    upper = apply(draws, 2L, stats::quantile, probs = 1 - tail_probability),
+    stringsAsFactors = FALSE
+  )
+  result[order(result$mean, decreasing = TRUE), , drop = FALSE]
+}
+
 #' Compute implied item abilities from a fit
 #'
 #' `implied_ability()` is retained as a compatibility alias for

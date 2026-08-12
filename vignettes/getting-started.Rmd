@@ -1,8 +1,10 @@
 ---
-title: "Getting Started with BTSBM"
-output: rmarkdown::html_vignette
+title: "Getting started: from results to a Bradley--Terry analysis"
+output:
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
-  %\VignetteIndexEntry{Getting Started with BTSBM}
+  %\VignetteIndexEntry{Getting started: from results to a Bradley--Terry analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -12,62 +14,128 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
+  fig.width = 7,
+  fig.height = 5,
   warning = FALSE,
   message = FALSE
 )
-set.seed(123)
 ```
 
-This vignette shows a lightweight workflow for fitting a Bradley-Terry stochastic
-block model and producing core summaries.
+## What this package does
 
-```{r}
+BTSBM analyses two kinds of preference data:
+
+1. Pairwise results: one item wins or loses against another, such as a match
+   in a league.
+2. Rankings: a person places several items from most to least preferred.
+
+This first tutorial uses pairwise results. The ranking tutorial is
+vignette("pl-ranking-models").
+
+A Bradley--Terry (BT) model assigns every player a positive strength. A larger
+strength means a greater probability of winning against a player with a smaller
+strength. A BT--SBM additionally lets the data group players with similar
+strengths into latent tiers.
+
+```{r library}
 library(BTSBM)
 ```
 
-## Data
+## 1. Start with data you can inspect
 
-```{r}
-w_ij <- ATP_2000_2025$`2017`$Y_ij[1:12, 1:12]
-diag(w_ij) <- 0L
-w_ij[1:3, 1:3]
+The toy tennis league is synthetic and intentionally small. wins[i, j] means
+the number of times player i beat player j. The diagonal is zero because a
+player does not play themself.
+
+```{r make-data}
+tennis <- tennis_toy(matches_per_pair = 8, seed = 1)
+tennis$wins
 ```
 
-## Fit
+Before fitting a model, inspect the observed outcomes. Darker cells identify
+frequent wins by the row player over the column player.
 
-```{r}
-fit <- gibbs_bt_sbm(
-  w_ij = w_ij,
-  a = 2,
-  prior = "GN",
-  gamma_GN = 0.8,
-  T_iter = 200,
-  T_burn = 100,
-  verbose = FALSE
+```{r observed-outcomes, fig.height=5}
+plot_pairwise_outcomes(tennis)
+```
+
+This plot is descriptive: it does not yet account for uncertainty or combine
+all opponents into one estimate of player strength.
+
+## 2. Choose a model
+
+Start with a BT--SBM when you think players may form broad tiers rather than a
+completely reliable order from first to last. Here, the Gnedin prior lets the
+number of tiers be learned from the data.
+
+```{r choose-model}
+model <- bt_sbm_model(
+  latent_strength = latent_strength(shape = 4, rate = exp(digamma(4))),
+  item_clustering = gnedin_prior(gnedin_hyperparameter = 0.5)
 )
+model
 ```
 
-## Relabel and Summarise
+The latent_strength() prior must be positive. item_clustering is a prior over
+possible player tiers. You can use finite_partition(max_clusters = 3) when a
+strict upper limit is scientifically justified.
 
-```{r}
-post <- relabel_by_lambda(fit$x_samples, fit$lambda_samples)
-pretty_table_K_distribution(post)
+## 3. Fit the model
+
+An MCMC fit produces many plausible values rather than one single answer.
+warmup draws are discarded; the remaining draws represent posterior
+uncertainty. The short chain below is suitable for a tutorial. Use longer,
+multiple chains in a real study.
+
+```{r fit}
+fit <- fit_btsbm(
+  tennis,
+  model,
+  mcmc_control(iter = 400, warmup = 200, seed = 2)
+)
+fit
 ```
 
-## Core Plots
+## 4. Read the main result: strengths and uncertainty
 
-```{r, fig.width = 8, fig.height = 5}
-plot_block_adjacency(fit = post, w_ij = w_ij)
+The point is the posterior mean strength. The horizontal line is a 90% credible
+interval: it describes the remaining uncertainty after seeing the results.
+Intervals that overlap substantially should not be read as a certain ordering.
+
+```{r strength-plot, fig.height=4.5}
+plot_strength_summary(fit)
 ```
 
-```{r, fig.width = 8, fig.height = 6}
-plot_assignment_probabilities(fit = post, w_ij = w_ij, x_hat = post$minVI_partition)
+The same information is available as a table, which is useful for reporting.
+
+```{r strength-table}
+strength_summary(fit)
 ```
 
-```{r, fig.width = 8, fig.height = 6}
-plot_lambda_uncertainty(fit = post, w_ij = w_ij, x_hat = post$minVI_partition)
+## 5. Ask whether the data support tiers
+
+The model's cluster labels can switch their names from one MCMC draw to the
+next. Instead, use a posterior similarity plot. A dark cell means the two
+players were frequently placed in the same tier.
+
+```{r similarity-plot, fig.height=5}
+plot_posterior_similarity(fit, target = "item")
 ```
 
-```{r, fig.width = 8, fig.height = 6}
-plot_rank_intervals(post, max_players = 12)
+## 6. Check the sampler before interpreting it
+
+MCMC draws should move around a stable region. Trace plots are a quick
+screening tool: long trends or a completely stuck trace are reasons to run
+longer chains or reconsider the model.
+
+```{r trace-plot, fig.height=4}
+plot_mcmc_traces(fit)
+mcmc_diagnostics(fit)
 ```
+
+## Where to go next
+
+* Use bt_model() if every item should have its own strength without tiers.
+* Use vignette("pl-ranking-models") when the observations are full or top-m
+  rankings rather than wins and losses.
+* Use vignette("toy-data-gallery") for additional worked synthetic examples.
