@@ -23,7 +23,8 @@ compute_expected_wins_rank_posterior(
 
 - lambda_item:
 
-  Numeric matrix or list of posterior draws for player strengths.
+  Numeric matrix or list of posterior draws for player strengths, or a
+  simple BT/PL or item-SBM btsbm_fit object.
 
 - w_ij:
 

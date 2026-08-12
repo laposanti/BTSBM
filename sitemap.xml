@@ -63,7 +63,12 @@
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_assignment_probabilities.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_block_adjacency.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_lambda_uncertainty.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/plot_mcmc_traces.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/plot_pairwise_outcomes.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/plot_posterior_similarity.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/plot_rank_intervals.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/plot_ranking_positions.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/plot_strength_summary.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/posterior_similarity.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/posterior_strength.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/pretty_table_K_distribution.html</loc></url>
@@ -71,6 +76,7 @@
 <url><loc>https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/sample_from_BTSBM.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/shannon_entropy.html</loc></url>
+<url><loc>https://laposanti.github.io/BTSBM/reference/strength_summary.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/summary.btsbm_fit.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/sushi_toy.html</loc></url>
 <url><loc>https://laposanti.github.io/BTSBM/reference/tennis_toy.html</loc></url>

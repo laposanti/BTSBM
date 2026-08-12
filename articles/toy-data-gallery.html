@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Toy datasets and model workflows • BTSBM: Bayesian paired-comparison and ranking models</title>
+<title>Toy datasets: choose a model and read its output • BTSBM: Bayesian paired-comparison and ranking models</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Toy datasets and model workflows">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Toy datasets: choose a model and read its output">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -65,7 +65,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Toy datasets and model workflows</h1>
+      <h1>Toy datasets: choose a model and read its output</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/laposanti/BTSBM/blob/main/vignettes/toy-data-gallery.Rmd" class="external-link"><code>vignettes/toy-data-gallery.Rmd</code></a></small>
@@ -74,76 +74,128 @@
 
     
     
-<p><sub></sub>~{r setup, include=FALSE} knitr::opts_chunk$set(collapse =
-TRUE, comment = “#&gt;”) <sub></sub>~</p>
-<p>BTSBM includes small, reproducible synthetic datasets for learning
-the interfaces and writing regression tests. They are deliberately not
-copies of respondent-level or match-level data from real
-applications.</p>
+<p>This gallery is a map of the package. Each dataset is synthetic,
+small enough to run quickly, and designed around one practical question.
+They are for learning and testing; they are not real contest, survey, or
+match data.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="pairwise-tennis-league">Pairwise tennis league<a class="anchor" aria-label="anchor" href="#pairwise-tennis-league"></a>
+<h2 id="if-you-have-winloss-counts-tennis">If you have win/loss counts: tennis<a class="anchor" aria-label="anchor" href="#if-you-have-winloss-counts-tennis"></a>
 </h2>
-<p>tennis_toy() creates a round-robin paired-comparison matrix with
-three generating player tiers. It is useful for the existing BT and
-BT–SBM models.</p>
-<p><sub></sub>~{r tennis} library(BTSBM)</p>
-<p>tennis &lt;- tennis_toy(matches_per_pair = 8, seed = 1) tennis</p>
-<p>tennis_fit &lt;- fit_btsbm( tennis, bt_sbm_model( item_clustering =
-gnedin_prior(gnedin_hyperparameter = 0.5) ), mcmc_control(iter = 100,
-warmup = 50, seed = 2) )</p>
-<p>posterior_strength(tennis_fit, summary = “mean”)
-posterior_similarity(tennis_fit, target = “item”) <sub></sub>~</p>
+<p>Use a Bradley–Terry model when every observation is a head-to-head
+outcome. The first question is simply: which player beat which opponent
+most often?</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tennis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tennis_toy.html">tennis_toy</a></span><span class="op">(</span>matches_per_pair <span class="op">=</span> <span class="fl">8</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_pairwise_outcomes.html">plot_pairwise_outcomes</a></span><span class="op">(</span><span class="va">tennis</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/tennis-data-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>Fit a BT–SBM if players may belong to broad tiers.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tennis_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_btsbm.html">fit_btsbm</a></span><span class="op">(</span></span>
+<span>  <span class="va">tennis</span>,</span>
+<span>  <span class="fu"><a href="../reference/bt_sbm_model.html">bt_sbm_model</a></span><span class="op">(</span></span>
+<span>    item_clustering <span class="op">=</span> <span class="fu"><a href="../reference/finite_partition.html">finite_partition</a></span><span class="op">(</span>max_clusters <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/mcmc_control.html">mcmc_control</a></span><span class="op">(</span>iter <span class="op">=</span> <span class="fl">300</span>, warmup <span class="op">=</span> <span class="fl">150</span>, seed <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_strength_summary.html">plot_strength_summary</a></span><span class="op">(</span><span class="va">tennis_fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/tennis-output-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_posterior_similarity.html">plot_posterior_similarity</a></span><span class="op">(</span><span class="va">tennis_fit</span>, target <span class="op">=</span> <span class="st">"item"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/tennis-output-2.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>Read the first plot as relative player strength and uncertainty. Read
+the second as evidence that pairs of players belong to the same
+tier.</p>
 </div>
 <div class="section level2">
-<h2 id="eurovision-inspired-ranking-mixture">Eurovision-inspired ranking mixture<a class="anchor" aria-label="anchor" href="#eurovision-inspired-ranking-mixture"></a>
+<h2 id="if-you-have-rankings-sushi-inspired-preferences">If you have rankings: Sushi-inspired preferences<a class="anchor" aria-label="anchor" href="#if-you-have-rankings-sushi-inspired-preferences"></a>
 </h2>
-<p>eurovision_toy() represents juror/viewer ranking profiles over
-fictional acts. The useful inferential target is the partition of
-ranking rows, so a PL mixture is natural.</p>
-<p><sub></sub>~{r eurovision} votes &lt;- eurovision_toy(n_rankings =
-30, rank_length = 5, seed = 3) votes</p>
-<p>mixture_fit &lt;- fit_btsbm( votes, pl_mixture_model(
-ranking_clustering = dirichlet_process_prior(concentration = 1) ),
-mcmc_control(iter = 120, warmup = 60, seed = 4) )</p>
-<p>posterior_similarity(mixture_fit, target = “ranking”)
-mcmc_diagnostics(mixture_fit) <sub></sub>~</p>
-<p>The matrix returned by posterior_similarity() is preferable to raw
-cluster labels because the labels themselves are exchangeable across
-MCMC draws.</p>
+<p>Use a PL model when each row is an ordered list. First inspect which
+items occur near the top of the reported rankings.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sushi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sushi_toy.html">sushi_toy</a></span><span class="op">(</span>n_rankings <span class="op">=</span> <span class="fl">30</span>, rank_length <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_ranking_positions.html">plot_ranking_positions</a></span><span class="op">(</span><span class="va">sushi</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/sushi-data-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>Then estimate item strengths and their uncertainty.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sushi_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_btsbm.html">fit_btsbm</a></span><span class="op">(</span></span>
+<span>  <span class="va">sushi</span>,</span>
+<span>  <span class="fu"><a href="../reference/pl_model.html">pl_model</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/mcmc_control.html">mcmc_control</a></span><span class="op">(</span>iter <span class="op">=</span> <span class="fl">300</span>, warmup <span class="op">=</span> <span class="fl">150</span>, seed <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_strength_summary.html">plot_strength_summary</a></span><span class="op">(</span><span class="va">sushi_fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/sushi-output-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_rank_intervals.html">plot_rank_intervals</a></span><span class="op">(</span><span class="va">sushi_fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/sushi-output-2.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The rank plot is particularly useful when strengths are close: it
+shows how much the possible ordering changes across posterior draws.</p>
 </div>
 <div class="section level2">
-<h2 id="sushi-inspired-plackettluce-model">Sushi-inspired Plackett–Luce model<a class="anchor" aria-label="anchor" href="#sushi-inspired-plackettluce-model"></a>
+<h2 id="if-respondents-may-have-different-tastes-eurovision-inspired-rankings">If respondents may have different tastes: Eurovision-inspired
+rankings<a class="anchor" aria-label="anchor" href="#if-respondents-may-have-different-tastes-eurovision-inspired-rankings"></a>
 </h2>
-<p>sushi_toy() is a synthetic dataset using Sushi Preference
-Dataset-style items. It supports a simple PL model, PL–SBM, or a ranking
-mixture. The original Sushi data are not bundled; see the PL
-ranking-model vignette for its source and licence.</p>
-<p><sub></sub>~{r sushi} sushi &lt;- sushi_toy(n_rankings = 30,
-rank_length = 5, seed = 5)</p>
-<p>pl_fit &lt;- fit_btsbm( sushi, pl_model(latent_strength =
-latent_strength(shape = 1, rate = 1)), mcmc_control(iter = 100, warmup =
-50, seed = 6) )</p>
-<p>posterior_strength(pl_fit, summary = “mean”) mcmc_diagnostics(pl_fit)
-<sub></sub>~</p>
+<p>Here the items are fictional acts, and the ranking rows are simulated
+from two different voting profiles. Use a PL mixture when the question
+is about groups of ranking rows rather than groups of items.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">votes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/eurovision_toy.html">eurovision_toy</a></span><span class="op">(</span>n_rankings <span class="op">=</span> <span class="fl">30</span>, rank_length <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_ranking_positions.html">plot_ranking_positions</a></span><span class="op">(</span><span class="va">votes</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/eurovision-data-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mixture_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_btsbm.html">fit_btsbm</a></span><span class="op">(</span></span>
+<span>  <span class="va">votes</span>,</span>
+<span>  <span class="fu"><a href="../reference/pl_mixture_model.html">pl_mixture_model</a></span><span class="op">(</span></span>
+<span>    ranking_clustering <span class="op">=</span> <span class="fu"><a href="../reference/dirichlet_process_prior.html">dirichlet_process_prior</a></span><span class="op">(</span>concentration <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/mcmc_control.html">mcmc_control</a></span><span class="op">(</span>iter <span class="op">=</span> <span class="fl">300</span>, warmup <span class="op">=</span> <span class="fl">150</span>, seed <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_posterior_similarity.html">plot_posterior_similarity</a></span><span class="op">(</span><span class="va">mixture_fit</span>, target <span class="op">=</span> <span class="st">"ranking"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/eurovision-output-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>Rows and columns are individual rankings. Darker blocks are evidence
+of rankings that repeatedly occur in the same latent preference
+profile.</p>
 </div>
 <div class="section level2">
-<h2 id="joint-rankingitem-structure">Joint ranking/item structure<a class="anchor" aria-label="anchor" href="#joint-rankingitem-structure"></a>
+<h2 id="if-both-rows-and-items-may-have-structure-pllbm">If both rows and items may have structure: PL–LBM<a class="anchor" aria-label="anchor" href="#if-both-rows-and-items-may-have-structure-pllbm"></a>
 </h2>
-<p>pl_lbm_toy() contains known ranking and item groups. It is a compact
-fixture for a PL–LBM workflow and for testing both posterior-similarity
-matrices.</p>
-<p><sub></sub>~{r lbm} structured_rankings &lt;- pl_lbm_toy(n_rankings =
-20, rank_length = 4, seed = 7) lbm_fit &lt;- fit_btsbm(
-structured_rankings, pl_lbm_model( ranking_clustering =
-finite_partition(max_clusters = 3), item_clustering =
-finite_partition(max_clusters = 3) ), mcmc_control(iter = 120, warmup =
-60, seed = 8) )</p>
-<p>mcmc_diagnostics(lbm_fit) posterior_similarity(lbm_fit, target =
-“ranking”) posterior_similarity(lbm_fit, target = “item”)
-<sub></sub>~</p>
-<p>For real analyses, run multiple chains, inspect mcmc_diagnostics(),
-and perform posterior predictive checks before interpreting a latent
-partition.</p>
+<p>The PL latent block model simultaneously groups ranking rows and
+items. This is the most structured option in the package. The synthetic
+fixture below has known generating groups, so it is a safe place to
+learn the workflow.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">structured_rankings</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pl_lbm_toy.html">pl_lbm_toy</a></span><span class="op">(</span>n_rankings <span class="op">=</span> <span class="fl">20</span>, rank_length <span class="op">=</span> <span class="fl">4</span>, seed <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
+<span><span class="va">lbm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_btsbm.html">fit_btsbm</a></span><span class="op">(</span></span>
+<span>  <span class="va">structured_rankings</span>,</span>
+<span>  <span class="fu"><a href="../reference/pl_lbm_model.html">pl_lbm_model</a></span><span class="op">(</span></span>
+<span>    ranking_clustering <span class="op">=</span> <span class="fu"><a href="../reference/finite_partition.html">finite_partition</a></span><span class="op">(</span>max_clusters <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
+<span>    item_clustering <span class="op">=</span> <span class="fu"><a href="../reference/finite_partition.html">finite_partition</a></span><span class="op">(</span>max_clusters <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/mcmc_control.html">mcmc_control</a></span><span class="op">(</span>iter <span class="op">=</span> <span class="fl">300</span>, warmup <span class="op">=</span> <span class="fl">150</span>, seed <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_posterior_similarity.html">plot_posterior_similarity</a></span><span class="op">(</span><span class="va">lbm_fit</span>, target <span class="op">=</span> <span class="st">"item"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/lbm-output-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mcmc_traces.html">plot_mcmc_traces</a></span><span class="op">(</span><span class="va">lbm_fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="toy-data-gallery_files/figure-html/lbm-traces-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mcmc_diagnostics.html">mcmc_diagnostics</a></span><span class="op">(</span><span class="va">lbm_fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             quantity        mean        sd      ess       mcse</span></span>
+<span><span class="co">#&gt; 1 n_ranking_clusters    2.633333 0.5234971 71.71198 0.06181849</span></span>
+<span><span class="co">#&gt; 2    n_item_clusters    2.506667 0.5645770 61.70506 0.07187251</span></span>
+<span><span class="co">#&gt; 3     log_likelihood -109.790990 4.9787178 34.79938 0.84397920</span></span>
+<span><span class="co">#&gt;   autocorrelation_lag_1</span></span>
+<span><span class="co">#&gt; 1             0.4454028</span></span>
+<span><span class="co">#&gt; 2             0.4391249</span></span>
+<span><span class="co">#&gt; 3             0.6594261</span></span></code></pre></div>
+<p>For every model, the final step is the same: inspect diagnostics,
+rerun with longer and multiple chains for real data, and avoid treating
+a dark similarity cell or a narrow interval as a guarantee.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

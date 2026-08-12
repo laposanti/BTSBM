@@ -24,8 +24,8 @@ plot_rank_intervals(
 
 - x:
 
-  Either a posterior-rank summary, posterior lambda draws, or the output
-  of
+  Either a posterior-rank summary, posterior lambda draws, a btsbm_fit
+  object, or the output of
   [`relabel_by_lambda()`](https://laposanti.github.io/BTSBM/reference/relabel_by_lambda.md).
 
 - max_players:

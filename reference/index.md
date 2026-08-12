@@ -130,8 +130,23 @@
 - [`plot_lambda_uncertainty()`](https://laposanti.github.io/BTSBM/reference/plot_lambda_uncertainty.md)
   : Figure 5 plotting function Lambda uncertainty plot (per player)
 
+- [`plot_mcmc_traces()`](https://laposanti.github.io/BTSBM/reference/plot_mcmc_traces.md)
+  : Plot saved MCMC traces
+
+- [`plot_pairwise_outcomes()`](https://laposanti.github.io/BTSBM/reference/plot_pairwise_outcomes.md)
+  : Plot observed pairwise win counts
+
+- [`plot_posterior_similarity()`](https://laposanti.github.io/BTSBM/reference/plot_posterior_similarity.md)
+  : Plot the posterior similarity of items or rankings
+
 - [`plot_rank_intervals()`](https://laposanti.github.io/BTSBM/reference/plot_rank_intervals.md)
   : Plot posterior rank intervals
+
+- [`plot_ranking_positions()`](https://laposanti.github.io/BTSBM/reference/plot_ranking_positions.md)
+  : Plot how often items appear at each ranking position
+
+- [`plot_strength_summary()`](https://laposanti.github.io/BTSBM/reference/plot_strength_summary.md)
+  : Plot posterior item strengths and their uncertainty
 
 - [`posterior_similarity()`](https://laposanti.github.io/BTSBM/reference/posterior_similarity.md)
   : Compute posterior similarity for an inferred partition
@@ -151,6 +166,9 @@
 
 - [`sample_from_BTSBM()`](https://laposanti.github.io/BTSBM/reference/sample_from_BTSBM.md)
   : Sample a Bradley–Terry Stochastic Block Model (BT-SBM) tournament
+
+- [`strength_summary()`](https://laposanti.github.io/BTSBM/reference/strength_summary.md)
+  : Summarise posterior item strengths with credible intervals
 
 - [`summary(`*`<btsbm_fit>`*`)`](https://laposanti.github.io/BTSBM/reference/summary.btsbm_fit.md)
   : Summarise a BTSBM fit

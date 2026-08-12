@@ -1,34 +1,32 @@
-# Plackett--Luce ranking models
+# Ranking data: a beginner's guide to Plackett--Luce models
 
-## Ranking data
+## When should I use a ranking model?
 
-The Plackett–Luce (PL) likelihood models a strict ranking as a sequence
-of choices from a shrinking set of items. `BTSBM` accepts the compact
-`rho` format used by the PLuce reference implementation: each row is one
-ranking and columns run from most to least preferred item. A row may be
-a full ranking or a top-`m` prefix, provided every ranking uses the same
-item universe.
+Use a Plackett–Luce (PL) model when each observation is an ordered list,
+such as sushi A was first, sushi B was second, and sushi C was third.
+This is different from pairwise data, where an observation only says who
+won one head-to-head comparison.
 
-The initial sampler uses the exponential-race augmentation of Caron and
-Doucet (2012). It yields Gamma conditional updates for positive
-abilities while preserving the PL likelihood. This is also the
-computational basis for the item-block PL–SBM implementation.
-
-## A Sushi-inspired demonstration
-
-The original Sushi Preference Dataset is a well-known ranking benchmark:
-it contains surveys of preferences over sushi and is described by
-Kamishima (2003). The original licence does not allow redistribution, so
-this package does not bundle any of its respondents’ rankings.
-[`sushi_toy()`](https://laposanti.github.io/BTSBM/reference/sushi_toy.md)
-is instead a small, reproducible synthetic teaching dataset with the
-same application setting and two known preference profiles. Obtain the
-original dataset directly from [Kamishima’s data
-page](https://www.kamishima.net/soft/) if its licence suits your use.
+The model gives every item a positive relative strength. At each
+position in a ranking, items with larger strengths are more likely to be
+selected. The strengths are relative rather than absolute: multiplying
+every strength by the same number would not change the predicted
+rankings.
 
 ``` r
 
 library(BTSBM)
+```
+
+## 1. Examine rankings before fitting
+
+The original Sushi Preference Dataset is a well-known benchmark. Its
+licence does not allow redistribution, so BTSBM includes a small
+synthetic Sushi-inspired teaching dataset instead. You can obtain the
+original data from [Kamishima’s data
+page](https://www.kamishima.net/soft/) if its terms suit your use.
+
+``` r
 
 sushi <- sushi_toy(n_rankings = 40, rank_length = 5, seed = 2026)
 sushi
@@ -41,98 +39,86 @@ sushi$rankings[1:4, ]
 #> Ranking_4     10      7      3      2      5
 ```
 
-Fit a simple PL model with a Gamma prior on item latent strengths.
-[`posterior_strength()`](https://laposanti.github.io/BTSBM/reference/posterior_strength.md)
-returns reporting-scale strengths, normalised to have geometric mean one
-by default.
+Each row is one respondent and each column is a reported position. The
+next plot is a useful first look. It counts how often an item appears in
+each position; it is not yet a fitted model.
 
 ``` r
 
-fit_pl <- fit_btsbm(
+plot_ranking_positions(sushi)
+```
+
+![](pl-ranking-models_files/figure-html/ranking-positions-1.png)
+
+## 2. Fit a simple PL model
+
+Start with the simplest model: one strength for each sushi type. The
+Gamma prior keeps strengths positive. The short chain below is for
+illustration; use longer, multiple chains in a real analysis.
+
+``` r
+
+simple_pl <- fit_btsbm(
   sushi,
   pl_model(latent_strength = latent_strength(shape = 1, rate = 1)),
   mcmc_control(iter = 600, warmup = 300, seed = 1)
 )
-
-posterior_strength(fit_pl, summary = "mean")
-#>           egg        shrimp          tuna         squid    sea_urchin 
-#>     0.6953632     1.5079607     1.3611839     1.2143304     1.6206194 
-#>    salmon_roe    fatty_tuna           eel cucumber_roll         inari 
-#>     1.1968904     1.1140410     0.6074993     0.8804495     0.6309641
+simple_pl
+#> <btsbm_fit> pl / none with 300 saved draws
 ```
 
-[`log_lik()`](https://laposanti.github.io/BTSBM/reference/log_lik.md)
-has one column per ranking row, the conditionally independent unit
-needed for ranking-level posterior predictive checks and PSIS-LOO.
+This plot is usually the main analysis result. The point is the
+posterior mean relative strength; the interval displays posterior
+uncertainty.
 
 ``` r
 
-dim(log_lik(fit_pl))
-#> [1] 300  40
+plot_strength_summary(simple_pl)
 ```
 
-## PL–SBM: item blocks with tied abilities
+![](pl-ranking-models_files/figure-html/simple-pl-strengths-1.png)
 
-The PL–SBM shares a strength among items assigned to the same latent
-block. The current implementation supports the Gnedin, Dirichlet
-process, Pitman–Yor, and finite Dirichlet–multinomial item-partition
-priors through named helpers. The names make the model intent explicit:
-`item_clustering` describes which items share a strength, and
-`gnedin_hyperparameter` controls the Gnedin prior.
+Rank intervals translate those strengths into an easier question: what
+place could each sushi item plausibly occupy? Rank 1 is best.
 
 ``` r
 
-fit_sbm <- fit_btsbm(
+plot_rank_intervals(simple_pl)
+```
+
+![](pl-ranking-models_files/figure-html/simple-pl-ranks-1.png)
+
+## 3. Do some sushi types form a tier?
+
+A PL–SBM lets items share a latent strength. It is useful when the data
+support broad groups, such as often favoured and rarely favoured, but do
+not support a precise order inside every group.
+
+``` r
+
+tiered_pl <- fit_btsbm(
   sushi,
   pl_sbm_model(
     item_clustering = gnedin_prior(gnedin_hyperparameter = 0.5)
   ),
   mcmc_control(iter = 600, warmup = 300, seed = 2)
 )
-
-fit_sbm
-#> <btsbm_fit> pl / item_sbm with 300 saved draws
-fit_sbm$draws$n_item_clusters
-#>   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 4 4 4 3 2 2 2 2 2 1 1 1 1 1 1 1 1 2
-#>  [38] 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2
-#>  [75] 2 2 2 3 3 3 3 3 2 2 2 2 2 2 3 3 3 4 2 2 2 2 2 2 2 2 3 2 2 2 2 2 2 2 4 4 3
-#> [112] 3 4 3 3 3 4 3 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2
-#> [149] 2 2 3 2 2 2 2 2 2 2 2 2 2 2 3 3 4 3 5 4 2 3 3 3 3 2 2 2 3 3 3 4 3 2 2 2 2
-#> [186] 2 2 2 3 5 5 3 3 3 2 2 2 2 2 3 2 4 3 3 2 2 2 2 2 2 3 2 3 6 6 4 4 4 2 7 6 5
-#> [223] 3 5 5 3 3 3 2 2 2 2 2 2 2 2 3 4 4 5 4 3 4 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-#> [260] 2 2 2 2 2 2 2 2 2 3 2 2 2 2 2 2 2 2 2 2 2 2 3 2 2 2 3 1 1 1 1 1 2 2 2 2 2
-#> [297] 2 2 2 3
-posterior_similarity(fit_sbm, target = "item")
-#>                     egg    shrimp      tuna     squid sea_urchin salmon_roe
-#> egg           1.0000000 0.2733333 0.2900000 0.3233333  0.2633333  0.3533333
-#> shrimp        0.2733333 1.0000000 0.8833333 0.8133333  0.9166667  0.7800000
-#> tuna          0.2900000 0.8833333 1.0000000 0.8200000  0.8833333  0.8133333
-#> squid         0.3233333 0.8133333 0.8200000 1.0000000  0.8100000  0.7933333
-#> sea_urchin    0.2633333 0.9166667 0.8833333 0.8100000  1.0000000  0.7966667
-#> salmon_roe    0.3533333 0.7800000 0.8133333 0.7933333  0.7966667  1.0000000
-#> fatty_tuna    0.3766667 0.7633333 0.7633333 0.7800000  0.7700000  0.7666667
-#> eel           0.7866667 0.1866667 0.2133333 0.2466667  0.1833333  0.2766667
-#> cucumber_roll 0.6133333 0.4633333 0.4966667 0.5200000  0.4733333  0.5466667
-#> inari         0.7700000 0.2066667 0.2266667 0.2666667  0.2066667  0.2866667
-#>               fatty_tuna       eel cucumber_roll     inari
-#> egg            0.3766667 0.7866667     0.6133333 0.7700000
-#> shrimp         0.7633333 0.1866667     0.4633333 0.2066667
-#> tuna           0.7633333 0.2133333     0.4966667 0.2266667
-#> squid          0.7800000 0.2466667     0.5200000 0.2666667
-#> sea_urchin     0.7700000 0.1833333     0.4733333 0.2066667
-#> salmon_roe     0.7666667 0.2766667     0.5466667 0.2866667
-#> fatty_tuna     1.0000000 0.3000000     0.5833333 0.3233333
-#> eel            0.3000000 1.0000000     0.5666667 0.8400000
-#> cucumber_roll  0.5833333 0.5666667     1.0000000 0.5633333
-#> inari          0.3233333 0.8400000     0.5633333 1.0000000
 ```
 
-The block labels are exchangeable. Use the posterior similarity matrix
-rather than raw label frequencies when summarising the partition until a
-model-specific canonicalisation method is chosen.
+Do not read raw MCMC cluster labels: label 1 in one draw need not mean
+the same thing as label 1 in another draw. Instead, interpret the
+posterior similarity plot. A dark cell means the two sushi types were
+often placed in the same tier.
 
-To choose another prior, substitute one of the following objects for
-`item_clustering`:
+``` r
+
+plot_posterior_similarity(tiered_pl, target = "item")
+```
+
+![](pl-ranking-models_files/figure-html/item-similarity-1.png)
+
+You can choose other priors for the item grouping. The names describe
+the decision being made:
 
 ``` r
 
@@ -141,357 +127,99 @@ pitman_yor_prior(concentration = 1, discount = 0.2)
 finite_partition(max_clusters = 4, concentration = 1)
 ```
 
-## Next PL models
+## 4. Could respondents have different preference profiles?
 
-[`pl_mixture_model()`](https://laposanti.github.io/BTSBM/reference/pl_mixture_model.md)
-clusters ranking rows, while
-[`pl_lbm_model()`](https://laposanti.github.io/BTSBM/reference/pl_lbm_model.md)
-jointly clusters ranking rows and items with a `C x K` latent-strength
-matrix. Both now have readable R Gibbs samplers based on the PLuce
-exponential-race architecture. They are suitable for small and moderate
-teaching/data-analysis problems; the PLuce C++ aggregation kernels are
-the next performance step.
+A PL mixture groups rankings, not sushi items. It answers questions such
+as whether there are distinct kinds of respondent preference. The
+Eurovision-inspired toy data is especially useful here because it has
+simulated jury and viewer profiles.
+
+``` r
+
+votes <- eurovision_toy(n_rankings = 36, rank_length = 5, seed = 3)
+plot_ranking_positions(votes)
+```
+
+![](pl-ranking-models_files/figure-html/mixture-data-1.png)
 
 ``` r
 
 mixture_fit <- fit_btsbm(
-  sushi,
+  votes,
   pl_mixture_model(
     ranking_clustering = dirichlet_process_prior(concentration = 1)
   ),
-  mcmc_control(iter = 300, warmup = 150, seed = 3)
+  mcmc_control(iter = 400, warmup = 200, seed = 4)
 )
-
-posterior_similarity(mixture_fit, target = "ranking")
-#>             Ranking_1  Ranking_2  Ranking_3 Ranking_4 Ranking_5 Ranking_6
-#> Ranking_1  1.00000000 0.22000000 0.18000000 0.3333333 0.2133333 0.3666667
-#> Ranking_2  0.22000000 1.00000000 0.08666667 0.1800000 0.2400000 0.3466667
-#> Ranking_3  0.18000000 0.08666667 1.00000000 0.3733333 0.3600000 0.2066667
-#> Ranking_4  0.33333333 0.18000000 0.37333333 1.0000000 0.3600000 0.3133333
-#> Ranking_5  0.21333333 0.24000000 0.36000000 0.3600000 1.0000000 0.4600000
-#> Ranking_6  0.36666667 0.34666667 0.20666667 0.3133333 0.4600000 1.0000000
-#> Ranking_7  0.42666667 0.41333333 0.08666667 0.2866667 0.3266667 0.4000000
-#> Ranking_8  0.07333333 0.15333333 0.52000000 0.2533333 0.4333333 0.2266667
-#> Ranking_9  0.46666667 0.36000000 0.06666667 0.3000000 0.2400000 0.3266667
-#> Ranking_10 0.40666667 0.26666667 0.25333333 0.3733333 0.2400000 0.3133333
-#> Ranking_11 0.09333333 0.26000000 0.28666667 0.1266667 0.2533333 0.1466667
-#> Ranking_12 0.26666667 0.27333333 0.38666667 0.3066667 0.4200000 0.5133333
-#> Ranking_13 0.40666667 0.52666667 0.06666667 0.3000000 0.3200000 0.4000000
-#> Ranking_14 0.22000000 0.10666667 0.53333333 0.4266667 0.2466667 0.2000000
-#> Ranking_15 0.22000000 0.17333333 0.40000000 0.4066667 0.4533333 0.2933333
-#> Ranking_16 0.32000000 0.09333333 0.40666667 0.3666667 0.1400000 0.1400000
-#> Ranking_17 0.07333333 0.18666667 0.51333333 0.2400000 0.4200000 0.2333333
-#> Ranking_18 0.23333333 0.08000000 0.60000000 0.4800000 0.2733333 0.1666667
-#> Ranking_19 0.46000000 0.33333333 0.20000000 0.2666667 0.3466667 0.5533333
-#> Ranking_20 0.45333333 0.26666667 0.14000000 0.2600000 0.1266667 0.3266667
-#> Ranking_21 0.29333333 0.06666667 0.43333333 0.4133333 0.1400000 0.1466667
-#> Ranking_22 0.14000000 0.13333333 0.62000000 0.3866667 0.4600000 0.3133333
-#> Ranking_23 0.46666667 0.40666667 0.11333333 0.2200000 0.2600000 0.4533333
-#> Ranking_24 0.40666667 0.28000000 0.17333333 0.2066667 0.3133333 0.4266667
-#> Ranking_25 0.32666667 0.23333333 0.26000000 0.3533333 0.3066667 0.4066667
-#> Ranking_26 0.10666667 0.18666667 0.56666667 0.3600000 0.4666667 0.2866667
-#> Ranking_27 0.13333333 0.18666667 0.52666667 0.2933333 0.3800000 0.2400000
-#> Ranking_28 0.34666667 0.52000000 0.08000000 0.2600000 0.3400000 0.4333333
-#> Ranking_29 0.36666667 0.10666667 0.38000000 0.4666667 0.2000000 0.2333333
-#> Ranking_30 0.16666667 0.15333333 0.66000000 0.4066667 0.4133333 0.2600000
-#> Ranking_31 0.30666667 0.05333333 0.42666667 0.4133333 0.1533333 0.2066667
-#> Ranking_32 0.23333333 0.11333333 0.52666667 0.3400000 0.2066667 0.1800000
-#> Ranking_33 0.32666667 0.18000000 0.25333333 0.2333333 0.1600000 0.1733333
-#> Ranking_34 0.08000000 0.25333333 0.40000000 0.1866667 0.3733333 0.1866667
-#> Ranking_35 0.19333333 0.48000000 0.24000000 0.3066667 0.4333333 0.4600000
-#> Ranking_36 0.10666667 0.24000000 0.40666667 0.2333333 0.4533333 0.3066667
-#> Ranking_37 0.28666667 0.08666667 0.43333333 0.4066667 0.1733333 0.1933333
-#> Ranking_38 0.22666667 0.32000000 0.26666667 0.3133333 0.4533333 0.5133333
-#> Ranking_39 0.08666667 0.23333333 0.38666667 0.2000000 0.3666667 0.2200000
-#> Ranking_40 0.15333333 0.26000000 0.23333333 0.1733333 0.2133333 0.2266667
-#>             Ranking_7  Ranking_8  Ranking_9 Ranking_10 Ranking_11 Ranking_12
-#> Ranking_1  0.42666667 0.07333333 0.46666667  0.4066667 0.09333333  0.2666667
-#> Ranking_2  0.41333333 0.15333333 0.36000000  0.2666667 0.26000000  0.2733333
-#> Ranking_3  0.08666667 0.52000000 0.06666667  0.2533333 0.28666667  0.3866667
-#> Ranking_4  0.28666667 0.25333333 0.30000000  0.3733333 0.12666667  0.3066667
-#> Ranking_5  0.32666667 0.43333333 0.24000000  0.2400000 0.25333333  0.4200000
-#> Ranking_6  0.40000000 0.22666667 0.32666667  0.3133333 0.14666667  0.5133333
-#> Ranking_7  1.00000000 0.07333333 0.64000000  0.2933333 0.08000000  0.2133333
-#> Ranking_8  0.07333333 1.00000000 0.03333333  0.1400000 0.47333333  0.4000000
-#> Ranking_9  0.64000000 0.03333333 1.00000000  0.2733333 0.04000000  0.1933333
-#> Ranking_10 0.29333333 0.14000000 0.27333333  1.0000000 0.12666667  0.3666667
-#> Ranking_11 0.08000000 0.47333333 0.04000000  0.1266667 1.00000000  0.2333333
-#> Ranking_12 0.21333333 0.40000000 0.19333333  0.3666667 0.23333333  1.0000000
-#> Ranking_13 0.64000000 0.07333333 0.66000000  0.2866667 0.06000000  0.2266667
-#> Ranking_14 0.08000000 0.35333333 0.10666667  0.3466667 0.23333333  0.4000000
-#> Ranking_15 0.24000000 0.46000000 0.18000000  0.2866667 0.28666667  0.3266667
-#> Ranking_16 0.12000000 0.16666667 0.15333333  0.4066667 0.16000000  0.2200000
-#> Ranking_17 0.07333333 0.78666667 0.03333333  0.1733333 0.47333333  0.4266667
-#> Ranking_18 0.09333333 0.36000000 0.10000000  0.3666667 0.19333333  0.3666667
-#> Ranking_19 0.40666667 0.15333333 0.40666667  0.3400000 0.16666667  0.4400000
-#> Ranking_20 0.30666667 0.07333333 0.34666667  0.4733333 0.11333333  0.2933333
-#> Ranking_21 0.10666667 0.16666667 0.14666667  0.4200000 0.12666667  0.2733333
-#> Ranking_22 0.07333333 0.59333333 0.06000000  0.2600000 0.35333333  0.4800000
-#> Ranking_23 0.46666667 0.08666667 0.51333333  0.2933333 0.12000000  0.3066667
-#> Ranking_24 0.34000000 0.21333333 0.29333333  0.3000000 0.22000000  0.3466667
-#> Ranking_25 0.23333333 0.26666667 0.20000000  0.3333333 0.16666667  0.4000000
-#> Ranking_26 0.08000000 0.66666667 0.05333333  0.2200000 0.37333333  0.4733333
-#> Ranking_27 0.08666667 0.64666667 0.04666667  0.2466667 0.42000000  0.4333333
-#> Ranking_28 0.65333333 0.08666667 0.59333333  0.2600000 0.12000000  0.2733333
-#> Ranking_29 0.22000000 0.18666667 0.21333333  0.4266667 0.12000000  0.2666667
-#> Ranking_30 0.10000000 0.52000000 0.06666667  0.3066667 0.31333333  0.4933333
-#> Ranking_31 0.09333333 0.17333333 0.13333333  0.4000000 0.10666667  0.2866667
-#> Ranking_32 0.09333333 0.34666667 0.07333333  0.2533333 0.21333333  0.2800000
-#> Ranking_33 0.26666667 0.14666667 0.26000000  0.3533333 0.21333333  0.1800000
-#> Ranking_34 0.06666667 0.60000000 0.04000000  0.1933333 0.59333333  0.3733333
-#> Ranking_35 0.28000000 0.40666667 0.20000000  0.3200000 0.28000000  0.5133333
-#> Ranking_36 0.09333333 0.66000000 0.06666667  0.2066667 0.46666667  0.4400000
-#> Ranking_37 0.11333333 0.18000000 0.12000000  0.4266667 0.14000000  0.3066667
-#> Ranking_38 0.24666667 0.40000000 0.19333333  0.2666667 0.26666667  0.5200000
-#> Ranking_39 0.08000000 0.62666667 0.08000000  0.1466667 0.52666667  0.3266667
-#> Ranking_40 0.12000000 0.30000000 0.10666667  0.2466667 0.34666667  0.2866667
-#>            Ranking_13 Ranking_14 Ranking_15 Ranking_16 Ranking_17 Ranking_18
-#> Ranking_1  0.40666667 0.22000000  0.2200000 0.32000000 0.07333333 0.23333333
-#> Ranking_2  0.52666667 0.10666667  0.1733333 0.09333333 0.18666667 0.08000000
-#> Ranking_3  0.06666667 0.53333333  0.4000000 0.40666667 0.51333333 0.60000000
-#> Ranking_4  0.30000000 0.42666667  0.4066667 0.36666667 0.24000000 0.48000000
-#> Ranking_5  0.32000000 0.24666667  0.4533333 0.14000000 0.42000000 0.27333333
-#> Ranking_6  0.40000000 0.20000000  0.2933333 0.14000000 0.23333333 0.16666667
-#> Ranking_7  0.64000000 0.08000000  0.2400000 0.12000000 0.07333333 0.09333333
-#> Ranking_8  0.07333333 0.35333333  0.4600000 0.16666667 0.78666667 0.36000000
-#> Ranking_9  0.66000000 0.10666667  0.1800000 0.15333333 0.03333333 0.10000000
-#> Ranking_10 0.28666667 0.34666667  0.2866667 0.40666667 0.17333333 0.36666667
-#> Ranking_11 0.06000000 0.23333333  0.2866667 0.16000000 0.47333333 0.19333333
-#> Ranking_12 0.22666667 0.40000000  0.3266667 0.22000000 0.42666667 0.36666667
-#> Ranking_13 1.00000000 0.08000000  0.2266667 0.10666667 0.08000000 0.07333333
-#> Ranking_14 0.08000000 1.00000000  0.3400000 0.50000000 0.37333333 0.68666667
-#> Ranking_15 0.22666667 0.34000000  1.0000000 0.28666667 0.47333333 0.37333333
-#> Ranking_16 0.10666667 0.50000000  0.2866667 1.00000000 0.18666667 0.54000000
-#> Ranking_17 0.08000000 0.37333333  0.4733333 0.18666667 1.00000000 0.36000000
-#> Ranking_18 0.07333333 0.68666667  0.3733333 0.54000000 0.36000000 1.00000000
-#> Ranking_19 0.40000000 0.20666667  0.2266667 0.16666667 0.16000000 0.19333333
-#> Ranking_20 0.26666667 0.27333333  0.1533333 0.35333333 0.10000000 0.22000000
-#> Ranking_21 0.09333333 0.59333333  0.2666667 0.66666667 0.18000000 0.58000000
-#> Ranking_22 0.09333333 0.56000000  0.4000000 0.32000000 0.62666667 0.53333333
-#> Ranking_23 0.53333333 0.14666667  0.1400000 0.16000000 0.10666667 0.10666667
-#> Ranking_24 0.29333333 0.20666667  0.2733333 0.16000000 0.22000000 0.18000000
-#> Ranking_25 0.22000000 0.30000000  0.3066667 0.22000000 0.29333333 0.30000000
-#> Ranking_26 0.09333333 0.45333333  0.4666667 0.20666667 0.73333333 0.42000000
-#> Ranking_27 0.08666667 0.44000000  0.4333333 0.24666667 0.67333333 0.45333333
-#> Ranking_28 0.73333333 0.06666667  0.2333333 0.09333333 0.10666667 0.08000000
-#> Ranking_29 0.20666667 0.46000000  0.3333333 0.48000000 0.18000000 0.52666667
-#> Ranking_30 0.10666667 0.58000000  0.4400000 0.41333333 0.54666667 0.60000000
-#> Ranking_31 0.09333333 0.58666667  0.3066667 0.61333333 0.16666667 0.60666667
-#> Ranking_32 0.05333333 0.56000000  0.3000000 0.46000000 0.36666667 0.57333333
-#> Ranking_33 0.26666667 0.23333333  0.2400000 0.40000000 0.16666667 0.26000000
-#> Ranking_34 0.08000000 0.29333333  0.4066667 0.22000000 0.61333333 0.26666667
-#> Ranking_35 0.29333333 0.24666667  0.4000000 0.12000000 0.42000000 0.24666667
-#> Ranking_36 0.11333333 0.30000000  0.3733333 0.14000000 0.67333333 0.28000000
-#> Ranking_37 0.07333333 0.66666667  0.2933333 0.62666667 0.18000000 0.62666667
-#> Ranking_38 0.28666667 0.28000000  0.3466667 0.16000000 0.40666667 0.24000000
-#> Ranking_39 0.12000000 0.24000000  0.3533333 0.16000000 0.60666667 0.29333333
-#> Ranking_40 0.12000000 0.24000000  0.2800000 0.22666667 0.34000000 0.22000000
-#>            Ranking_19 Ranking_20 Ranking_21 Ranking_22 Ranking_23 Ranking_24
-#> Ranking_1   0.4600000 0.45333333 0.29333333 0.14000000 0.46666667  0.4066667
-#> Ranking_2   0.3333333 0.26666667 0.06666667 0.13333333 0.40666667  0.2800000
-#> Ranking_3   0.2000000 0.14000000 0.43333333 0.62000000 0.11333333  0.1733333
-#> Ranking_4   0.2666667 0.26000000 0.41333333 0.38666667 0.22000000  0.2066667
-#> Ranking_5   0.3466667 0.12666667 0.14000000 0.46000000 0.26000000  0.3133333
-#> Ranking_6   0.5533333 0.32666667 0.14666667 0.31333333 0.45333333  0.4266667
-#> Ranking_7   0.4066667 0.30666667 0.10666667 0.07333333 0.46666667  0.3400000
-#> Ranking_8   0.1533333 0.07333333 0.16666667 0.59333333 0.08666667  0.2133333
-#> Ranking_9   0.4066667 0.34666667 0.14666667 0.06000000 0.51333333  0.2933333
-#> Ranking_10  0.3400000 0.47333333 0.42000000 0.26000000 0.29333333  0.3000000
-#> Ranking_11  0.1666667 0.11333333 0.12666667 0.35333333 0.12000000  0.2200000
-#> Ranking_12  0.4400000 0.29333333 0.27333333 0.48000000 0.30666667  0.3466667
-#> Ranking_13  0.4000000 0.26666667 0.09333333 0.09333333 0.53333333  0.2933333
-#> Ranking_14  0.2066667 0.27333333 0.59333333 0.56000000 0.14666667  0.2066667
-#> Ranking_15  0.2266667 0.15333333 0.26666667 0.40000000 0.14000000  0.2733333
-#> Ranking_16  0.1666667 0.35333333 0.66666667 0.32000000 0.16000000  0.1600000
-#> Ranking_17  0.1600000 0.10000000 0.18000000 0.62666667 0.10666667  0.2200000
-#> Ranking_18  0.1933333 0.22000000 0.58000000 0.53333333 0.10666667  0.1800000
-#> Ranking_19  1.0000000 0.36000000 0.16666667 0.23333333 0.58666667  0.5066667
-#> Ranking_20  0.3600000 1.00000000 0.32000000 0.14000000 0.33333333  0.2866667
-#> Ranking_21  0.1666667 0.32000000 1.00000000 0.37333333 0.11333333  0.1133333
-#> Ranking_22  0.2333333 0.14000000 0.37333333 1.00000000 0.13333333  0.2133333
-#> Ranking_23  0.5866667 0.33333333 0.11333333 0.13333333 1.00000000  0.4466667
-#> Ranking_24  0.5066667 0.28666667 0.11333333 0.21333333 0.44666667  1.0000000
-#> Ranking_25  0.3266667 0.28666667 0.24666667 0.31333333 0.28000000  0.2733333
-#> Ranking_26  0.2066667 0.10000000 0.23333333 0.70666667 0.11333333  0.2266667
-#> Ranking_27  0.2066667 0.16000000 0.25333333 0.62000000 0.13333333  0.2133333
-#> Ranking_28  0.3933333 0.29333333 0.08000000 0.10000000 0.51333333  0.3333333
-#> Ranking_29  0.2333333 0.26666667 0.50666667 0.36666667 0.17333333  0.2066667
-#> Ranking_30  0.2266667 0.18666667 0.44666667 0.68000000 0.14000000  0.2066667
-#> Ranking_31  0.1733333 0.26666667 0.68000000 0.36000000 0.12666667  0.1866667
-#> Ranking_32  0.1400000 0.20666667 0.48000000 0.47333333 0.12666667  0.1466667
-#> Ranking_33  0.2133333 0.32000000 0.34000000 0.13333333 0.26000000  0.2333333
-#> Ranking_34  0.1466667 0.12666667 0.16000000 0.44000000 0.10000000  0.2000000
-#> Ranking_35  0.3600000 0.20000000 0.14666667 0.39333333 0.25333333  0.3333333
-#> Ranking_36  0.2400000 0.13333333 0.12666667 0.56666667 0.16666667  0.2800000
-#> Ranking_37  0.2000000 0.36666667 0.72000000 0.40000000 0.14666667  0.1733333
-#> Ranking_38  0.3733333 0.20666667 0.16666667 0.41333333 0.30000000  0.3933333
-#> Ranking_39  0.1666667 0.10666667 0.10666667 0.46000000 0.12666667  0.2200000
-#> Ranking_40  0.2266667 0.21333333 0.22000000 0.26000000 0.20000000  0.3000000
-#>            Ranking_25 Ranking_26 Ranking_27 Ranking_28 Ranking_29 Ranking_30
-#> Ranking_1   0.3266667 0.10666667 0.13333333 0.34666667  0.3666667 0.16666667
-#> Ranking_2   0.2333333 0.18666667 0.18666667 0.52000000  0.1066667 0.15333333
-#> Ranking_3   0.2600000 0.56666667 0.52666667 0.08000000  0.3800000 0.66000000
-#> Ranking_4   0.3533333 0.36000000 0.29333333 0.26000000  0.4666667 0.40666667
-#> Ranking_5   0.3066667 0.46666667 0.38000000 0.34000000  0.2000000 0.41333333
-#> Ranking_6   0.4066667 0.28666667 0.24000000 0.43333333  0.2333333 0.26000000
-#> Ranking_7   0.2333333 0.08000000 0.08666667 0.65333333  0.2200000 0.10000000
-#> Ranking_8   0.2666667 0.66666667 0.64666667 0.08666667  0.1866667 0.52000000
-#> Ranking_9   0.2000000 0.05333333 0.04666667 0.59333333  0.2133333 0.06666667
-#> Ranking_10  0.3333333 0.22000000 0.24666667 0.26000000  0.4266667 0.30666667
-#> Ranking_11  0.1666667 0.37333333 0.42000000 0.12000000  0.1200000 0.31333333
-#> Ranking_12  0.4000000 0.47333333 0.43333333 0.27333333  0.2666667 0.49333333
-#> Ranking_13  0.2200000 0.09333333 0.08666667 0.73333333  0.2066667 0.10666667
-#> Ranking_14  0.3000000 0.45333333 0.44000000 0.06666667  0.4600000 0.58000000
-#> Ranking_15  0.3066667 0.46666667 0.43333333 0.23333333  0.3333333 0.44000000
-#> Ranking_16  0.2200000 0.20666667 0.24666667 0.09333333  0.4800000 0.41333333
-#> Ranking_17  0.2933333 0.73333333 0.67333333 0.10666667  0.1800000 0.54666667
-#> Ranking_18  0.3000000 0.42000000 0.45333333 0.08000000  0.5266667 0.60000000
-#> Ranking_19  0.3266667 0.20666667 0.20666667 0.39333333  0.2333333 0.22666667
-#> Ranking_20  0.2866667 0.10000000 0.16000000 0.29333333  0.2666667 0.18666667
-#> Ranking_21  0.2466667 0.23333333 0.25333333 0.08000000  0.5066667 0.44666667
-#> Ranking_22  0.3133333 0.70666667 0.62000000 0.10000000  0.3666667 0.68000000
-#> Ranking_23  0.2800000 0.11333333 0.13333333 0.51333333  0.1733333 0.14000000
-#> Ranking_24  0.2733333 0.22666667 0.21333333 0.33333333  0.2066667 0.20666667
-#> Ranking_25  1.0000000 0.35333333 0.32666667 0.18000000  0.2266667 0.32666667
-#> Ranking_26  0.3533333 1.00000000 0.66000000 0.10000000  0.2733333 0.61333333
-#> Ranking_27  0.3266667 0.66000000 1.00000000 0.08666667  0.2733333 0.56666667
-#> Ranking_28  0.1800000 0.10000000 0.08666667 1.00000000  0.1600000 0.09333333
-#> Ranking_29  0.2266667 0.27333333 0.27333333 0.16000000  1.0000000 0.38666667
-#> Ranking_30  0.3266667 0.61333333 0.56666667 0.09333333  0.3866667 1.00000000
-#> Ranking_31  0.2866667 0.26000000 0.28000000 0.08000000  0.5866667 0.46666667
-#> Ranking_32  0.3200000 0.40000000 0.46000000 0.08000000  0.4000000 0.48000000
-#> Ranking_33  0.1666667 0.14666667 0.18000000 0.22666667  0.3800000 0.24000000
-#> Ranking_34  0.2466667 0.52000000 0.52000000 0.10000000  0.1666667 0.42000000
-#> Ranking_35  0.4133333 0.44000000 0.38000000 0.32666667  0.2000000 0.38000000
-#> Ranking_36  0.3133333 0.56666667 0.57333333 0.11333333  0.1466667 0.48000000
-#> Ranking_37  0.3133333 0.25333333 0.26666667 0.08000000  0.5066667 0.46666667
-#> Ranking_38  0.4733333 0.41333333 0.38000000 0.29333333  0.1800000 0.37333333
-#> Ranking_39  0.2666667 0.47333333 0.51333333 0.13333333  0.1533333 0.40000000
-#> Ranking_40  0.3466667 0.28666667 0.27333333 0.14666667  0.1266667 0.27333333
-#>            Ranking_31 Ranking_32 Ranking_33 Ranking_34 Ranking_35 Ranking_36
-#> Ranking_1  0.30666667 0.23333333  0.3266667 0.08000000  0.1933333 0.10666667
-#> Ranking_2  0.05333333 0.11333333  0.1800000 0.25333333  0.4800000 0.24000000
-#> Ranking_3  0.42666667 0.52666667  0.2533333 0.40000000  0.2400000 0.40666667
-#> Ranking_4  0.41333333 0.34000000  0.2333333 0.18666667  0.3066667 0.23333333
-#> Ranking_5  0.15333333 0.20666667  0.1600000 0.37333333  0.4333333 0.45333333
-#> Ranking_6  0.20666667 0.18000000  0.1733333 0.18666667  0.4600000 0.30666667
-#> Ranking_7  0.09333333 0.09333333  0.2666667 0.06666667  0.2800000 0.09333333
-#> Ranking_8  0.17333333 0.34666667  0.1466667 0.60000000  0.4066667 0.66000000
-#> Ranking_9  0.13333333 0.07333333  0.2600000 0.04000000  0.2000000 0.06666667
-#> Ranking_10 0.40000000 0.25333333  0.3533333 0.19333333  0.3200000 0.20666667
-#> Ranking_11 0.10666667 0.21333333  0.2133333 0.59333333  0.2800000 0.46666667
-#> Ranking_12 0.28666667 0.28000000  0.1800000 0.37333333  0.5133333 0.44000000
-#> Ranking_13 0.09333333 0.05333333  0.2666667 0.08000000  0.2933333 0.11333333
-#> Ranking_14 0.58666667 0.56000000  0.2333333 0.29333333  0.2466667 0.30000000
-#> Ranking_15 0.30666667 0.30000000  0.2400000 0.40666667  0.4000000 0.37333333
-#> Ranking_16 0.61333333 0.46000000  0.4000000 0.22000000  0.1200000 0.14000000
-#> Ranking_17 0.16666667 0.36666667  0.1666667 0.61333333  0.4200000 0.67333333
-#> Ranking_18 0.60666667 0.57333333  0.2600000 0.26666667  0.2466667 0.28000000
-#> Ranking_19 0.17333333 0.14000000  0.2133333 0.14666667  0.3600000 0.24000000
-#> Ranking_20 0.26666667 0.20666667  0.3200000 0.12666667  0.2000000 0.13333333
-#> Ranking_21 0.68000000 0.48000000  0.3400000 0.16000000  0.1466667 0.12666667
-#> Ranking_22 0.36000000 0.47333333  0.1333333 0.44000000  0.3933333 0.56666667
-#> Ranking_23 0.12666667 0.12666667  0.2600000 0.10000000  0.2533333 0.16666667
-#> Ranking_24 0.18666667 0.14666667  0.2333333 0.20000000  0.3333333 0.28000000
-#> Ranking_25 0.28666667 0.32000000  0.1666667 0.24666667  0.4133333 0.31333333
-#> Ranking_26 0.26000000 0.40000000  0.1466667 0.52000000  0.4400000 0.56666667
-#> Ranking_27 0.28000000 0.46000000  0.1800000 0.52000000  0.3800000 0.57333333
-#> Ranking_28 0.08000000 0.08000000  0.2266667 0.10000000  0.3266667 0.11333333
-#> Ranking_29 0.58666667 0.40000000  0.3800000 0.16666667  0.2000000 0.14666667
-#> Ranking_30 0.46666667 0.48000000  0.2400000 0.42000000  0.3800000 0.48000000
-#> Ranking_31 1.00000000 0.46000000  0.3333333 0.16666667  0.1666667 0.13333333
-#> Ranking_32 0.46000000 1.00000000  0.2066667 0.30666667  0.2333333 0.27333333
-#> Ranking_33 0.33333333 0.20666667  1.0000000 0.20666667  0.1066667 0.13333333
-#> Ranking_34 0.16666667 0.30666667  0.2066667 1.00000000  0.4000000 0.55333333
-#> Ranking_35 0.16666667 0.23333333  0.1066667 0.40000000  1.0000000 0.46666667
-#> Ranking_36 0.13333333 0.27333333  0.1333333 0.55333333  0.4666667 1.00000000
-#> Ranking_37 0.68666667 0.55333333  0.3066667 0.18000000  0.1733333 0.15333333
-#> Ranking_38 0.19333333 0.22666667  0.1333333 0.30666667  0.5866667 0.46000000
-#> Ranking_39 0.14666667 0.26000000  0.1866667 0.63333333  0.4133333 0.60000000
-#> Ranking_40 0.17333333 0.22666667  0.1666667 0.36000000  0.3600000 0.32666667
-#>            Ranking_37 Ranking_38 Ranking_39 Ranking_40
-#> Ranking_1  0.28666667  0.2266667 0.08666667  0.1533333
-#> Ranking_2  0.08666667  0.3200000 0.23333333  0.2600000
-#> Ranking_3  0.43333333  0.2666667 0.38666667  0.2333333
-#> Ranking_4  0.40666667  0.3133333 0.20000000  0.1733333
-#> Ranking_5  0.17333333  0.4533333 0.36666667  0.2133333
-#> Ranking_6  0.19333333  0.5133333 0.22000000  0.2266667
-#> Ranking_7  0.11333333  0.2466667 0.08000000  0.1200000
-#> Ranking_8  0.18000000  0.4000000 0.62666667  0.3000000
-#> Ranking_9  0.12000000  0.1933333 0.08000000  0.1066667
-#> Ranking_10 0.42666667  0.2666667 0.14666667  0.2466667
-#> Ranking_11 0.14000000  0.2666667 0.52666667  0.3466667
-#> Ranking_12 0.30666667  0.5200000 0.32666667  0.2866667
-#> Ranking_13 0.07333333  0.2866667 0.12000000  0.1200000
-#> Ranking_14 0.66666667  0.2800000 0.24000000  0.2400000
-#> Ranking_15 0.29333333  0.3466667 0.35333333  0.2800000
-#> Ranking_16 0.62666667  0.1600000 0.16000000  0.2266667
-#> Ranking_17 0.18000000  0.4066667 0.60666667  0.3400000
-#> Ranking_18 0.62666667  0.2400000 0.29333333  0.2200000
-#> Ranking_19 0.20000000  0.3733333 0.16666667  0.2266667
-#> Ranking_20 0.36666667  0.2066667 0.10666667  0.2133333
-#> Ranking_21 0.72000000  0.1666667 0.10666667  0.2200000
-#> Ranking_22 0.40000000  0.4133333 0.46000000  0.2600000
-#> Ranking_23 0.14666667  0.3000000 0.12666667  0.2000000
-#> Ranking_24 0.17333333  0.3933333 0.22000000  0.3000000
-#> Ranking_25 0.31333333  0.4733333 0.26666667  0.3466667
-#> Ranking_26 0.25333333  0.4133333 0.47333333  0.2866667
-#> Ranking_27 0.26666667  0.3800000 0.51333333  0.2733333
-#> Ranking_28 0.08000000  0.2933333 0.13333333  0.1466667
-#> Ranking_29 0.50666667  0.1800000 0.15333333  0.1266667
-#> Ranking_30 0.46666667  0.3733333 0.40000000  0.2733333
-#> Ranking_31 0.68666667  0.1933333 0.14666667  0.1733333
-#> Ranking_32 0.55333333  0.2266667 0.26000000  0.2266667
-#> Ranking_33 0.30666667  0.1333333 0.18666667  0.1666667
-#> Ranking_34 0.18000000  0.3066667 0.63333333  0.3600000
-#> Ranking_35 0.17333333  0.5866667 0.41333333  0.3600000
-#> Ranking_36 0.15333333  0.4600000 0.60000000  0.3266667
-#> Ranking_37 1.00000000  0.1933333 0.14000000  0.2266667
-#> Ranking_38 0.19333333  1.0000000 0.36000000  0.3200000
-#> Ranking_39 0.14000000  0.3600000 1.00000000  0.3666667
-#> Ranking_40 0.22666667  0.3200000 0.36666667  1.0000000
-mcmc_diagnostics(mixture_fit)
-#>             quantity        mean        sd      ess      mcse
-#> 1 n_ranking_clusters    5.826667  1.748429 22.24567 0.3707022
-#> 2     log_likelihood -364.233637 13.902347 15.30795 3.5532809
-#>   autocorrelation_lag_1
-#> 1             0.6945876
-#> 2             0.6080740
 ```
 
-The LBM is exercised with a known-structure synthetic fixture:
+The rows and columns now refer to rankings, not acts. Dark blocks
+suggest respondents whose preferences were often assigned together.
 
 ``` r
 
+plot_posterior_similarity(mixture_fit, target = "ranking")
+```
+
+![](pl-ranking-models_files/figure-html/ranking-similarity-1.png)
+
+## 5. Jointly group respondents and items
+
+The PL–LBM has both kinds of grouping: it clusters ranking rows and
+items at the same time. It is useful for a question like which
+respondent profiles prefer which groups of items. pl_lbm_toy() has known
+simulated structure so you can see the workflow.
+
+``` r
+
+structured_rankings <- pl_lbm_toy(n_rankings = 24, rank_length = 4, seed = 5)
 lbm_fit <- fit_btsbm(
-  pl_lbm_toy(n_rankings = 20, rank_length = 4),
+  structured_rankings,
   pl_lbm_model(
     ranking_clustering = finite_partition(max_clusters = 3),
     item_clustering = finite_partition(max_clusters = 3)
   ),
-  mcmc_control(iter = 300, warmup = 150, seed = 4)
+  mcmc_control(iter = 400, warmup = 200, seed = 6)
 )
-
-mcmc_diagnostics(lbm_fit)
-#>             quantity        mean        sd      ess       mcse
-#> 1 n_ranking_clusters    2.733333 0.4729838 49.77876 0.06703849
-#> 2    n_item_clusters    2.193333 0.6624813 52.12587 0.09175863
-#> 3     log_likelihood -110.375679 6.4165042 15.88139 1.61010535
-#>   autocorrelation_lag_1
-#> 1             0.2784504
-#> 2             0.4338673
-#> 3             0.8143269
 ```
 
-[`mcmc_diagnostics()`](https://laposanti.github.io/BTSBM/reference/mcmc_diagnostics.md)
-reports effective sample-size estimates, Monte Carlo standard errors,
-and lag-one autocorrelation for the total ranking likelihood and
-available occupied-cluster traces. Use these alongside multiple chains
-and posterior predictive checks for a substantive analysis.
+``` r
 
-[`pl_lbm_toy()`](https://laposanti.github.io/BTSBM/reference/pl_lbm_toy.md)
-provides a structural fixture with known ranking and item partitions for
-diagnostics and forthcoming PLuce parity tests.
+plot_posterior_similarity(lbm_fit, target = "item")
+```
+
+![](pl-ranking-models_files/figure-html/lbm-item-similarity-1.png)
+
+``` r
+
+plot_posterior_similarity(lbm_fit, target = "ranking")
+```
+
+![](pl-ranking-models_files/figure-html/lbm-ranking-similarity-1.png)
+
+## 6. Check the MCMC run
+
+The diagnostics table and traces should be checked before interpreting a
+partition. They are not a substitute for multiple chains, but they make
+it easy to spot a trace that is stuck or still drifting.
+
+``` r
+
+mcmc_diagnostics(tiered_pl)
+#>          quantity        mean        sd      ess      mcse
+#> 1 n_item_clusters    2.263333 0.9919351 23.00151 0.2068260
+#> 2  log_likelihood -406.622999 3.3293552 24.45201 0.6732911
+#>   autocorrelation_lag_1
+#> 1             0.7339248
+#> 2             0.6772591
+plot_mcmc_traces(tiered_pl)
+```
+
+![](pl-ranking-models_files/figure-html/diagnostics-1.png)
+
+For model comparison, log_lik() returns one likelihood contribution per
+ranking. If the optional loo package is installed, use loo_btsbm() to
+perform ranking-level PSIS-LOO.
 
 ## References
 

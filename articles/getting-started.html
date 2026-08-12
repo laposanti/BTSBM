@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Getting Started with BTSBM • BTSBM: Bayesian paired-comparison and ranking models</title>
+<title>Getting started: from results to a Bradley--Terry analysis • BTSBM: Bayesian paired-comparison and ranking models</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started with BTSBM">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started: from results to a Bradley--Terry analysis">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -61,11 +61,11 @@
 
 
 
-<script src="getting-started_files/kePrint-0.0.1/kePrint.js"></script><link href="getting-started_files/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Getting Started with BTSBM</h1>
+      <h1>Getting started: from results to a Bradley--Terry analysis</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/laposanti/BTSBM/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
@@ -74,76 +74,142 @@
 
     
     
-<p>This vignette shows a lightweight workflow for fitting a
-Bradley-Terry stochastic block model and producing core summaries.</p>
+<div class="section level2">
+<h2 id="what-this-package-does">What this package does<a class="anchor" aria-label="anchor" href="#what-this-package-does"></a>
+</h2>
+<p>BTSBM analyses two kinds of preference data:</p>
+<ol style="list-style-type: decimal">
+<li>Pairwise results: one item wins or loses against another, such as a
+match in a league.</li>
+<li>Rankings: a person places several items from most to least
+preferred.</li>
+</ol>
+<p>This first tutorial uses pairwise results. The ranking tutorial is
+vignette(“pl-ranking-models”).</p>
+<p>A Bradley–Terry (BT) model assigns every player a positive strength.
+A larger strength means a greater probability of winning against a
+player with a smaller strength. A BT–SBM additionally lets the data
+group players with similar strengths into latent tiers.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/laposanti/BTSBM" class="external-link">BTSBM</a></span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
-<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+<h2 id="start-with-data-you-can-inspect">1. Start with data you can inspect<a class="anchor" aria-label="anchor" href="#start-with-data-you-can-inspect"></a>
 </h2>
+<p>The toy tennis league is synthetic and intentionally small. wins[i,
+j] means the number of times player i beat player j. The diagonal is
+zero because a player does not play themself.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">w_ij</span> <span class="op">&lt;-</span> <span class="va">ATP_2000_2025</span><span class="op">$</span><span class="va">`2017`</span><span class="op">$</span><span class="va">Y_ij</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">w_ij</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
-<span><span class="va">w_ij</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
-<span><span class="co">#&gt;             Nadal R. Federer R. Dimitrov G.</span></span>
-<span><span class="co">#&gt; Nadal R.           0          0           3</span></span>
-<span><span class="co">#&gt; Federer R.         4          0           1</span></span>
-<span><span class="co">#&gt; Dimitrov G.        0          0           0</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="fit">Fit<a class="anchor" aria-label="anchor" href="#fit"></a>
-</h2>
+<code class="sourceCode R"><span><span class="va">tennis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tennis_toy.html">tennis_toy</a></span><span class="op">(</span>matches_per_pair <span class="op">=</span> <span class="fl">8</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">tennis</span><span class="op">$</span><span class="va">wins</span></span>
+<span><span class="co">#&gt;            Ace Baseline Crosscourt Dropshot Elite Forehand</span></span>
+<span><span class="co">#&gt; Ace          0        5          6        6     5        8</span></span>
+<span><span class="co">#&gt; Baseline     3        0          3        3     6        6</span></span>
+<span><span class="co">#&gt; Crosscourt   2        5          0        6     7        7</span></span>
+<span><span class="co">#&gt; Dropshot     2        5          2        0     4        6</span></span>
+<span><span class="co">#&gt; Elite        3        2          1        4     0        4</span></span>
+<span><span class="co">#&gt; Forehand     0        2          1        2     4        0</span></span></code></pre></div>
+<p>Before fitting a model, inspect the observed outcomes. Darker cells
+identify frequent wins by the row player over the column player.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gibbs_bt_sbm.html">gibbs_bt_sbm</a></span><span class="op">(</span></span>
-<span>  w_ij <span class="op">=</span> <span class="va">w_ij</span>,</span>
-<span>  a <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  prior <span class="op">=</span> <span class="st">"GN"</span>,</span>
-<span>  gamma_GN <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span>  T_iter <span class="op">=</span> <span class="fl">200</span>,</span>
-<span>  T_burn <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_pairwise_outcomes.html">plot_pairwise_outcomes</a></span><span class="op">(</span><span class="va">tennis</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/observed-outcomes-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>This plot is descriptive: it does not yet account for uncertainty or
+combine all opponents into one estimate of player strength.</p>
 </div>
 <div class="section level2">
-<h2 id="relabel-and-summarise">Relabel and Summarise<a class="anchor" aria-label="anchor" href="#relabel-and-summarise"></a>
+<h2 id="choose-a-model">2. Choose a model<a class="anchor" aria-label="anchor" href="#choose-a-model"></a>
 </h2>
+<p>Start with a BT–SBM when you think players may form broad tiers
+rather than a completely reliable order from first to last. Here, the
+Gnedin prior lets the number of tiers be learned from the data.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">post</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/relabel_by_lambda.html">relabel_by_lambda</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">x_samples</span>, <span class="va">fit</span><span class="op">$</span><span class="va">lambda_samples</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/pretty_table_K_distribution.html">pretty_table_K_distribution</a></span><span class="op">(</span><span class="va">post</span><span class="op">)</span></span></code></pre></div>
-<table class="table table" style="margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:right;">
-2
-</th>
-<th style="text-align:right;">
-3
-</th>
-</tr></thead>
-<tbody><tr>
-<td style="text-align:right;">
-0.62
-</td>
-<td style="text-align:right;">
-0.32
-</td>
-</tr></tbody>
-</table>
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bt_sbm_model.html">bt_sbm_model</a></span><span class="op">(</span></span>
+<span>  latent_strength <span class="op">=</span> <span class="fu"><a href="../reference/latent_strength.html">latent_strength</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">4</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Special.html" class="external-link">digamma</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  item_clustering <span class="op">=</span> <span class="fu"><a href="../reference/gnedin_prior.html">gnedin_prior</a></span><span class="op">(</span>gnedin_hyperparameter <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">model</span></span>
+<span><span class="co">#&gt; &lt;btsbm_model&gt; Bradley--Terry with latent item clustering </span></span>
+<span><span class="co">#&gt;   latent strength: Gamma(shape = 4 , rate = 3.511761 )</span></span>
+<span><span class="co">#&gt;   item clustering:&lt;clustering_prior&gt; Gnedin(gnedin_hyperparameter = 0.5)</span></span></code></pre></div>
+<p>The latent_strength() prior must be positive. item_clustering is a
+prior over possible player tiers. You can use
+finite_partition(max_clusters = 3) when a strict upper limit is
+scientifically justified.</p>
 </div>
 <div class="section level2">
-<h2 id="core-plots">Core Plots<a class="anchor" aria-label="anchor" href="#core-plots"></a>
+<h2 id="fit-the-model">3. Fit the model<a class="anchor" aria-label="anchor" href="#fit-the-model"></a>
 </h2>
+<p>An MCMC fit produces many plausible values rather than one single
+answer. warmup draws are discarded; the remaining draws represent
+posterior uncertainty. The short chain below is suitable for a tutorial.
+Use longer, multiple chains in a real study.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_block_adjacency.html">plot_block_adjacency</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_btsbm.html">fit_btsbm</a></span><span class="op">(</span></span>
+<span>  <span class="va">tennis</span>,</span>
+<span>  <span class="va">model</span>,</span>
+<span>  <span class="fu"><a href="../reference/mcmc_control.html">mcmc_control</a></span><span class="op">(</span>iter <span class="op">=</span> <span class="fl">400</span>, warmup <span class="op">=</span> <span class="fl">200</span>, seed <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">fit</span></span>
+<span><span class="co">#&gt; &lt;btsbm_fit&gt; bt / item_sbm with 200 saved draws</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="read-the-main-result-strengths-and-uncertainty">4. Read the main result: strengths and uncertainty<a class="anchor" aria-label="anchor" href="#read-the-main-result-strengths-and-uncertainty"></a>
+</h2>
+<p>The point is the posterior mean strength. The horizontal line is a
+90% credible interval: it describes the remaining uncertainty after
+seeing the results. Intervals that overlap substantially should not be
+read as a certain ordering.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_assignment_probabilities.html">plot_assignment_probabilities</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span>, x_hat <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_strength_summary.html">plot_strength_summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/strength-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The same information is available as a table, which is useful for
+reporting.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_lambda_uncertainty.html">plot_lambda_uncertainty</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">post</span>, w_ij <span class="op">=</span> <span class="va">w_ij</span>, x_hat <span class="op">=</span> <span class="va">post</span><span class="op">$</span><span class="va">minVI_partition</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/strength_summary.html">strength_summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         item      mean    median     lower    upper</span></span>
+<span><span class="co">#&gt; 1        Ace 1.6482758 1.6820440 1.0000000 2.150828</span></span>
+<span><span class="co">#&gt; 3 Crosscourt 1.6215289 1.6737805 1.0000000 2.146159</span></span>
+<span><span class="co">#&gt; 2   Baseline 1.1710874 1.2384788 0.4858528 1.967910</span></span>
+<span><span class="co">#&gt; 4   Dropshot 0.7962691 0.6177404 0.4798787 1.780272</span></span>
+<span><span class="co">#&gt; 5      Elite 0.6479440 0.5967778 0.4668456 1.000000</span></span>
+<span><span class="co">#&gt; 6   Forehand 0.6309056 0.5936463 0.4623794 1.000000</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="ask-whether-the-data-support-tiers">5. Ask whether the data support tiers<a class="anchor" aria-label="anchor" href="#ask-whether-the-data-support-tiers"></a>
+</h2>
+<p>The model’s cluster labels can switch their names from one MCMC draw
+to the next. Instead, use a posterior similarity plot. A dark cell means
+the two players were frequently placed in the same tier.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_rank_intervals.html">plot_rank_intervals</a></span><span class="op">(</span><span class="va">post</span>, max_players <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="768" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_posterior_similarity.html">plot_posterior_similarity</a></span><span class="op">(</span><span class="va">fit</span>, target <span class="op">=</span> <span class="st">"item"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/similarity-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level2">
+<h2 id="check-the-sampler-before-interpreting-it">6. Check the sampler before interpreting it<a class="anchor" aria-label="anchor" href="#check-the-sampler-before-interpreting-it"></a>
+</h2>
+<p>MCMC draws should move around a stable region. Trace plots are a
+quick screening tool: long trends or a completely stuck trace are
+reasons to run longer chains or reconsider the model.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mcmc_traces.html">plot_mcmc_traces</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/trace-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mcmc_diagnostics.html">mcmc_diagnostics</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          quantity  mean       sd      ess       mcse autocorrelation_lag_1</span></span>
+<span><span class="co">#&gt; 1 n_item_clusters 1.935 0.333664 33.87867 0.05732528             0.6839837</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="where-to-go-next">Where to go next<a class="anchor" aria-label="anchor" href="#where-to-go-next"></a>
+</h2>
+<ul>
+<li>Use bt_model() if every item should have its own strength without
+tiers.</li>
+<li>Use vignette(“pl-ranking-models”) when the observations are full or
+top-m rankings rather than wins and losses.</li>
+<li>Use vignette(“toy-data-gallery”) for additional worked synthetic
+examples.</li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
